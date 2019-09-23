@@ -1,5 +1,9 @@
+"""
+Application to serve API of selected-tests service.
+"""
+
 from flask import Flask
-app = Flask(__name__)
+
 
 def create_app() -> Flask:
     """
