@@ -1,5 +1,5 @@
 import pytest
-import app
+import selected_tests as app
 
 
 @pytest.fixture()
