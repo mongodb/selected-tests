@@ -1,5 +1,8 @@
+*.egg-info
 *.pyc
 .idea
+.tox
 __pycache__
 config.yml
+pip-wheel-metadata
 venv

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?><testsuite errors="1" failures="0" name="pytest" skipped="0" tests="1" time="0.103"><testcase classname="" file="tests/test_app.py" name="tests.test_app" time="0.000"><error message="collection failure">ImportError while importing test module &apos;/Users/lydia.stepanek/mongo/selected-tests/tests/test_app.py&apos;.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-tests/test_app.py:2: in &lt;module&gt;
-    import selected_tests as app
-E   ModuleNotFoundError: No module named &apos;selected_tests&apos;</error></testcase></testsuite>

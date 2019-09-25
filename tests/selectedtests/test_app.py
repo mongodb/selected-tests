@@ -1,5 +1,6 @@
 import pytest
-import selected_tests as app
+
+from selectedtests import app as under_test
 
 
 @pytest.fixture()
@@ -7,7 +8,7 @@ def app_client():
     """
     Client for the flask web with mocked endpoints.
     """
-    client = app.create_app().test_client()
+    client = under_test.create_app().test_client()
     return client
 
 
