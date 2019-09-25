@@ -23,28 +23,24 @@ This service is used to predict which tests need to run based on code changes.
 
 # Set up environment
 ```
-virtualenv --python=python3 venv
-source venv/bin/activate
 pip install -r requirements.txt
 pip install -e .
 ```
 
 # Run app locally
 ```
-pip install -r requirements.txt
 python src/app.py
 ```
 
 # Run tests
-Testing is done via pytest.
+Testing is done via pytest. You can pass the --flake8 argument to perform some
+flake8 sanity checks on .py files.
 ```
-pip install -r requirements.txt
-pytest
+pytest --flake8
 ```
 
 To get code coverage information, you can run pytest directly.
 ```
-pip install -r requirements.txt
 $ pytest --cov=src --cov-report=html
 ```
 

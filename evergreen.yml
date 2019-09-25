@@ -26,11 +26,6 @@ pre:
     directory: src
 - func: create virtualenv
 
-post:
-- command: attach.xunit_results
-  params:
-    file: src/junit-*.xml
-
 tasks:
 - name: unit_tests
   commands:
@@ -41,7 +36,7 @@ tasks:
         set -o errexit
         . venv/bin/activate
 
-        pytest --flake8 --ignore=venv --junitxml=junit-bf-matching.xml
+        pytest --flake8 --ignore=venv
 
 - name: check_formatting
   commands:
