@@ -1,6 +1,7 @@
 import pytest
 
 from selectedtests import app as under_test
+from flask import testing
 
 
 @pytest.fixture()
@@ -12,7 +13,7 @@ def app_client():
     return client
 
 
-def test_health(app_client):
+def test_health(app_client: testing.FlaskClient):
     """
     Test /health endpoint
     """
