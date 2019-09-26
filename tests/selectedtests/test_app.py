@@ -1,6 +1,6 @@
 import pytest
 
-from selectedtests import app as under_test
+from selectedtests.app import app as under_test
 from flask import testing
 
 

@@ -4,6 +4,8 @@ Application to serve API of selected-tests service.
 
 from flask import Flask
 
+DEFAULT_PORT = 8080
+
 
 def create_app() -> Flask:
     """
@@ -23,5 +25,10 @@ def create_app() -> Flask:
     return app
 
 
+def main():
+    """Run the server."""
+    return create_app()
+
+
 if __name__ == "__main__":
-    create_app().run(host="0.0.0.0", port=8080)
+    main().run(host="0.0.0.0", port=DEFAULT_PORT)
