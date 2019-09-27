@@ -1,6 +1,7 @@
 *.egg-info
 *.pyc
 .idea
+.python-version
 .tox
 __pycache__
 config.yml

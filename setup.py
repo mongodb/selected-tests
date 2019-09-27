@@ -41,6 +41,7 @@ setup(
     ],
     install_requires=[
         'flask==1.0.4',
+        'gunicorn==19.9.0',
     ],
     entry_points={
         'console_scripts': [
