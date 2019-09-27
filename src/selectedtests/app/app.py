@@ -6,21 +6,29 @@ from flask import Flask, jsonify
 
 DEFAULT_PORT = 8080
 
-application = Flask(__name__)
 
-
-@application.route("/health")
-def health():
+def create_app() -> Flask:
     """
-   Get information about whether service is running
-   """
-    return jsonify({"online": True})
+    Create an instance of the flask application.
+
+    :return: Instance of flask application.
+    """
+    app = Flask(__name__)
+
+    @app.route("/health")
+    def health():
+        """
+       Get information about whether service is running
+       """
+        return jsonify({"online": True})
+
+    return app
 
 
 def main():
     """Run the server."""
-    return application.run(host="0.0.0.0", port=DEFAULT_PORT)
+    return create_app()
 
 
 if __name__ == "__main__":
-    main()
+    main().run(host="0.0.0.0", port=DEFAULT_PORT)
