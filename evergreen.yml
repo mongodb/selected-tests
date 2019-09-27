@@ -36,7 +36,7 @@ tasks:
         set -o errexit
         . venv/bin/activate
 
-        pytest --flake8 --ignore=venv
+        pytest --flake8 -c pyproject.toml --ignore=venv
 
 - name: check_formatting
   commands:

@@ -17,7 +17,7 @@ python src/selectedtests/app/app.py
 Testing is done via pytest. You can pass the --flake8 argument to perform some
 flake8 sanity checks on .py files.
 ```
-pytest --flake8
+pytest --flake8 -c pyproject.toml
 ```
 
 To get code coverage information, you can run pytest directly.
@@ -39,6 +39,6 @@ to configure your editor to automatically format your code.
 
 ## Deploy
 
-Deployment is done via helm to [canopy](https://github.com/10gen/kanopy-docs#index). The project
+Deployment is done via helm to [kanopy](https://github.com/10gen/kanopy-docs#index). The project
 will automatically be deployed on merge to master. The deployed application will be at
 http://selected-tests.server-tig.prod.corp.mongodb.com .
