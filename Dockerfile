@@ -12,6 +12,6 @@ RUN pip3 install --upgrade pip
 ADD . /selected-tests
 WORKDIR /selected-tests
 RUN pip3 install -r requirements.txt
-RUN pip3 install -e .
+RUN pip3 install .
 
 CMD ["scripts/server.sh"]

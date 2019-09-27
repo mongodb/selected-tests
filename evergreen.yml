@@ -47,4 +47,4 @@ tasks:
           set -o errexit
           . venv/bin/activate
 
-          black --check --diff src
+          black --check --diff src tests

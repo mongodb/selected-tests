@@ -10,7 +10,7 @@ pip install -e .
 
 # Run app locally
 ```
-python src/app.py
+python src/selectedtests/app/app.py
 ```
 
 # Run tests
@@ -31,7 +31,7 @@ This project is formatting with [black](https://github.com/psf/black). To autofo
 can use the black command line tool:
 
 ```
-$ black src
+$ black src tests
 ```
 
 See the black [documentation](https://github.com/psf/black#editor-integration) for details on how

@@ -2,33 +2,25 @@
 Application to serve API of selected-tests service.
 """
 
-from flask import Flask
+from flask import Flask, jsonify
 
 DEFAULT_PORT = 8080
 
+application = Flask(__name__)
 
-def create_app() -> Flask:
+
+@application.route("/health")
+def health():
     """
-    Create an instance of the flask application.
-
-    :return: Instance of flask application.
-    """
-    app = Flask(__name__)
-
-    @app.route("/health")
-    def health():
-        """
-       Get information about whether service is running
-       """
-        return "ok"
-
-    return app
+   Get information about whether service is running
+   """
+    return jsonify({"online": True})
 
 
 def main():
     """Run the server."""
-    return create_app()
+    return application.run(host="0.0.0.0", port=DEFAULT_PORT)
 
 
 if __name__ == "__main__":
-    main().run(host="0.0.0.0", port=DEFAULT_PORT)
+    main()

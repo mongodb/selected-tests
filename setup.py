@@ -18,7 +18,7 @@ setup(
     name='selectedtests',
     version='0.1.0',
     license='Apache License, Version 2.0',
-    description='',
+    description='Calculate correlated tests for source files in a given evergreen project',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Lydia Stepanek',
@@ -39,6 +39,12 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
-    install_requires=[],
-    entry_points='',
+    install_requires=[
+        'flask==1.0.4',
+    ],
+    entry_points={
+        'console_scripts': [
+            'selected-tests-service = selectedtests.app.app:main',
+        ],
+    }
 )
