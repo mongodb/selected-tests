@@ -18,8 +18,8 @@ def create_app() -> Flask:
     @app.route("/health")
     def health():
         """
-       Get information about whether service is running
-       """
+        Get information about whether service is running
+        """
         return jsonify({"online": True})
 
     return app
