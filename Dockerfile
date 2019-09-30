@@ -12,6 +12,6 @@ RUN pip3 install --upgrade pip
 ADD . /selected-tests
 WORKDIR /selected-tests
 RUN pip3 install .
-RUN pip install gunicorn==19.9.0
+RUN pip3 install gunicorn==19.9.0
 
 CMD ["scripts/server.sh"]
