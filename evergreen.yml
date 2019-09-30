@@ -1,0 +1,50 @@
+buildvariants:
+- display_name: Ubuntu 16.04
+  name: ubuntu1604
+  run_on:
+    - ubuntu1604-test
+  tasks:
+    - name: unit_tests
+    - name: check_formatting
+
+functions:
+  create virtualenv:
+  - command: shell.exec
+    params:
+      working_dir: src
+      script: |
+        set -o errexit
+        virtualenv --python=/opt/mongodbtoolchain/v3/bin/python3 venv
+        . venv/bin/activate
+
+        pip install -r requirements.txt
+        pip install -e .
+
+pre:
+- command: git.get_project
+  params:
+    directory: src
+- func: create virtualenv
+
+tasks:
+- name: unit_tests
+  commands:
+  - command: shell.exec
+    params:
+      working_dir: src
+      script: |
+        set -o errexit
+        . venv/bin/activate
+
+        pytest --flake8 --ignore=venv
+
+- name: check_formatting
+  commands:
+    - command: shell.exec
+      params:
+        working_dir: src
+        script: |
+          set -o errexit
+          . venv/bin/activate
+
+          black --check --diff src tests --config setup.cfg
