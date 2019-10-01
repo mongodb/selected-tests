@@ -22,7 +22,7 @@ def create_app() -> Flask:
         version="1.0",
         title="Selected Tests Service",
         description="This service is used to predict which tests need to run based on code changes",
-        doc="/swagger"
+        doc="/swagger",
     )
 
     add_health_endpoints(api)
