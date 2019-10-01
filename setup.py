@@ -37,7 +37,7 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
     install_requires=[
-        'flask==1.0.4',
+        'flask==1.1.1',
         'flask-restplus==0.13.0',
     ],
     entry_points={
