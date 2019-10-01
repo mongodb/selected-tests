@@ -1,7 +1,7 @@
 from flask import testing
 
 
-def test_health(app_client: testing.FlaskClient):
+def test_health_endpoint(app_client: testing.FlaskClient):
     """
     Test /health endpoint
     """
