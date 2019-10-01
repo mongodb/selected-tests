@@ -37,6 +37,18 @@ $ black src tests --config setup.cfg
 See the black [documentation](https://github.com/psf/black#editor-integration) for details on how
 to configure your editor to automatically format your code.
 
+##Swagger
+
+The swagger documentation for this service can be found at the /swagger endpoint. If running
+locally, navigate to http://localhost:8080/swagger to see it.
+
+If any new endpoints are added to the service or if the service is updated in such a way that any of
+the existing endpoints' contracts change, the swagger documentation must be updated to reflect the
+new state of the service before that change can be merged to master.
+
+Documentation for how the swagger documentation is done can be found 
+[here](https://flask-restplus.readthedocs.io/en/stable/swagger.html).
+
 ## Deploy
 
 Deployment is done via helm to [kanopy](https://github.com/10gen/kanopy-docs#index). The project

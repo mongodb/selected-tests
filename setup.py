@@ -38,6 +38,7 @@ setup(
     ],
     install_requires=[
         'flask==1.0.4',
+        'flask-restplus==0.13.0',
     ],
     entry_points={
         'console_scripts': [
