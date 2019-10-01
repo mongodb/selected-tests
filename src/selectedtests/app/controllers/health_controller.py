@@ -20,6 +20,7 @@ def add_health_endpoints(api: Api):
         """
         The class that represents the collection of endpoints that give the health of the service.
         """
+
         @ns.response(200, "Success", health_model)
         def get(self):
             """
