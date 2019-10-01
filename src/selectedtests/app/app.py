@@ -2,7 +2,10 @@
 Application to serve API of selected-tests service.
 """
 
-from flask import Flask, jsonify
+from flask import Flask
+from flask_restplus import Api
+
+from selectedtests.app.controllers.health_controller import add_health_endpoints
 
 DEFAULT_PORT = 8080
 
@@ -14,13 +17,15 @@ def create_app() -> Flask:
     :return: Instance of flask application.
     """
     app = Flask(__name__)
+    api = Api(
+        app,
+        version="1.0",
+        title="Selected Tests Service",
+        description="This service is used to predict which tests need to run based on code changes",
+        doc="/swagger",
+    )
 
-    @app.route("/health")
-    def health():
-        """
-        Get information about whether service is running
-        """
-        return jsonify({"online": True})
+    add_health_endpoints(api)
 
     return app
 
