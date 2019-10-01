@@ -4,6 +4,7 @@ Application to serve API of selected-tests service.
 
 from flask import Flask
 from flask_restplus import Api
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from selectedtests.app.controllers.health_controller import add_health_endpoints
 
@@ -17,6 +18,7 @@ def create_app() -> Flask:
     :return: Instance of flask application.
     """
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     api = Api(
         app,
         version="1.0",
