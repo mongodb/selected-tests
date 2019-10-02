@@ -34,7 +34,7 @@ push your changes to the remote 'staging' branch.
 That command will look something like this if your branch is called 'new_branch'
  and the original selected-tests repo is called origin:
 ```
-git push origin new_branch:origin/staging
+git push origin new_branch:staging
 ```
 
 ## Style
