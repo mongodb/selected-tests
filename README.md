@@ -27,7 +27,7 @@ $ pytest --cov=src --cov-report=html
 
 # Pushing to staging
 The staging environment for this service is
-[here](https://selected-tests.server-tig.prod.corp.mongodb.com/swagger). In order to test your
+[here](https://selected-tests.server-tig.staging.corp.mongodb.com). In order to test your
 changes there, make a pr with your branch and make sure it passes the required evergreen tests. Then, 
 push your changes to the remote 'staging' branch. 
 
