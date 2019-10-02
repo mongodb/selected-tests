@@ -3,9 +3,9 @@ Application to serve API of selected-tests service.
 """
 
 from flask import Flask
-from flask_restplus import Api
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from selectedtests.app.swagger_api import Swagger_Api
 from selectedtests.app.controllers.health_controller import add_health_endpoints
 
 DEFAULT_PORT = 8080
@@ -19,7 +19,7 @@ def create_app() -> Flask:
     """
     app = Flask(__name__)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-    api = Api(
+    api = Swagger_Api(
         app,
         version="1.0",
         title="Selected Tests Service",
