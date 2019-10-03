@@ -49,6 +49,19 @@ $ black src tests --config setup.cfg
 See the black [documentation](https://github.com/psf/black#editor-integration) for details on how
 to configure your editor to automatically format your code.
 
+### Pydoc
+
+This project is check with [pydocstyle](https://github.com/PyCQA/pydocstyle). This ensures that best
+practices for pydoc's are followed and that every function and class has a pydoc associated with it.
+
+In order to run it locally, run 
+```
+pydocstyle src --add-ignore=D104
+```
+
+We ignore D104 as it is looking for "Missing docstring in public package". Since we're running these
+packages in kanopy and aren't uploading them anywhere, this check doesn't really add much value.
+
 ##Swagger
 
 The swagger documentation for this service can be found at the /swagger endpoint. If running
