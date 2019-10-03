@@ -43,11 +43,21 @@ This project is formatting with [black](https://github.com/psf/black). To autofo
 can use the black command line tool:
 
 ```
-$ black src tests --config setup.cfg
+$ black src tests
 ```
 
 See the black [documentation](https://github.com/psf/black#editor-integration) for details on how
 to configure your editor to automatically format your code.
+
+### Pydoc
+
+This project is checked with [pydocstyle](https://github.com/PyCQA/pydocstyle). This ensures that best
+practices for pydoc's are followed and that every function and class has a pydoc associated with it.
+
+In order to run it locally, run 
+```
+pydocstyle src
+```
 
 ##Swagger
 

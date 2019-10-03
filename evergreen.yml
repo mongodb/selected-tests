@@ -6,6 +6,7 @@ buildvariants:
   tasks:
     - name: unit_tests
     - name: check_formatting
+    - name: check_pydoc
 
 functions:
   create virtualenv:
@@ -47,4 +48,15 @@ tasks:
           set -o errexit
           . venv/bin/activate
 
-          black --check --diff src tests --config setup.cfg
+          black --check --diff src tests
+
+- name: check_pydoc
+  commands:
+    - command: shell.exec
+      params:
+        working_dir: src
+        script: |
+          set -o errexit
+          . venv/bin/activate
+
+          pydocstyle src

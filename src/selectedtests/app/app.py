@@ -1,6 +1,4 @@
-"""
-Application to serve API of selected-tests service.
-"""
+"""Application to serve API of selected-tests service."""
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
