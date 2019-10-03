@@ -48,7 +48,7 @@ tasks:
           set -o errexit
           . venv/bin/activate
 
-          black --check --diff src tests --config pyproject.toml
+          black --check --diff src tests
 
 - name: check_pydoc
   commands:

@@ -43,7 +43,7 @@ This project is formatting with [black](https://github.com/psf/black). To autofo
 can use the black command line tool:
 
 ```
-$ black src tests --config pyproject.toml
+$ black src tests
 ```
 
 See the black [documentation](https://github.com/psf/black#editor-integration) for details on how
