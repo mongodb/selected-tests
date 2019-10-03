@@ -59,4 +59,4 @@ tasks:
           set -o errexit
           . venv/bin/activate
 
-          pydocstyle src --add-ignore=D104
+          pydocstyle src
