@@ -98,7 +98,7 @@ To make an API request, follow the following steps:
 2. Get your personal auth_token and auth_user cookies for the
    https://selected-tests.server-tig.prod.corp.mongodb.com domain. (You can find
    these under the Application tab in Chrome console.)
-![Cookies example](https://github.com/mongodb/selected-tests/blob/59eca7748afd620abd56ef44a672a9b75c0505a5/cookies_example.md "Cookies example")
+![Cookies example](https://github.com/mongodb/selected-tests/blob/8e02b82e80839490f4ddcc8fc850c98f5f12559f/cookies_example.md "Cookies example")
 3. Now you can make a curl request to the API using your auth_token and auth_user
    cookies:
  ```
