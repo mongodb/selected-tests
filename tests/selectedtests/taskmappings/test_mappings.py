@@ -210,21 +210,29 @@ class TestGetFlippedTasks:
 class TestFlippedTasksPerBuild:
     def test_get_flipped_tasks_per_build(self):
         build_variant = "test"
-        tasks = [_mock_task(display_name=str(i), activated=True, status="Success") for i in range(12)]
+        tasks = [
+            _mock_task(display_name=str(i), activated=True, status="Success") for i in range(12)
+        ]
         build_mock = MagicMock(build_variant=build_variant)
         build_mock.get_tasks.return_value = tasks
 
         prev_version = MagicMock()
         prev_build = MagicMock()
         prev_build.get_tasks.return_value = [
-            _mock_task(display_name=str(i), activated=True, status="Success" if (i % 2 == 0) else "Failed") for i in range(11)
+            _mock_task(
+                display_name=str(i), activated=True, status="Success" if (i % 2 == 0) else "Failed"
+            )
+            for i in range(11)
         ]
         prev_version.build_by_variant.return_value = prev_build
 
         next_version = MagicMock()
         next_build = MagicMock()
         next_build.get_tasks.return_value = [
-            _mock_task(display_name=str(i), activated=True, status="Success" if (i % 3 == 0) else "Failed") for i in range(11)
+            _mock_task(
+                display_name=str(i), activated=True, status="Success" if (i % 3 == 0) else "Failed"
+            )
+            for i in range(11)
         ]
         next_version.build_by_variant.return_value = next_build
 
