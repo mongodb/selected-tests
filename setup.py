@@ -37,12 +37,18 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
     install_requires=[
+        'boltons==19.1.0',
+        'Click==7.0',
+        'evergreen.py==0.6.9',
         'flask==1.1.1',
         'flask-restplus==0.13.0',
+        'GitPython == 3.0.3',
+        'structlog==19.1.0',
     ],
     entry_points={
         'console_scripts': [
             'selected-tests-service = selectedtests.app.app:main',
+            'mappings = selectedtests.cli:main'
         ],
     }
 )

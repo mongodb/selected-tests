@@ -1,0 +1,205 @@
+    {
+        "branch": "master",
+        "create_time": "2019-10-11T20:56:35",
+        "start_time": "2019-10-12T15:32:24.924000",
+        "project": "mongodb-mongo-master",
+        "repo": "mongo",
+        "revision": "217719684c170987ef5bb45e0393c32299811943",
+        "version_id": "mongodb_mongo_master_217719684c170987ef5bb45e0393c32299811943",
+        "builds": {
+            "enterprise-rhel-62-64-bit": {
+                "display_name": "! Enterprise RHEL 6.2",
+                "build_variant": "enterprise-rhel-62-64-bit",
+                "tasks": [
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards",
+                        "activated": true,
+                        "status": "started"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_00_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_01_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_02_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_03_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_04_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_05_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_06_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_07_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_08_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_09_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_10_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_11_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_12_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_13_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_14_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_15_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_16_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_17_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_18_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_19_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_20_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_21_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_22_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_23_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_24_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_25_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_26_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_27_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_gen",
+                        "activated": true,
+                        "status": "success"
+                    },
+                    {
+                        "display_name": "sharding_last_stable_mongos_and_mixed_shards_misc_enterprise-rhel-62-64-bit",
+                        "activated": true,
+                        "status": "undispatched"
+                    }
+                ]
+            },
+            "enterprise-windows-64-2k8-required": {
+                "display_name": "! Enterprise Windows 2008R2",
+                "build_variant": "enterprise-windows-64-2k8-required",
+                "tasks": []
+            },
+            "linux-64-debug": {
+                "display_name": "! Linux DEBUG",
+                "build_variant": "linux-64-debug",
+                "tasks": []
+            },
+            "rhel-62-64-bit-required-mobile": {
+                "display_name": "! RHEL 6.2 (mobile)",
+                "build_variant": "rhel-62-64-bit-required-mobile",
+                "tasks": []
+            },
+            "enterprise-ubuntu-dynamic-1604-clang": {
+                "display_name": "! Shared Library Enterprise Ubuntu 16.04 (Clang)",
+                "build_variant": "enterprise-ubuntu-dynamic-1604-clang",
+                "tasks": []
+            },
+            "ubuntu1804-debug-aubsan-lite": {
+                "display_name": "! {A,UB}SAN Enterprise Ubuntu 18.04 DEBUG",
+                "build_variant": "ubuntu1804-debug-aubsan-lite",
+                "tasks": []
+            }
+        },
+        "modules": {
+            "enterprise": {
+                "revision": "8bec73ad9dfbbafdbd359bf59417dc3d2ef7d9c1"
+            },
+            "wtdevelop": {
+                "revision": "af2cb8f052184a94635c3bfc358620dd36df5828"
+            }
+        }
+    }

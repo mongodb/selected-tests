@@ -13,6 +13,34 @@ pip install -e .
 python src/selectedtests/app/app.py
 ```
 
+# Create task mappings
+The task mapping cli command has only one required argument - the name of an evergreen project.
+In order to run it, run the below. 
+```
+pip install -e .
+mappings task EVERGREEN_PROJECT_NAME
+```
+Currently, it can only analyze public git repos. Private repo support is coming in a future version.
+
+Its options are described below.
+```
+  --start TEXT              The date to begin analyzing the project at - has
+                            to be an iso date. Default is 5 days ago
+  --end TEXT                The date to stop analyzing the project at - has to
+                            be an iso date. Default is the time at which the
+                            command is run
+  --org-name TEXT           The Github organization name - defaults to mongodb
+  --file-regex TEXT         Regex that will be used to map what files mappings
+                            will be created for. Defaults to '.*'
+  --module-name TEXT        The name of the associated module that should be
+                            analyzed. Default is none.
+  --module-file-regex TEXT  Regex that will be used to map what module files
+                            mappings will be created. Default is '.*'
+  --output-file TEXT        Path to a file where the task mappings should be
+                            written to. Default is to output to stdout
+  --help                    Show this message and exit.
+```
+
 # Run tests
 Testing is done via pytest. You can pass the --flake8 argument to perform some
 flake8 sanity checks on .py files.

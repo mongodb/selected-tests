@@ -1,0 +1,49 @@
+    {
+        "branch": "master",
+        "create_time": "2019-10-11T20:39:56",
+        "start_time": "2019-10-12T15:54:06.375000",
+        "project": "mongodb-mongo-master",
+        "repo": "mongo",
+        "revision": "0682563bfb28c7275fbaeaac47ee31a7f77e19ca",
+        "version_id": "mongodb_mongo_master_0682563bfb28c7275fbaeaac47ee31a7f77e19ca",
+        "builds": {
+            "enterprise-rhel-62-64-bit": {
+                "display_name": "! Enterprise RHEL 6.2",
+                "build_variant": "enterprise-rhel-62-64-bit",
+                "tasks": []
+            },
+            "enterprise-windows-64-2k8-required": {
+                "display_name": "! Enterprise Windows 2008R2",
+                "build_variant": "enterprise-windows-64-2k8-required",
+                "tasks": []
+            },
+            "linux-64-debug": {
+                "display_name": "! Linux DEBUG",
+                "build_variant": "linux-64-debug",
+                "tasks": []
+            },
+            "rhel-62-64-bit-required-mobile": {
+                "display_name": "! RHEL 6.2 (mobile)",
+                "build_variant": "rhel-62-64-bit-required-mobile",
+                "tasks": []
+            },
+            "enterprise-ubuntu-dynamic-1604-clang": {
+                "display_name": "! Shared Library Enterprise Ubuntu 16.04 (Clang)",
+                "build_variant": "enterprise-ubuntu-dynamic-1604-clang",
+                "tasks": []
+            },
+            "ubuntu1804-debug-aubsan-lite": {
+                "display_name": "! {A,UB}SAN Enterprise Ubuntu 18.04 DEBUG",
+                "build_variant": "ubuntu1804-debug-aubsan-lite",
+                "tasks": []
+            }
+        },
+        "modules": {
+            "enterprise": {
+                "revision": "8bec73ad9dfbbafdbd359bf59417dc3d2ef7d9c1"
+            },
+            "wtdevelop": {
+                "revision": "af2cb8f052184a94635c3bfc358620dd36df5828"
+            }
+        }
+    }
