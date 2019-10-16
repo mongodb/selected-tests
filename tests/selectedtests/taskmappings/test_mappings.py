@@ -335,6 +335,17 @@ class TestIsTaskAFlip:
 
         assert under_test._is_task_a_flip(mock_task, tasks_prev, tasks_next)
 
+        mock_task = _mock_task(activated=True, status="success")
+        mock_task.is_success.return_value = False
+
+        mock_prev_task = _mock_task(activated=True, status="failed")
+        tasks_prev = {mock_task.display_name: mock_prev_task}
+
+        mock_next_task = _mock_task(activated=True, status=mock_task.status)
+        tasks_next = {mock_task.display_name: mock_next_task}
+
+        assert under_test._is_task_a_flip(mock_task, tasks_prev, tasks_next)
+
     def test_prev_task_not_activated_is_not_a_flip(self):
         mock_task = _mock_task(activated=True, status="failed")
         mock_task.is_success.return_value = False

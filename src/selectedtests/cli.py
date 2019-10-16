@@ -1,3 +1,4 @@
+"""Cli entry point for the mappings command."""
 import os.path
 import json
 import logging
@@ -17,7 +18,7 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
 def _setup_logging(verbose: bool):
-    """Setup logging configuration"""
+    """Set up the logging configuration."""
     structlog.configure(logger_factory=structlog.stdlib.LoggerFactory())
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(level=level)
@@ -29,6 +30,7 @@ def _setup_logging(verbose: bool):
 @click.pass_context
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 def cli(ctx, verbose: bool):
+    """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = CachedEvergreenApi.get_api(use_config_file=True)
 
@@ -90,7 +92,7 @@ def task(
     module_file_regex: str,
     output_file: str,
 ):
-    """Prints the task mappings for a given evergreen project"""
+    """Create the task mappings for a given evergreen project."""
     evg_api = ctx.obj["evg_api"]
     try:
         start_date = datetime.fromisoformat(start)

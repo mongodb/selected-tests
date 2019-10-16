@@ -1,3 +1,4 @@
+"""Method to create the task mappings for a given evergreen project."""
 from datetime import datetime
 from typing import List, Dict, Generator
 import os.path
@@ -18,7 +19,10 @@ TASK_BUILDS_KEY = "builds"
 
 
 class TaskMappings:
+    """Represents and creates the task mappings for an evergreen project."""
+
     def __init__(self, mappings: Dict, evergreen_project: str, repo_name: str, branch: str):
+        """Init a taskmapping instance. Use create_task_mappings rather than this directly."""
         self.mappings = mappings
         self.evergreen_project = evergreen_project
         self.repo_name = repo_name
@@ -36,6 +40,19 @@ class TaskMappings:
         module_name: str,
         module_file_regex: Pattern,
     ):
+        """
+        Create the task mappings for an evergreen project. Optionally looks at an associated module.
+
+        :param evg_api: An instance of the evg_api client
+        :param evergreen_project: The name of the evergreen project to analyze.
+        :param start_date: The date at which to start analyzing versions of the project.
+        :param end_date: The date up to which we should analyze versions of the project.
+        :param org_name: Name of the github org that the repo in the evergreen project belongs to.
+        :param file_regex: Regex pattern to match changed files against.
+        :param module_name: Name of the module associated with the evergreen project to also analyze
+        :param module_file_regex: Regex pattern to match changed files of the module against.
+        :return: An instance of the task mappings class
+        """
         project_versions: Generator[Version] = evg_api.versions_by_project(evergreen_project)
 
         task_mappings = {}
@@ -86,6 +103,12 @@ class TaskMappings:
         return TaskMappings(task_mappings, evergreen_project, repo_name, branch)
 
     def transform(self) -> List[Dict]:
+        """
+        Transform the task mappings into how it will get stored in the database.
+
+        :return: An array of dictionaries. Becomes an array of changed files that have in them the
+         builds and the tasks in those that changed when that file did.
+        """
         task_mappings = []
         for mapping in self.mappings:
             cur_mappings = self.mappings.get(mapping)
@@ -110,6 +133,13 @@ class TaskMappings:
 
 
 def _get_filtered_files(diff: DiffIndex, regex: Pattern) -> List[str]:
+    """
+    Get the list of changed files.
+
+    :param diff: The diff between two commits.
+    :param regex: The regex pattern to match the files found in the diff against.
+    :return: A list of the changed files that matched the given regex pattern.
+    """
     re: List[str] = []
     for file in _get_changed_files(diff):
         if match(regex, file.b_path):
@@ -123,6 +153,16 @@ def _get_module_changed_files(
     prev_module: ManifestModule,
     module_file_regex: Pattern,
 ) -> List[str]:
+    """
+    Get the files that changed in the associated module.
+
+    :param module_repo: The repo that contains the source code for the associated module.
+    :param cur_module: The module version associated with the version being analyzed.
+    :param prev_module: The module associated with the parent of the current version.
+    :param module_file_regex: Regex pattern to match any files found in the diff against.
+    :return: List of changed files from the diff between the two module versions
+     that match the given pattern.
+    """
     if cur_module is None or prev_module is None:
         return []
     if cur_module.revision != prev_module.revision:
@@ -136,11 +176,26 @@ def _get_module_changed_files(
 
 
 def _get_associated_module(version: Version, module_name: str) -> ManifestModule:
+    """
+    Get the associated module for the given version.
+
+    :param version: The version to get the module from.
+    :param module_name: The name of the module to get.
+    :return: The module that was asked for. Can return None if that module wasn't found.
+    """
     modules = version.get_manifest().modules
     return modules.get(module_name)
 
 
 def _get_diff(repo: Repo, cur_revision: str, prev_revision: str) -> DiffIndex:
+    """
+    Create a diff between two revisions.
+
+    :param repo: The repo that contains the two given revisions.
+    :param cur_revision: The child revision.
+    :param prev_revision: The parent revision.
+    :return: The diff between the two given revisions.
+    """
     cur_commit = repo.commit(cur_revision)
     parent = repo.commit(prev_revision)
 
@@ -148,6 +203,16 @@ def _get_diff(repo: Repo, cur_revision: str, prev_revision: str) -> DiffIndex:
 
 
 def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mappings: Dict):
+    """
+    Map the flipped tasks to the changed files found in this version. Mapping will be done in \
+    place in the dictionary given in the task_mappings parameter.
+
+    :param changed_files: List of the files that changed in this version.
+    :param flipped_tasks: Dictionary that contains the build variants as keys and the list of tasks
+     that changed in that variant as the value.
+    :param task_mappings: Where the mappings will be stored. New mappings will be added to this
+     dictionary in place.
+    """
     for file_name in changed_files:
         task_mappings_for_file = task_mappings.setdefault(
             file_name, {TASK_BUILDS_KEY: {}, SEEN_COUNT_KEY: 0}
@@ -162,6 +227,15 @@ def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mapp
 
 
 def _init_repo(temp_dir, org_name: str, repo_name: str, branch: str) -> Repo:
+    """
+    Create the given repo in the given directory and checkout the given branch.
+
+    :param temp_dir: The place where to clone the repo to or check for it already existing.
+    :param org_name: The org name in github that owns the repo.
+    :param repo_name: The name of the repo to clone.
+    :param branch: The branch to checkout in the repo.
+    :return: An Repo instance that further git operations can be done on.
+    """
     repo_path = os.path.join(temp_dir, repo_name)
     if os.path.exists(repo_path):
         repo = Repo(repo_path)
@@ -177,6 +251,11 @@ def _init_repo(temp_dir, org_name: str, repo_name: str, branch: str) -> Repo:
 
 
 def _get_changed_files(diff: DiffIndex):
+    """
+    Create a generator for the diff index. We only want modified, added, and removed files.
+
+    :param diff: The diff to generate files out of.
+    """
     for patch in diff.iter_change_type("M"):
         yield patch
 
@@ -188,10 +267,25 @@ def _get_changed_files(diff: DiffIndex):
 
 
 def _filter_non_required_distros(builds: List[Build]) -> List[Build]:
+    """
+    Filter the distros that aren't required in evergreen.
+
+    :param builds: The builds to put through the filter.
+    :return: A list of the builds that are required.
+    """
     return [build for build in builds if build.display_name.startswith("!")]
 
 
 def _get_flipped_tasks(prev_version: Version, version: Version, next_version: Version) -> Dict:
+    """
+    Get the tasks that flipped in the current version.
+
+    :param prev_version: The parent of the current version.
+    :param version: The version that is being analyzed.
+    :param next_version: The child of the current version.
+    :return: A dictionary with build variants as keys and the list of tasks that flipped in those
+     variants as the values.
+    """
     builds = version.get_builds()
     builds = _filter_non_required_distros(builds)
     flipped_tasks = {}
@@ -205,6 +299,14 @@ def _get_flipped_tasks(prev_version: Version, version: Version, next_version: Ve
 def _get_flipped_tasks_per_build(
     build: Build, prev_version: Version, next_version: Version
 ) -> List[Task]:
+    """
+    Get the flipped tasks in the given build.
+
+    :param build: The build to analyze.
+    :param prev_version: The parent version of the version the given build belongs to.
+    :param next_version: The child version of the version the given build belongs to.
+    :return: A list of all the flipped tasks that happened in the given build.
+    """
     prev_build: Build = prev_version.build_by_variant(build.build_variant)
     next_build: Build = next_version.build_by_variant(build.build_variant)
 
@@ -219,6 +321,7 @@ def _get_flipped_tasks_per_build(
 def _create_task_map(tasks: [Task]) -> Dict:
     """
     Create a dictionary of tasks by display_name.
+
     :param tasks: List of tasks to map.
     :return: Dictionary of tasks by display_name.
     """
@@ -228,6 +331,7 @@ def _create_task_map(tasks: [Task]) -> Dict:
 def _is_task_a_flip(task: Task, prev_tasks: Dict, next_tasks: Dict) -> bool:
     """
     Determine if given task has flipped to states in this version.
+
     :param task: Task to check.
     :param next_tasks: Dictionary of tasks in next version.
     :param prev_tasks: Dictionary of tasks in previous version.
