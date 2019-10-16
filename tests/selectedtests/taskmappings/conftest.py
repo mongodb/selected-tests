@@ -8,16 +8,7 @@ from datetime import datetime
 TASKS_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_OUTPUT_PATH = os.path.join(TASKS_DIRECTORY, "sample_data")
 SAMPLE_VERSIONS_PATH = os.path.join(TASKS_DIRECTORY, "sample_data", "sample_versions")
-VERSIONS = [
-    "version_0",
-    "version_1",
-    "version_2",
-    "version_3",
-    "version_4",
-    "version_5",
-    "version_6",
-    "version_7",
-]
+VERSIONS = ["next_version", "current_version", "prev_version"]
 
 
 @pytest.fixture()
@@ -33,7 +24,6 @@ def evg_versions() -> List[MagicMock]:
         with open(os.path.join(SAMPLE_VERSIONS_PATH, f"{version}.json"), "r") as data:
             versions.append(_create_version_mocks(json.load(data)))
 
-    versions.reverse()
     return versions
 
 
@@ -59,7 +49,7 @@ def _create_version_mocks(data: Dict) -> MagicMock:
 
     version_mock.build_by_variant.side_effect = get_build_by_variant
 
-    manifest = MagicMock(modules=data.get("modules"))
+    manifest = MagicMock(modules={})
 
     version_mock.get_manifest.return_value = manifest
 

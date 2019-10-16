@@ -1,9 +1,11 @@
 import json
+
 from click.testing import CliRunner
 from unittest.mock import patch, MagicMock
 from selectedtests.cli import cli
 
 NS = "selectedtests.cli"
+MAPPINGS_NS = "selectedtests.taskmappings.mappings"
 
 
 def ns(relative_name):
@@ -11,12 +13,30 @@ def ns(relative_name):
     return NS + "." + relative_name
 
 
+def m_ns(relative_name):
+    """Return a full name to mappings from a name relative to the tested module"s name space."""
+    return MAPPINGS_NS + "." + relative_name
+
+
 class TestCli:
     @patch(ns("CachedEvergreenApi"))
-    def test_integration(self, cached_evg_api, evg_versions, expected_output):
+    @patch(m_ns("_init_repo"))
+    @patch(m_ns("_get_diff"))
+    @patch(m_ns("_get_filtered_files"))
+    def test_integration(
+        self,
+        filtered_files_mock,
+        diff_mock,
+        repo_mock,
+        cached_evg_api,
+        evg_versions,
+        expected_output,
+    ):
         mock_evg_api = MagicMock()
         mock_evg_api.versions_by_project.return_value = evg_versions
         cached_evg_api.get_api.return_value = mock_evg_api
+
+        filtered_files_mock.return_value = ["src/file1", "src/file2"]
 
         runner = CliRunner()
         with runner.isolated_filesystem():

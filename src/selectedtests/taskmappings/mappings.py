@@ -83,17 +83,18 @@ class TaskMappings:
 
                 changed_files = _get_filtered_files(diff, file_regex)
 
-                cur_module = _get_associated_module(version, module_name)
-                prev_module = _get_associated_module(prev_version, module_name)
-                if cur_module is not None and module_repo is None:
-                    module_repo = _init_repo(
-                        temp_dir, cur_module.owner, cur_module.repo, cur_module.branch
-                    )
+                if module_name is not None and module_name != "":
+                    cur_module = _get_associated_module(version, module_name)
+                    prev_module = _get_associated_module(prev_version, module_name)
+                    if cur_module is not None and module_repo is None:
+                        module_repo = _init_repo(
+                            temp_dir, cur_module.owner, cur_module.repo, cur_module.branch
+                        )
 
-                module_changed_files = _get_module_changed_files(
-                    module_repo, cur_module, prev_module, module_file_regex
-                )
-                changed_files.extend(module_changed_files)
+                    module_changed_files = _get_module_changed_files(
+                        module_repo, cur_module, prev_module, module_file_regex
+                    )
+                    changed_files.extend(module_changed_files)
 
                 flipped_tasks = _get_flipped_tasks(prev_version, version, next_version)
 
@@ -340,17 +341,27 @@ def _is_task_a_flip(task: Task, prev_tasks: Dict, next_tasks: Dict) -> bool:
     if not task.activated:
         return False
 
-    if task.status.lower() != "success" and task.status.lower() != "failed":
+    if not _check_meaningful_task_status(task):
         return False
 
     next_task: Task = next_tasks.get(task.display_name)
-    if not next_task or not next_task.activated:
+    if not next_task or not next_task.activated or not _check_meaningful_task_status(next_task):
         return False
     prev_task: Task = prev_tasks.get(task.display_name)
-    if not prev_task or not prev_task.activated:
+    if not prev_task or not prev_task.activated or not _check_meaningful_task_status(prev_task):
         return False
 
     if task.status == next_task.status and task.status != prev_task.status:
         return True
 
     return False
+
+
+def _check_meaningful_task_status(task: Task) -> bool:
+    """
+    Check whether the script can make a meaningful judgement off the status of the given task.
+
+    :param task: The task to analyze
+    :return: A bool representing whether the task should be analyzed or not
+    """
+    return task.status.lower() == "success" or task.status.lower() == "failed"

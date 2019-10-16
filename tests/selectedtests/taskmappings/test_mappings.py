@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock, patch
 import re
+from copy import deepcopy
 
 from selectedtests.taskmappings import mappings as under_test
+
 
 NS = "selectedtests.taskmappings.mappings"
 
@@ -9,6 +11,174 @@ NS = "selectedtests.taskmappings.mappings"
 def ns(relative_name):
     """Return a full name from a name relative to the tested module"s name space."""
     return NS + "." + relative_name
+
+
+class TestCreateTaskMappings:
+    @patch(ns("_init_repo"))
+    @patch(ns("_get_diff"))
+    @patch(ns("_get_filtered_files"))
+    @patch(ns("_get_associated_module"))
+    @patch(ns("_get_module_changed_files"))
+    @patch(ns("_get_flipped_tasks"))
+    def test_module_source_files_included(
+        self,
+        flipped_mock,
+        module_changed_mock,
+        associated_module_mock,
+        filtered_mock,
+        diff_mock,
+        init_repo_mock,
+    ):
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [MagicMock(create_time=i) for i in range(3)]
+        evg_api_mock.versions_by_project.return_value.reverse()
+        associated_module_mock.return_value = None
+
+        module_changed_mock.return_value = ["module_file"]
+        filtered_mock.return_value = [f"file{i}" for i in range(2)]
+
+        expected_file_list = deepcopy(module_changed_mock.return_value) + deepcopy(
+            filtered_mock.return_value
+        )
+
+        flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
+        project_name = "project"
+
+        mappings = under_test.TaskMappings.create_task_mappings(
+            evg_api_mock, project_name, -1, 3, None, None, "module", None
+        )
+
+        assert len(expected_file_list) == len(mappings.mappings)
+        for file in expected_file_list:
+            file_mappings = mappings.mappings.get(file)["builds"]
+            assert 1 == mappings.mappings.get(file)[under_test.SEEN_COUNT_KEY]
+            assert file_mappings is not None
+            for variant in flipped_mock.return_value:
+                expected_tasks = flipped_mock.return_value.get(variant)
+                variant_output = file_mappings.get(variant)
+                assert variant_output is not None
+                for task in expected_tasks:
+                    assert task in variant_output
+
+    @patch(ns("_init_repo"))
+    @patch(ns("_get_diff"))
+    @patch(ns("_get_filtered_files"))
+    @patch(ns("_get_associated_module"))
+    @patch(ns("_get_module_changed_files"))
+    @patch(ns("_get_flipped_tasks"))
+    def test_module_source_files_not_included_if_no_module_passed_in(
+        self,
+        flipped_mock,
+        module_changed_mock,
+        associated_module_mock,
+        filtered_mock,
+        diff_mock,
+        init_repo_mock,
+    ):
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [MagicMock(create_time=i) for i in range(3)]
+        evg_api_mock.versions_by_project.return_value.reverse()
+        associated_module_mock.return_value = None
+
+        module_changed_mock.return_value = ["module_file"]
+        filtered_mock.return_value = [f"file{i}" for i in range(2)]
+
+        expected_file_list = deepcopy(filtered_mock.return_value)
+
+        flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
+        project_name = "project"
+
+        mappings = under_test.TaskMappings.create_task_mappings(
+            evg_api_mock, project_name, -1, 3, None, None, "", None
+        )
+
+        assert len(expected_file_list) == len(mappings.mappings)
+        for file in expected_file_list:
+            file_mappings = mappings.mappings.get(file)["builds"]
+            assert 1 == mappings.mappings.get(file)[under_test.SEEN_COUNT_KEY]
+            assert file_mappings is not None
+            for variant in flipped_mock.return_value:
+                expected_tasks = flipped_mock.return_value.get(variant)
+                variant_output = file_mappings.get(variant)
+                assert variant_output is not None
+                for task in expected_tasks:
+                    assert task in variant_output
+
+    @patch(ns("_init_repo"))
+    @patch(ns("_get_diff"))
+    @patch(ns("_get_filtered_files"))
+    @patch(ns("_get_flipped_tasks"))
+    def test_no_flipped_tasks_creates_no_mappings(
+        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock
+    ):
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [MagicMock(create_time=i) for i in range(3)]
+        evg_api_mock.versions_by_project.return_value.reverse()
+        filtered_mock.return_value = [f"file{i}" for i in range(2)]
+
+        flipped_mock.return_value = {}
+        project_name = "project"
+
+        mappings = under_test.TaskMappings.create_task_mappings(
+            evg_api_mock, project_name, -1, 3, None, None, "", None
+        )
+
+        assert 0 == len(mappings.mappings)
+
+    @patch(ns("_init_repo"))
+    @patch(ns("_get_diff"))
+    @patch(ns("_get_filtered_files"))
+    @patch(ns("_get_flipped_tasks"))
+    def test_only_versions_in_given_range_are_analyzed(
+        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock
+    ):
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(create_time=i, revision=i) for i in range(7)
+        ]
+        evg_api_mock.versions_by_project.return_value.reverse()
+
+        expected_range = 2
+
+        def get_diff(repo, cur_revision, prev_revision):
+            if cur_revision == expected_range:
+                return True
+            return False
+
+        diff_mock.side_effect = get_diff
+
+        expected_files = [f"file{i}" for i in range(2)]
+        bad_file_list = ["bad_file"]
+
+        def get_filtered_files(diff, regex):
+            if diff:
+                return expected_files
+            return bad_file_list
+
+        filtered_mock.side_effect = get_filtered_files
+
+        flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
+        project_name = "project"
+
+        mappings = under_test.TaskMappings.create_task_mappings(
+            evg_api_mock, project_name, expected_range, expected_range, None, None, "", None
+        )
+
+        assert len(expected_files) == len(mappings.mappings)
+        for file in bad_file_list:
+            assert file not in mappings.mappings.keys()
+
+        for file in expected_files:
+            file_mappings = mappings.mappings.get(file)["builds"]
+            assert 1 == mappings.mappings.get(file)[under_test.SEEN_COUNT_KEY]
+            assert file_mappings is not None
+            for variant in flipped_mock.return_value:
+                expected_tasks = flipped_mock.return_value.get(variant)
+                variant_output = file_mappings.get(variant)
+                assert len(expected_tasks) == len(variant_output)
+                assert variant_output is not None
+                for task in expected_tasks:
+                    assert task in variant_output
 
 
 class TestTransformationOfTaskMappings:
@@ -381,6 +551,22 @@ class TestIsTaskAFlip:
         tasks_next = {mock_task.display_name: mock_next_task}
 
         assert not under_test._is_task_a_flip(mock_task, tasks_prev, tasks_next)
+
+
+class TestMeaningfulTaskStatus:
+    def test_success_failed_status_pass(self):
+        pass_mock = MagicMock(status="success")
+
+        assert under_test._check_meaningful_task_status(pass_mock)
+
+        failed_mock = MagicMock(status="failed")
+
+        assert under_test._check_meaningful_task_status(failed_mock)
+
+    def test_other_task_status_do_not_pass(self):
+        task_mock = MagicMock(status="started")
+
+        assert not under_test._check_meaningful_task_status(task_mock)
 
 
 def _mock_task(activated: bool = None, status: str = None, display_name: str = None):
