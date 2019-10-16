@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, Dict, Generator
 import os.path
-from re import Pattern, match, compile
+import tempfile
+from re import Pattern, match
 
 from evergreen.api import Version, Build, Task, CachedEvergreenApi
 from evergreen.manifest import ManifestModule
@@ -12,7 +13,6 @@ from structlog import get_logger
 LOGGER = get_logger(__name__)
 
 GITHUB_BASE_URL = "https://github.com"
-CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 SEEN_COUNT_KEY = "seen_count"
 TASK_BUILDS_KEY = "builds"
 
@@ -45,40 +45,43 @@ class TaskMappings:
         branch = ""
         repo_name = ""
 
-        for next_version, version, prev_version in windowed_iter(project_versions, 3):
-            if version.create_time < start_date:
-                break
-            if version.create_time > end_date:
-                continue
-            if base_repo is None:
-                base_repo = _init_repo(org_name, version.repo, version.branch)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            for next_version, version, prev_version in windowed_iter(project_versions, 3):
+                if version.create_time < start_date:
+                    break
+                if version.create_time > end_date:
+                    continue
+                if base_repo is None:
+                    base_repo = _init_repo(temp_dir, org_name, version.repo, version.branch)
 
-            LOGGER.info(f"Processing mappings for version {version.version_id}")
+                LOGGER.info(f"Processing mappings for version {version.version_id}")
 
-            branch = version.branch
-            repo_name = version.repo
-            try:
-                diff = _get_diff(base_repo, version.revision, prev_version.revision)
-            except ValueError as e:
-                print(e)
-                continue
+                branch = version.branch
+                repo_name = version.repo
+                try:
+                    diff = _get_diff(base_repo, version.revision, prev_version.revision)
+                except ValueError as e:
+                    print(e)
+                    continue
 
-            changed_files = _get_filtered_files(diff, file_regex)
+                changed_files = _get_filtered_files(diff, file_regex)
 
-            cur_module = _get_associated_module(version, module_name)
-            prev_module = _get_associated_module(prev_version, module_name)
-            if cur_module is not None and module_repo is None:
-                module_repo = _init_repo(cur_module.owner, cur_module.repo, cur_module.branch)
+                cur_module = _get_associated_module(version, module_name)
+                prev_module = _get_associated_module(prev_version, module_name)
+                if cur_module is not None and module_repo is None:
+                    module_repo = _init_repo(
+                        temp_dir, cur_module.owner, cur_module.repo, cur_module.branch
+                    )
 
-            module_changed_files = _get_module_changed_files(
-                module_repo, cur_module, prev_module, module_file_regex
-            )
-            changed_files.extend(module_changed_files)
+                module_changed_files = _get_module_changed_files(
+                    module_repo, cur_module, prev_module, module_file_regex
+                )
+                changed_files.extend(module_changed_files)
 
-            flipped_tasks = _get_flipped_tasks(prev_version, version, next_version)
+                flipped_tasks = _get_flipped_tasks(prev_version, version, next_version)
 
-            if len(flipped_tasks) > 0:
-                _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
+                if len(flipped_tasks) > 0:
+                    _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
 
         return TaskMappings(task_mappings, evergreen_project, repo_name, branch)
 
@@ -158,8 +161,8 @@ def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mapp
                 builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
 
 
-def _init_repo(org_name: str, repo_name: str, branch: str) -> Repo:
-    repo_path = os.path.join(CURRENT_DIRECTORY, repo_name)
+def _init_repo(temp_dir, org_name: str, repo_name: str, branch: str) -> Repo:
+    repo_path = os.path.join(temp_dir, repo_name)
     if os.path.exists(repo_path):
         repo = Repo(repo_path)
         repo.remotes["origin"].pull()

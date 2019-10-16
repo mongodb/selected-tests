@@ -1,7 +1,7 @@
 import os.path
 import json
 import logging
-from datetime import datetime, timedelta, time, date
+from datetime import datetime, timedelta, time
 import re
 
 from evergreen.api import CachedEvergreenApi
