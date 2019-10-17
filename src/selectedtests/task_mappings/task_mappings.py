@@ -70,11 +70,11 @@ class TaskMappings:
                     continue
                 if base_repo is None:
                     base_repo = _init_repo(temp_dir, org_name, version.repo, version.branch)
+                    branch = version.branch
+                    repo_name = version.repo
 
                 LOGGER.info(f"Processing mappings for version {version.version_id}")
 
-                branch = version.branch
-                repo_name = version.repo
                 try:
                     diff = _get_diff(base_repo, version.revision, prev_version.revision)
                 except ValueError as e:

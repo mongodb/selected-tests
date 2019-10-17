@@ -3,10 +3,10 @@ from datetime import datetime, date, time
 import re
 from copy import deepcopy
 
-from selectedtests.task_mappings import mappings as under_test
+from selectedtests.task_mappings import task_mappings as under_test
 
 
-NS = "selectedtests.task_mappings.mappings"
+NS = "selectedtests.task_mappings.task_mappings"
 
 
 def ns(relative_name):

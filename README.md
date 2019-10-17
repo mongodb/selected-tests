@@ -29,21 +29,32 @@ Currently, it can only analyze public git repos. Private repo support is coming 
 
 Its options are described below.
 ```
-  --start TEXT              The date to begin analyzing the project at - has
-                            to be an iso date. Default is 5 days ago
-  --end TEXT                The date to stop analyzing the project at - has to
-                            be an iso date. Default is the time at which the
-                            command is run
-  --org-name TEXT           The Github organization name - defaults to mongodb
-  --file-regex TEXT         Regex that will be used to map what files mappings
-                            will be created for. Defaults to '.*'
-  --module-name TEXT        The name of the associated module that should be
-                            analyzed. Default is none.
-  --module-file-regex TEXT  Regex that will be used to map what module files
-                            mappings will be created. Default is '.*'
-  --output-file TEXT        Path to a file where the task mappings should be
-                            written to. Default is to output to stdout
-  --help                    Show this message and exit.
+  --start TEXT                    The date to begin analyzing the project at - has to be an iso date.
+                                  Example: 2019-10-11T19:10:38
+                                  [required]
+
+  --end TEXT                      The date to stop analyzing the project at - has to be an iso date.
+                                  Example: 2019-10-11T19:10:38
+                                  [required]
+
+  --org-name TEXT                 The Github organization name - defaults to mongodb.
+
+  --source-file-regex TEXT        Regex to determine what files mappings will be created for.
+                                  Example: 'src.*'
+                                  [required]
+
+  --module-name TEXT              The name of the associated module that should be analyzed. 
+                                  Example: enterprise
+
+  --module-source-file-regex TEXT Regex to determine what module files mappings will be created for.
+                                  Example: 'src.*'
+                                  [required if module-name is non-empty]
+
+  --output-file TEXT              Path to a file where the task mappings should be written to.
+                                  Example: 'output.txt'
+
+  --help                          Show this message and exit.
+
 ```
 
 
