@@ -231,19 +231,15 @@ def _init_repo(temp_dir, org_name: str, repo_name: str, branch: str) -> Repo:
     """
     Create the given repo in the given directory and checkout the given branch.
 
-    :param temp_dir: The place where to clone the repo to or check for it already existing.
+    :param temp_dir: The place where to clone the repo to.
     :param org_name: The org name in github that owns the repo.
     :param repo_name: The name of the repo to clone.
     :param branch: The branch to checkout in the repo.
     :return: An Repo instance that further git operations can be done on.
     """
     repo_path = os.path.join(temp_dir, repo_name)
-    if os.path.exists(repo_path):
-        repo = Repo(repo_path)
-        repo.remotes["origin"].pull()
-    else:
-        url = f"{GITHUB_BASE_URL}/{org_name}/{repo_name}.git"
-        repo = Repo.clone_from(url, repo_path)
+    url = f"{GITHUB_BASE_URL}/{org_name}/{repo_name}.git"
+    repo = Repo.clone_from(url, repo_path)
     origin = repo.remotes["origin"]
     repo.create_head(branch, origin.refs[branch]).set_tracking_branch(
         origin.refs[branch]
