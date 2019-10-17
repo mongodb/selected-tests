@@ -38,9 +38,9 @@
         }
       ]
     },
-    "not_seen_build": {
-      "display_name": "! not_seen_build",
-      "build_variant": "not_seen_build",
+    "build_with_no_flipped_tasks": {
+      "display_name": "! build_with_no_flipped_tasks",
+      "build_variant": "build_with_no_flipped_tasks",
       "tasks": [
         {
           "display_name": "sharding_ese",

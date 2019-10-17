@@ -1,11 +1,12 @@
 from unittest.mock import MagicMock, patch
+from datetime import datetime, date, time
 import re
 from copy import deepcopy
 
-from selectedtests.taskmappings import mappings as under_test
+from selectedtests.task_mappings import mappings as under_test
 
 
-NS = "selectedtests.taskmappings.mappings"
+NS = "selectedtests.task_mappings.mappings"
 
 
 def ns(relative_name):
@@ -30,7 +31,9 @@ class TestCreateTaskMappings:
         init_repo_mock,
     ):
         evg_api_mock = MagicMock()
-        evg_api_mock.versions_by_project.return_value = [MagicMock(create_time=i) for i in range(3)]
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
+        ]
         evg_api_mock.versions_by_project.return_value.reverse()
         associated_module_mock.return_value = None
 
@@ -44,8 +47,11 @@ class TestCreateTaskMappings:
         flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
         project_name = "project"
 
+        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, -1, 3, None, None, "module", None
+            evg_api_mock, project_name, start, end, None, None, "module", None
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
@@ -76,23 +82,36 @@ class TestCreateTaskMappings:
         init_repo_mock,
     ):
         evg_api_mock = MagicMock()
-        evg_api_mock.versions_by_project.return_value = [MagicMock(create_time=i) for i in range(3)]
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
+        ]
         evg_api_mock.versions_by_project.return_value.reverse()
+
+        # We still mock the two below so that we can check to make sure even if the version has a
+        # module and that module has changed files in it, we don't actually add the changed files
+        # to the task mappings if they're not asked for
+        module_changed_mock.return_value = ["module_file"]
         associated_module_mock.return_value = None
 
-        module_changed_mock.return_value = ["module_file"]
         filtered_mock.return_value = [f"file{i}" for i in range(2)]
-
         expected_file_list = deepcopy(filtered_mock.return_value)
 
         flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
         project_name = "project"
 
+        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, -1, 3, None, None, "", None
+            evg_api_mock, project_name, start, end, None, None, "", None
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
+        # Here we're checking to make sure the files that were changed in the module aren't
+        # added to the mappings
+        for file in module_changed_mock.return_value:
+            assert file not in mappings.mappings.keys()
+
         for file in expected_file_list:
             file_mappings = mappings.mappings.get(file)["builds"]
             assert 1 == mappings.mappings.get(file)[under_test.SEEN_COUNT_KEY]
@@ -112,15 +131,20 @@ class TestCreateTaskMappings:
         self, flipped_mock, filtered_mock, diff_mock, init_repo_mock
     ):
         evg_api_mock = MagicMock()
-        evg_api_mock.versions_by_project.return_value = [MagicMock(create_time=i) for i in range(3)]
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
+        ]
         evg_api_mock.versions_by_project.return_value.reverse()
         filtered_mock.return_value = [f"file{i}" for i in range(2)]
 
         flipped_mock.return_value = {}
         project_name = "project"
 
+        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, -1, 3, None, None, "", None
+            evg_api_mock, project_name, start, end, None, None, "", None
         )
 
         assert 0 == len(mappings.mappings)
@@ -134,16 +158,21 @@ class TestCreateTaskMappings:
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
-            MagicMock(create_time=i, revision=i) for i in range(7)
+            MagicMock(create_time=datetime.combine(date(1, 1, 1), time(i, 1, 0)), revision=i)
+            for i in range(7)
         ]
         evg_api_mock.versions_by_project.return_value.reverse()
 
-        expected_range = 2
+        # This time range will only analyze the version where i=3 in the versions made above
+        desired_start = datetime.combine(date(1, 1, 1), time(2, 30, 0))
+        desired_end = datetime.combine(date(1, 1, 1), time(3, 30, 0))
 
+        # We check for revision=3 here as that's the only version that should be analyzed
+        # in the given time range
         def get_diff(repo, cur_revision, prev_revision):
-            if cur_revision == expected_range:
-                return True
-            return False
+            if cur_revision == 3:
+                return MagicMock(expected=True)
+            return MagicMock(expected=False)
 
         diff_mock.side_effect = get_diff
 
@@ -151,7 +180,7 @@ class TestCreateTaskMappings:
         bad_file_list = ["bad_file"]
 
         def get_filtered_files(diff, regex):
-            if diff:
+            if diff.expected:
                 return expected_files
             return bad_file_list
 
@@ -161,7 +190,7 @@ class TestCreateTaskMappings:
         project_name = "project"
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, expected_range, expected_range, None, None, "", None
+            evg_api_mock, project_name, desired_start, desired_end, None, None, "", None
         )
 
         assert len(expected_files) == len(mappings.mappings)

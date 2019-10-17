@@ -9,6 +9,11 @@ pip install -e .
 ```
 
 ## Run app locally
+
+#### Prerequisites
+- Evergreen credentials
+  - You can find your credentials in your User Settings in the Evergreen UI. The cli looks for them
+  in the usual default location, i.e. '~/.evergreen.yml'
 ```
 python src/selectedtests/app/app.py
 ```

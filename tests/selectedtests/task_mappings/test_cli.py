@@ -1,11 +1,12 @@
 import json
+from datetime import datetime
 
 from click.testing import CliRunner
 from unittest.mock import patch, MagicMock
 from selectedtests.cli import cli
 
 NS = "selectedtests.cli"
-MAPPINGS_NS = "selectedtests.taskmappings.mappings"
+MAPPINGS_NS = "selectedtests.task_mappings.mappings"
 
 
 def ns(relative_name):
@@ -41,6 +42,8 @@ class TestCli:
         runner = CliRunner()
         with runner.isolated_filesystem():
             output_file = "output.txt"
+            iso_create = datetime.fromisoformat("2019-10-11T19:10:38")
+            iso_end = datetime.fromisoformat("2019-10-11T19:30:38")
             result = runner.invoke(
                 cli,
                 [
@@ -50,6 +53,10 @@ class TestCli:
                     "src.*",
                     "--output-file",
                     output_file,
+                    "--start",
+                    iso_create.isoformat(),
+                    "--end",
+                    iso_end.isoformat(),
                 ],
             )
             assert result.exit_code == 0
