@@ -1,0 +1,40 @@
+[
+    {
+        "source_file": "src/file1",
+        "project": "mongodb-mongo-master",
+        "repo": "mongo",
+        "branch": "master",
+        "source_file_seen_count": 1,
+        "tasks": [
+             {
+                "name": "sharding_auth",
+                "variant": "enterprise-rhel-62-64-bit",
+                "flip_count": 1
+            },
+            {
+                "name": "sharding_auth_audit",
+                "variant": "enterprise-rhel-62-64-bit",
+                "flip_count": 1
+            }
+        ]
+    },
+        {
+        "source_file": "src/file2",
+        "project": "mongodb-mongo-master",
+        "repo": "mongo",
+        "branch": "master",
+        "source_file_seen_count": 1,
+        "tasks": [
+            {
+                "name": "sharding_auth",
+                "variant": "enterprise-rhel-62-64-bit",
+                "flip_count": 1
+            },
+            {
+                "name": "sharding_auth_audit",
+                "variant": "enterprise-rhel-62-64-bit",
+                "flip_count": 1
+            }
+        ]
+    }
+]

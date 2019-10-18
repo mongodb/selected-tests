@@ -1,0 +1,47 @@
+    {
+        "branch": "master",
+        "create_time": "2019-10-11T18:49:51",
+        "start_time": "2019-10-12T18:31:05.102000",
+        "project": "mongodb-mongo-master",
+        "repo": "mongo",
+        "revision": "6b345cce214efb1b3f9dcffc2f25a833d1caa100",
+        "version_id": "mongodb_mongo_master_6b345cce214efb1b3f9dcffc2f25a833d1caa100",
+        "builds": {
+            "enterprise-rhel-62-64-bit": {
+                "display_name": "! Enterprise RHEL 6.2",
+                "build_variant": "enterprise-rhel-62-64-bit",
+                "tasks": [
+                    {
+                        "display_name": "sharding_ese",
+                        "activated": true,
+                        "status": "started"
+                    },
+                    {
+                        "display_name": "sharding_ese_gcm",
+                        "activated": true,
+                        "status": "failed"
+                    },
+                    {
+                        "display_name": "sharding_auth",
+                        "activated": true,
+                        "status": "success"
+                    },
+                    {
+                        "display_name": "sharding_auth_audit",
+                        "activated": true,
+                        "status": "failed"
+                    },
+                                        {
+                        "display_name": "busiest_node",
+                        "activated": true,
+                        "status": "started"
+                    }
+                ]
+            },
+          "build_with_no_flipped_tasks": {
+              "display_name": "! build_with_no_flipped_tasks",
+              "build_variant": "build_with_no_flipped_tasks",
+              "tasks": []
+            }
+        }
+    }
