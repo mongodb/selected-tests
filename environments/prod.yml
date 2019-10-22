@@ -1,0 +1,10 @@
+prometheusRules:
+  - alert: HighNumberBadStatusCodeResponses
+    expr: sum(increase(traefik_backend_requests_total{backend="selected-tests.server-tig.prod.corp.mongodb.com/", code=~"5.*|4.*"}[1h])) > 10
+    for: 5m
+    labels:
+      severity: warning
+      email_to: dev-prod-dag@mongodb.com
+    annotations:
+      description: "High number of bad responses coming from selected-tests service"
+      summary: "Selected tests service giving high number of bad responses over the last hour (current number: {{ $value }}). More information can be seen here: https://grafana.corp.mongodb.com/d/zenZa6oWk/selected-tests-service?orgId=4"
