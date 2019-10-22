@@ -1,4 +1,4 @@
-"""Cli entry point for the mappings command."""
+"""Cli entry point for the task-mappings command."""
 import os.path
 import json
 import logging
@@ -9,7 +9,7 @@ from evergreen.api import CachedEvergreenApi
 import click
 import structlog
 
-from selectedtests.task_mappings.task_mappings import TaskMappings
+from selectedtests.task_mappings.mappings import TaskMappings
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -55,12 +55,6 @@ def cli(ctx, verbose: bool):
     required=True,
 )
 @click.option(
-    "--org-name",
-    type=str,
-    help="The Github organization name - defaults to mongodb",
-    default="mongodb",
-)
-@click.option(
     "--source-file-regex",
     type=str,
     help="Regex that will be used to map what files mappings will be created for. "
@@ -83,12 +77,11 @@ def cli(ctx, verbose: bool):
     type=str,
     help="Path to a file where the task mappings should be written to. Example: 'output.txt'",
 )
-def task(
+def create(
     ctx,
     evergreen_project: str,
     start: str,
     end: str,
-    org_name: str,
     source_file_regex: str,
     module_name: str,
     module_source_file_regex: str,
@@ -118,14 +111,7 @@ def task(
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 
     mappings = TaskMappings.create_task_mappings(
-        evg_api,
-        evergreen_project,
-        start_date,
-        end_date,
-        org_name,
-        file_regex,
-        module_name,
-        module_file_regex,
+        evg_api, evergreen_project, start_date, end_date, file_regex, module_name, module_file_regex
     )
 
     transformed_mappings = mappings.transform()

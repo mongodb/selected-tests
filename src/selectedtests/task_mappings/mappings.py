@@ -1,7 +1,6 @@
 """Method to create the task mappings for a given evergreen project."""
 from datetime import datetime
 from typing import List, Dict, Generator
-import os.path
 import tempfile
 from re import Pattern, match
 
@@ -11,9 +10,10 @@ from boltons.iterutils import windowed_iter
 from git import Repo, DiffIndex
 from structlog import get_logger
 
+from selectedtests.git_helper import get_changed_files, init_repo
+
 LOGGER = get_logger(__name__)
 
-GITHUB_BASE_URL = "https://github.com"
 SEEN_COUNT_KEY = "seen_count"
 TASK_BUILDS_KEY = "builds"
 
@@ -35,7 +35,6 @@ class TaskMappings:
         evergreen_project: str,
         start_date: datetime,
         end_date: datetime,
-        org_name: str,
         file_regex: Pattern,
         module_name: str,
         module_file_regex: Pattern,
@@ -47,7 +46,6 @@ class TaskMappings:
         :param evergreen_project: The name of the evergreen project to analyze.
         :param start_date: The date at which to start analyzing versions of the project.
         :param end_date: The date up to which we should analyze versions of the project.
-        :param org_name: Name of the github org that the repo in the evergreen project belongs to.
         :param file_regex: Regex pattern to match changed files against.
         :param module_name: Name of the module associated with the evergreen project to also analyze
         :param module_file_regex: Regex pattern to match changed files of the module against.
@@ -69,7 +67,7 @@ class TaskMappings:
                 if version.create_time > end_date:
                     continue
                 if base_repo is None:
-                    base_repo = _init_repo(temp_dir, org_name, version.repo, version.branch)
+                    base_repo = init_repo(temp_dir, version.repo, version.branch)
                     branch = version.branch
                     repo_name = version.repo
 
@@ -87,8 +85,8 @@ class TaskMappings:
                     cur_module = _get_associated_module(version, module_name)
                     prev_module = _get_associated_module(prev_version, module_name)
                     if cur_module is not None and module_repo is None:
-                        module_repo = _init_repo(
-                            temp_dir, cur_module.owner, cur_module.repo, cur_module.branch
+                        module_repo = init_repo(
+                            temp_dir, cur_module.repo, cur_module.branch, cur_module.owner
                         )
 
                     module_changed_files = _get_module_changed_files(
@@ -142,9 +140,9 @@ def _get_filtered_files(diff: DiffIndex, regex: Pattern) -> List[str]:
     :return: A list of the changed files that matched the given regex pattern.
     """
     re: List[str] = []
-    for file in _get_changed_files(diff):
-        if match(regex, file.b_path):
-            re.append(file.b_path)
+    for file in get_changed_files(diff, LOGGER):
+        if match(regex, file):
+            re.append(file)
     return re
 
 
@@ -225,42 +223,6 @@ def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mapp
             for cur_task in flipped_tasks.get(build_name):
                 cur_flips_for_task = builds_to_task_mappings.setdefault(cur_task, 0)
                 builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
-
-
-def _init_repo(temp_dir, org_name: str, repo_name: str, branch: str) -> Repo:
-    """
-    Create the given repo in the given directory and checkout the given branch.
-
-    :param temp_dir: The place where to clone the repo to.
-    :param org_name: The org name in github that owns the repo.
-    :param repo_name: The name of the repo to clone.
-    :param branch: The branch to checkout in the repo.
-    :return: An Repo instance that further git operations can be done on.
-    """
-    repo_path = os.path.join(temp_dir, repo_name)
-    url = f"{GITHUB_BASE_URL}/{org_name}/{repo_name}.git"
-    repo = Repo.clone_from(url, repo_path)
-    origin = repo.remotes["origin"]
-    repo.create_head(branch, origin.refs[branch]).set_tracking_branch(
-        origin.refs[branch]
-    ).checkout()
-    return repo
-
-
-def _get_changed_files(diff: DiffIndex):
-    """
-    Create a generator for the diff index. We only want modified, added, and removed files.
-
-    :param diff: The diff to generate files out of.
-    """
-    for patch in diff.iter_change_type("M"):
-        yield patch
-
-    for patch in diff.iter_change_type("A"):
-        yield patch
-
-    for patch in diff.iter_change_type("R"):
-        yield patch
 
 
 def _filter_non_required_distros(builds: List[Build]) -> List[Build]:
