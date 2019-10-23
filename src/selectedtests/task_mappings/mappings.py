@@ -4,7 +4,7 @@ from typing import List, Dict, Generator
 import tempfile
 from re import Pattern, match
 
-from evergreen.api import Version, Build, Task, CachedEvergreenApi
+from evergreen.api import Version, Build, Task, EvergreenApi
 from evergreen.manifest import ManifestModule
 from boltons.iterutils import windowed_iter
 from git import Repo, DiffIndex
@@ -31,7 +31,7 @@ class TaskMappings:
     @classmethod
     def create_task_mappings(
         cls,
-        evg_api: CachedEvergreenApi,
+        evg_api: EvergreenApi,
         evergreen_project: str,
         start_date: datetime,
         end_date: datetime,

@@ -20,7 +20,7 @@ def expected_task_mappings_output():
 
 
 @pytest.fixture()
-def expected_test_mappings_output():
+def expected_test_mappings():
     with open(os.path.join(SAMPLE_OUTPUT_PATH, "expected_test_mappings.json"), "r") as data:
         return json.load(data)
 
@@ -51,6 +51,15 @@ def evg_versions() -> List[MagicMock]:
             versions.append(_create_version_mocks(json.load(data)))
 
     return versions
+
+
+@pytest.fixture()
+def evg_versions_with_manifest() -> List[MagicMock]:
+    version_mock = MagicMock()
+    my_module_mock = MagicMock(repo="module-repo", branch="module-branch", owner="module-owner")
+    version_mock.get_manifest.return_value = MagicMock(modules={"my-module": my_module_mock})
+    versions = [version_mock]
+    return (v for v in versions)
 
 
 def _create_version_mocks(data: Dict) -> MagicMock:

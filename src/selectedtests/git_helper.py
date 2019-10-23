@@ -1,17 +1,17 @@
 """Git helper for mappings commands."""
 import os.path
-import structlog
 
 from typing import Any, Set
+from tempfile import TemporaryDirectory
 from git import Commit, Diff, DiffIndex, Repo
-from structlog.stdlib import LoggerFactory
 
 
-structlog.configure(logger_factory=LoggerFactory())
 GITHUB_BASE_URL = "https://github.com"
 
 
-def init_repo(temp_dir, repo_name: str, branch: str, org_name: str = "mongodb") -> Repo:
+def init_repo(
+    temp_dir: TemporaryDirectory, repo_name: str, branch: str, org_name: str = "mongodb"
+) -> Repo:
     """
     Create the given repo in the given directory and checkout the given branch.
 
