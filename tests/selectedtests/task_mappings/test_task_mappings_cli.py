@@ -2,10 +2,10 @@ import json
 
 from click.testing import CliRunner
 from unittest.mock import patch, MagicMock
-from selectedtests.cli import cli
+from selectedtests.task_mappings.cli import cli
 
-NS = "selectedtests.cli"
-MAPPINGS_NS = "selectedtests.task_mappings.task_mappings"
+NS = "selectedtests.task_mappings.cli"
+MAPPINGS_NS = "selectedtests.task_mappings.mappings"
 
 
 def ns(relative_name):
@@ -19,22 +19,14 @@ def m_ns(relative_name):
 
 
 class TestCli:
-    @patch(ns("CachedEvergreenApi"))
-    @patch(m_ns("_init_repo"))
-    @patch(m_ns("_get_diff"))
+    @patch(ns("RetryingEvergreenApi"))
     @patch(m_ns("_get_filtered_files"))
     def test_integration(
-        self,
-        filtered_files_mock,
-        diff_mock,
-        repo_mock,
-        cached_evg_api,
-        evg_versions,
-        expected_output,
+        self, filtered_files_mock, evg_api, evg_versions, expected_task_mappings_output
     ):
         mock_evg_api = MagicMock()
         mock_evg_api.versions_by_project.return_value = evg_versions
-        cached_evg_api.get_api.return_value = mock_evg_api
+        evg_api.get_api.return_value = mock_evg_api
 
         filtered_files_mock.return_value = ["src/file1", "src/file2"]
 
@@ -44,7 +36,7 @@ class TestCli:
             result = runner.invoke(
                 cli,
                 [
-                    "task",
+                    "create",
                     "mongodb-mongo-master",
                     "--source-file-regex",
                     "src.*",
@@ -59,4 +51,4 @@ class TestCli:
             assert result.exit_code == 0
             with open(output_file, "r") as data:
                 output = json.load(data)
-                assert expected_output == output
+                assert expected_task_mappings_output == output

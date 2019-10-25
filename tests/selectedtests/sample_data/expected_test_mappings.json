@@ -1,0 +1,10 @@
+[
+    {
+        "source_file": "new-source-file",
+        "project": "mongodb-mongo-master",
+        "branch": "master",
+        "repo": "name-of-repo",
+        "source_file_seen_count": 1,
+        "test_files": [{"name": "new-test-file", "test_file_seen_count": 1}]
+    }
+]
