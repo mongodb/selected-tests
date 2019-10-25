@@ -124,7 +124,6 @@ def create(
     if output_file:
         with open(output_file, "a") as f:
             f.write(json_dump)
-            f.close()
     else:
         print(json_dump)
 
