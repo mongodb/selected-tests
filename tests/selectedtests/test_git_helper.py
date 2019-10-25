@@ -24,7 +24,7 @@ def repo_with_many_changed_files(temp_directory):
     open(file_to_modify, "wb").close()
     open(file_to_rename, "wb").close()
     repo.index.add([unchanged_file, file_to_delete, file_to_modify, file_to_rename])
-    repo.index.commit("add file-to-delete, file-to-modify, and file-to-rename file")
+    repo.index.commit("add files to change")
 
     # rename file
     renamed_file = os.path.join(temp_directory, "now-renamed-file")
@@ -42,7 +42,7 @@ def repo_with_many_changed_files(temp_directory):
     repo.index.remove([file_to_delete], working_tree=True)
 
     # commit changes
-    repo.index.add([new_file, file_to_modify, renamed_file, unchanged_file])
+    repo.index.add([unchanged_file, renamed_file, new_file, file_to_modify])
     repo.index.commit("add new file, modified file, and renamed file")
 
     return repo
