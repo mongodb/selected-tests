@@ -158,6 +158,15 @@ new state of the service before that change can be merged to master.
 Documentation for how the swagger documentation is done can be found
 [here](https://flask-restplus.readthedocs.io/en/stable/swagger.html).
 
+## Merging code to master
+
+Merges to the build-baron-tools repo should be done via the Evergreen [Commit Queue](https://github.com/evergreen-ci/evergreen/wiki/Commit-Queue).
+
+When your PR is ready to merge, add a comment with the following:
+```
+evergreen merge
+```
+
 ## Deploy
 
 Deployment is done via helm to [Kanopy](https://github.com/10gen/kanopy-docs#index) (MongoDB
