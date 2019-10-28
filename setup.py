@@ -43,6 +43,7 @@ setup(
         'flask==1.1.1',
         'flask-restplus==0.13.0',
         'GitPython==3.0.3',
+        'pymongo[tls]==3.8.0',
         'structlog==19.1.0',
     ],
     entry_points={
