@@ -160,7 +160,7 @@ Documentation for how the swagger documentation is done can be found
 
 ## Merging code to master
 
-Merges to the build-baron-tools repo should be done via the Evergreen [Commit Queue](https://github.com/evergreen-ci/evergreen/wiki/Commit-Queue).
+Merges to the selected-tests repo should be done via the Evergreen [Commit Queue](https://github.com/evergreen-ci/evergreen/wiki/Commit-Queue).
 
 When your PR is ready to merge, add a comment with the following:
 ```
