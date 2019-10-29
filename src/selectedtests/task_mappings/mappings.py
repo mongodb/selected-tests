@@ -38,6 +38,7 @@ class TaskMappings:
         file_regex: Pattern,
         module_name: str,
         module_file_regex: Pattern,
+        build_regex: Pattern,
     ):
         """
         Create the task mappings for an evergreen project. Optionally looks at an associated module.
@@ -49,6 +50,7 @@ class TaskMappings:
         :param file_regex: Regex pattern to match changed files against.
         :param module_name: Name of the module associated with the evergreen project to also analyze
         :param module_file_regex: Regex pattern to match changed files of the module against.
+        :param build_regex: Regex pattern to match build variant names against.
         :return: An instance of the task mappings class
         """
         project_versions: Generator[Version] = evg_api.versions_by_project(evergreen_project)
@@ -94,7 +96,7 @@ class TaskMappings:
                     )
                     changed_files.extend(module_changed_files)
 
-                flipped_tasks = _get_flipped_tasks(prev_version, version, next_version)
+                flipped_tasks = _get_flipped_tasks(prev_version, version, next_version, build_regex)
 
                 if len(flipped_tasks) > 0:
                     _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
@@ -225,17 +227,19 @@ def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mapp
                 builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
 
 
-def _filter_non_required_distros(builds: List[Build]) -> List[Build]:
+def _filter_non_required_distros(builds: List[Build], build_regex: Pattern) -> List[Build]:
     """
     Filter the distros that aren't required in evergreen.
 
     :param builds: The builds to put through the filter.
     :return: A list of the builds that are required.
     """
-    return [build for build in builds if build.display_name.startswith("!")]
+    return [build for build in builds if match(build_regex, build.display_name)]
 
 
-def _get_flipped_tasks(prev_version: Version, version: Version, next_version: Version) -> Dict:
+def _get_flipped_tasks(
+    prev_version: Version, version: Version, next_version: Version, build_regex: Pattern
+) -> Dict:
     """
     Get the tasks that flipped in the current version.
 
@@ -246,7 +250,7 @@ def _get_flipped_tasks(prev_version: Version, version: Version, next_version: Ve
      variants as the values.
     """
     builds = version.get_builds()
-    builds = _filter_non_required_distros(builds)
+    builds = _filter_non_required_distros(builds, build_regex)
     flipped_tasks = {}
     for build in builds:
         flipped_tasks_in_build = _get_flipped_tasks_per_build(build, prev_version, next_version)
