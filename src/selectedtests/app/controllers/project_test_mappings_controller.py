@@ -9,9 +9,6 @@ from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.app.test_mapping_work_item import TestMappingWorkItem
 from selectedtests.evergreen_helper import get_evg_project
 
-MONGO_WRAPPER = None
-EVG_API = None
-
 
 def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: EvergreenApi):
     """
@@ -21,10 +18,6 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
     :param mongo: Mongo Wrapper instance
     :param evg_api: An instance of the evg_api client
     """
-    global MONGO_WRAPPER
-    MONGO_WRAPPER = mongo
-    global EVG_API
-    EVG_API = evg_api
     ns = api.namespace("projects", description="Project Test Mappings")
 
     test_mappings_work_item = ns.model(
@@ -60,7 +53,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.expect(test_mappings_work_item)
         def post(self, project):
             """Enqueue a project test mapping work item."""
-            evergreen_project = get_evg_project(EVG_API, project)
+            evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
                 abort(404, custom="Evergreen project not found")
             else:
@@ -75,7 +68,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                     work_item_params.get("module_source_file_regex"),
                     work_item_params.get("module_test_file_regex"),
                 )
-                if work_item.insert(MONGO_WRAPPER.test_mappings_queue()):
+                if work_item.insert(mongo.test_mappings_queue()):
                     return jsonify({f"Work item added for project '{project}'": True})
                 else:
                     abort(422, custom=f"Work item already exists for project '{project}'")
