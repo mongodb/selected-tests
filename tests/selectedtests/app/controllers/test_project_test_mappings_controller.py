@@ -11,20 +11,16 @@ def ns(relative_name):
     return NS + "." + relative_name
 
 
-@patch(ns("MONGO_WRAPPER"))
 @patch(ns("TestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_work_item_inserted(
     get_evg_project_mock,
     test_mapping_work_item_mock,
-    mongo_wrapper_mock,
     app_client: testing.FlaskClient,
 ):
-    get_evg_project_mock.return_value = MagicMock()
-    work_item_mock = MagicMock()
-    work_item_mock.insert.return_value = True
-    test_mapping_work_item_mock.new_test_mappings.return_value = work_item_mock
-    mongo_wrapper_mock.test_mappings_queue.return_value = MagicMock()
+    project = "valid-evergreen-project"
+    get_evg_project_mock.return_value = MagicMock(identifier=project)
+    test_mapping_work_item_mock.new_test_mappings.return_value.insert.return_value = True
     test_params = dict(
         source_file_regex="source-file-regex",
         test_file_regex="test-file-regex",
@@ -32,7 +28,6 @@ def test_work_item_inserted(
         module_source_file_regex="module-source-file-regex",
         module_test_file_regex="module-test-file-regex",
     )
-    project = "valid-evergreen-project"
 
     response = app_client.post(f"/projects/{project}/test-mappings", data=json.dumps(test_params))
     assert response.status_code == 200
@@ -41,22 +36,17 @@ def test_work_item_inserted(
     )
 
 
-@patch(ns("MONGO_WRAPPER"))
 @patch(ns("TestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_no_module_passed_in(
     get_evg_project_mock,
     test_mapping_work_item_mock,
-    mongo_wrapper_mock,
     app_client: testing.FlaskClient,
 ):
-    get_evg_project_mock.return_value = MagicMock()
-    work_item_mock = MagicMock()
-    work_item_mock.insert.return_value = True
-    test_mapping_work_item_mock.new_test_mappings.return_value = work_item_mock
-    mongo_wrapper_mock.test_mappings_queue.return_value = MagicMock()
-    test_params = dict(source_file_regex="source-file-regex", test_file_regex="test-file-regex")
     project = "valid-evergreen-project"
+    get_evg_project_mock.return_value = MagicMock(identifier=project)
+    test_mapping_work_item_mock.new_test_mappings.return_value.insert.return_value = True
+    test_params = dict(source_file_regex="source-file-regex", test_file_regex="test-file-regex")
 
     response = app_client.post(f"/projects/{project}/test-mappings", data=json.dumps(test_params))
     assert response.status_code == 200
@@ -77,20 +67,15 @@ def test_project_not_found(get_evg_project_mock, app_client: testing.FlaskClient
     assert "Evergreen project not found" in response.get_data(as_text=True)
 
 
-@patch(ns("MONGO_WRAPPER"))
 @patch(ns("TestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_project_cannot_be_inserted(
     get_evg_project_mock,
     test_mapping_work_item_mock,
-    mongo_wrapper_mock,
     app_client: testing.FlaskClient,
 ):
     get_evg_project_mock.return_value = MagicMock()
-    work_item_mock = MagicMock()
-    work_item_mock.insert.return_value = False
-    test_mapping_work_item_mock.new_test_mappings.return_value = work_item_mock
-    mongo_wrapper_mock.test_mappings_queue.return_value = MagicMock()
+    test_mapping_work_item_mock.new_test_mappings.return_value.insert.return_value = False
     test_params = dict(source_file_regex="source-file-regex", test_file_regex="test-file-regex")
     project = "project-already-exists-in-work-item-db"
 

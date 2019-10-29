@@ -3,22 +3,25 @@ import os
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
-from evergreen.api import RetryingEvergreenApi
+from evergreen.api import EvergreenApi, RetryingEvergreenApi
 
 from selectedtests.app.swagger_api import Swagger_Api
 from selectedtests.app.controllers.health_controller import add_health_endpoints
 from selectedtests.app.controllers.project_test_mappings_controller import (
     add_project_test_mappings_endpoints,
 )
+from selectedtests.app.test_mapping_work_item import setup_indexes
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 DEFAULT_PORT = 8080
 
 
-def create_app() -> Flask:
+def create_app(mongo: MongoWrapper, evg_api: EvergreenApi) -> Flask:
     """
     Create an instance of the flask application.
 
+    :param mongo: Mongo Wrapper instance
+    :param evg_api: An instance of the evg_api client
     :return: Instance of flask application.
     """
     app = Flask(__name__)
@@ -31,8 +34,8 @@ def create_app() -> Flask:
         doc="/swagger",
     )
 
-    mongo = _get_mongo_wrapper()
-    evg_api = RetryingEvergreenApi.get_api(use_config_file=True)
+    # Creating index no-ops if index already exists
+    setup_indexes(mongo.test_mappings_queue())
 
     add_health_endpoints(api)
     add_project_test_mappings_endpoints(api, mongo, evg_api)
@@ -52,7 +55,9 @@ def _get_mongo_wrapper() -> MongoWrapper:
 
 def main():
     """Run the server."""
-    return create_app()
+    mongo = _get_mongo_wrapper()
+    evg_api = RetryingEvergreenApi.get_api(use_config_file=True)
+    return create_app(mongo, evg_api)
 
 
 if __name__ == "__main__":

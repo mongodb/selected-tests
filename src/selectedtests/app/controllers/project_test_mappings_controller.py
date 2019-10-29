@@ -6,7 +6,7 @@ from flask_restplus import abort, Api, fields, Resource
 from evergreen.api import EvergreenApi
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.app.test_mapping_work_item import setup_indexes, TestMappingWorkItem
+from selectedtests.app.test_mapping_work_item import TestMappingWorkItem
 from selectedtests.evergreen_helper import get_evg_project
 
 MONGO_WRAPPER = None
@@ -65,9 +65,6 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                 abort(404, custom="Evergreen project not found")
             else:
                 work_item_params = json.loads(request.get_data().decode("utf8"))
-
-                # Creating index no-ops if index already exists
-                setup_indexes(MONGO_WRAPPER.test_mappings_queue())
 
                 source_file_regex = work_item_params.get("source_file_regex")
                 work_item = TestMappingWorkItem.new_test_mappings(
