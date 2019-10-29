@@ -118,9 +118,27 @@ def create(
 
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 
-    mappings = TaskMappings.create_task_mappings(
-        evg_api, evergreen_project, start_date, end_date, file_regex, module_name, module_file_regex
-    )
+    if build_variant_regex:
+        mappings = TaskMappings.create_task_mappings(
+            evg_api,
+            evergreen_project,
+            start_date,
+            end_date,
+            file_regex,
+            module_name,
+            module_file_regex,
+            re.compile(build_variant_regex),
+        )
+    else:
+        mappings = TaskMappings.create_task_mappings(
+            evg_api,
+            evergreen_project,
+            start_date,
+            end_date,
+            file_regex,
+            module_name,
+            module_file_regex,
+        )
 
     transformed_mappings = mappings.transform()
 

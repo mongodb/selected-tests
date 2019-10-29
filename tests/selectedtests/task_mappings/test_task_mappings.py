@@ -29,7 +29,6 @@ class TestCreateTaskMappings:
         filtered_mock,
         diff_mock,
         init_repo_mock,
-        required_builds_regex,
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -52,7 +51,7 @@ class TestCreateTaskMappings:
         end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, start, end, None, "module", None, required_builds_regex
+            evg_api_mock, project_name, start, end, None, "module", None
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
@@ -81,7 +80,6 @@ class TestCreateTaskMappings:
         filtered_mock,
         diff_mock,
         init_repo_mock,
-        required_builds_regex,
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -105,7 +103,7 @@ class TestCreateTaskMappings:
         end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, start, end, None, "", None, required_builds_regex
+            evg_api_mock, project_name, start, end, None, "", None
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
@@ -130,7 +128,7 @@ class TestCreateTaskMappings:
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
     def test_no_flipped_tasks_creates_no_mappings(
-        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock, required_builds_regex
+        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -146,17 +144,45 @@ class TestCreateTaskMappings:
         end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, start, end, None, "", None, required_builds_regex
+            evg_api_mock, project_name, start, end, None, "", None
         )
 
         assert 0 == len(mappings.mappings)
+
+    @patch(ns("_filter_non_matching_distros"))
+    @patch(ns("init_repo"))
+    @patch(ns("_get_diff"))
+    @patch(ns("_get_filtered_files"))
+    def test_build_variant_regex_passed_correctly(
+        self, filtered_mock, diff_mock, init_repo_mock, non_matching_filter_mock
+    ):
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
+        ]
+        evg_api_mock.versions_by_project.return_value.reverse()
+        filtered_mock.return_value = []
+        non_matching_filter_mock.return_value = []
+
+        project_name = "project"
+
+        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+
+        build_regex = re.compile("is_this_passed_correctly")
+
+        under_test.TaskMappings.create_task_mappings(
+            evg_api_mock, project_name, start, end, None, "", None, build_regex
+        )
+
+        assert build_regex == non_matching_filter_mock.call_args[0][1]
 
     @patch(ns("init_repo"))
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
     def test_only_versions_in_given_range_are_analyzed(
-        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock, required_builds_regex
+        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -192,14 +218,7 @@ class TestCreateTaskMappings:
         project_name = "project"
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock,
-            project_name,
-            desired_start,
-            desired_end,
-            None,
-            "",
-            None,
-            required_builds_regex,
+            evg_api_mock, project_name, desired_start, desired_end, None, "", None
         )
 
         assert len(expected_files) == len(mappings.mappings)
