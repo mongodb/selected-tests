@@ -76,11 +76,6 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                     work_item_params.get("module_test_file_regex"),
                 )
                 if work_item.insert(MONGO_WRAPPER.test_mappings_queue()):
-                    return jsonify(
-                        {f"Work item added for '{project}', '{source_file_regex}'": True}
-                    )
+                    return jsonify({f"Work item added for project '{project}'": True})
                 else:
-                    abort(
-                        422,
-                        custom=f"Work item already exists for '{project}', '{source_file_regex}'",
-                    )
+                    abort(422, custom=f"Work item already exists for project '{project}'")

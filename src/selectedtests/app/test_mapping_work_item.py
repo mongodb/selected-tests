@@ -15,7 +15,7 @@ def setup_indexes(collection):
 
     :param collection: Collection to add indexes to.
     """
-    index = IndexModel([("project", ASCENDING), ("source_file_regex", ASCENDING)], unique=True)
+    index = IndexModel([("project", ASCENDING)], unique=True)
     collection.create_indexes([index])
 
 

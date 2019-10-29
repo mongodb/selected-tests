@@ -14,9 +14,7 @@ def ns(relative_name):
 @patch(ns("TestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_work_item_inserted(
-    get_evg_project_mock,
-    test_mapping_work_item_mock,
-    app_client: testing.FlaskClient,
+    get_evg_project_mock, test_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -31,17 +29,13 @@ def test_work_item_inserted(
 
     response = app_client.post(f"/projects/{project}/test-mappings", data=json.dumps(test_params))
     assert response.status_code == 200
-    assert f"Work item added for '{project}', 'source-file-regex'" in response.get_data(
-        as_text=True
-    )
+    assert f"Work item added for project '{project}'" in response.get_data(as_text=True)
 
 
 @patch(ns("TestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_no_module_passed_in(
-    get_evg_project_mock,
-    test_mapping_work_item_mock,
-    app_client: testing.FlaskClient,
+    get_evg_project_mock, test_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -50,9 +44,7 @@ def test_no_module_passed_in(
 
     response = app_client.post(f"/projects/{project}/test-mappings", data=json.dumps(test_params))
     assert response.status_code == 200
-    assert f"Work item added for '{project}', 'source-file-regex'" in response.get_data(
-        as_text=True
-    )
+    assert f"Work item added for project '{project}'" in response.get_data(as_text=True)
 
 
 @patch(ns("get_evg_project"))
@@ -70,9 +62,7 @@ def test_project_not_found(get_evg_project_mock, app_client: testing.FlaskClient
 @patch(ns("TestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_project_cannot_be_inserted(
-    get_evg_project_mock,
-    test_mapping_work_item_mock,
-    app_client: testing.FlaskClient,
+    get_evg_project_mock, test_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     get_evg_project_mock.return_value = MagicMock()
     test_mapping_work_item_mock.new_test_mappings.return_value.insert.return_value = False
@@ -81,6 +71,4 @@ def test_project_cannot_be_inserted(
 
     response = app_client.post(f"/projects/{project}/test-mappings", data=json.dumps(test_params))
     assert response.status_code == 422
-    assert f"Work item already exists for '{project}', 'source-file-regex'" in response.get_data(
-        as_text=True
-    )
+    assert f"Work item already exists for project '{project}'" in response.get_data(as_text=True)
