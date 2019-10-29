@@ -77,7 +77,6 @@ def cli(ctx, verbose: bool):
     type=str,
     help="Regex that will be used to decide what build variants are analyzed. "
     "Example: 'src.*'. Defaults to '!.*'",
-    default="!.*",
 )
 @click.option(
     "--output-file",
@@ -106,7 +105,6 @@ def create(
             "The start or end date could not be parsed - make sure it's an iso date"
         )
 
-    build_regex = re.compile(build_variant_regex)
     file_regex = re.compile(source_file_regex)
 
     module_file_regex = None
@@ -128,7 +126,6 @@ def create(
         file_regex,
         module_name,
         module_file_regex,
-        build_regex,
     )
 
     transformed_mappings = mappings.transform()

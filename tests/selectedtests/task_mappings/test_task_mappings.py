@@ -356,7 +356,7 @@ class TestFilterDistros:
         required_distros = [MagicMock(display_name=f"!distro{i}") for i in range(5)]
         optional_distros = [MagicMock(display_name=f"distro{i}") for i in range(10)]
 
-        fitered_distros = under_test._filter_non_required_distros(
+        fitered_distros = under_test._filter_non_matching_distros(
             required_distros + optional_distros, required_builds_regex
         )
 
@@ -369,7 +369,7 @@ class TestFilterDistros:
     def test_filter_all_distros(self):
         optional_distros = [MagicMock(display_name=f"distro{i}") for i in range(10)]
 
-        filtered_distros = under_test._filter_non_required_distros(
+        filtered_distros = under_test._filter_non_matching_distros(
             optional_distros, re.compile("#")
         )
 
