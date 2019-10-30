@@ -11,6 +11,7 @@ from git import Repo, DiffIndex
 from structlog import get_logger
 
 from selectedtests.git_helper import get_changed_files, init_repo
+from selectedtests.evergreen_helper import get_evg_project
 
 LOGGER = get_logger(__name__)
 
@@ -69,7 +70,10 @@ class TaskMappings:
                 if version.create_time > end_date:
                     continue
                 if base_repo is None:
-                    base_repo = init_repo(temp_dir, version.repo, version.branch)
+                    project_info = get_evg_project(evg_api, evergreen_project)
+                    base_repo = init_repo(
+                        temp_dir, version.repo, version.branch, project_info.owner_name
+                    )
                     branch = version.branch
                     repo_name = version.repo
 
