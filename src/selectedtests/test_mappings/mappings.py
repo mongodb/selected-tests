@@ -6,12 +6,12 @@ from datetime import datetime
 from collections import defaultdict
 from re import Pattern
 from git import Repo
-from typing import Dict
 from tempfile import TemporaryDirectory
 
 from evergreen.api import EvergreenApi
 from evergreen.manifest import ManifestModule
 from selectedtests.git_helper import init_repo, modified_files_for_commit
+from selectedtests.evergreen_helper import get_evg_project
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -85,7 +85,7 @@ def generate_project_test_mappings(
     :param end_date: The date up to which we should analyze commits of the project.
     :return: A list of test mappings for the evergreen project
     """
-    evg_project = _get_evg_project(evg_api, evergreen_project)
+    evg_project = get_evg_project(evg_api, evergreen_project)
     project_repo = init_repo(
         temp_dir, evg_project.repo_name, evg_project.branch_name, evg_project.owner_name
     )
@@ -136,20 +136,6 @@ def generate_module_test_mappings(
         module.branch,
     )
     return module_test_mappings.get_mappings()
-
-
-def _get_evg_project(evg_api: EvergreenApi, project: str) -> Dict:
-    """
-    Fetch an Evergreen project's info from the Evergreen API.
-
-    :param evg_api: An instance of the evg_api client
-    :param project: The name of the evergreen project to analyze.
-    :return: evg_api client instance of the project
-    """
-    for evergreen_project in evg_api.all_projects():
-        if evergreen_project.identifier == project:
-            return evergreen_project
-    return None
 
 
 def _get_module(evg_api: EvergreenApi, project: str, module_repo: str) -> ManifestModule:
