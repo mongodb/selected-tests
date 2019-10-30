@@ -33,10 +33,16 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
             ),
             "module": fields.String(description="Module to include in the analysis"),
             "module_source_file_regex": fields.String(
-                description="Regex describing folder containing source files in given module. Required if module param is provided."
+                description="""
+                            Regex describing folder containing source files in given module.
+                            Required if module param is provided.
+                            """
             ),
             "module_test_file_regex": fields.String(
-                description="Regex describing folder containing test files in given module. Required if module param is provided."
+                description="""
+                            Regex describing folder containing test files in given module.
+                            Required if module param is provided.
+                            """
             ),
         },
     )
