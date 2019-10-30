@@ -30,9 +30,7 @@ def cli(ctx, verbose: str):
 @cli.command()
 @click.pass_context
 def create_indexes(ctx):
-    """
-    Initialize the mongo database with proper indexes.
-    """
+    """Initialize the mongo database with proper indexes."""
     # Creating index no-ops if index already exists
     setup_indexes(ctx.obj["mongo"].test_mappings_queue())
 
