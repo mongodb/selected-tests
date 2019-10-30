@@ -10,7 +10,6 @@ from selectedtests.app.controllers.health_controller import add_health_endpoints
 from selectedtests.app.controllers.project_test_mappings_controller import (
     add_project_test_mappings_endpoints,
 )
-from selectedtests.app.test_mapping_work_item import setup_indexes
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 DEFAULT_PORT = 8080
@@ -33,9 +32,6 @@ def create_app(mongo: MongoWrapper, evg_api: EvergreenApi) -> Flask:
         description="This service is used to predict which tests need to run based on code changes",
         doc="/swagger",
     )
-
-    # Creating index no-ops if index already exists
-    setup_indexes(mongo.test_mappings_queue())
 
     add_health_endpoints(api)
     add_project_test_mappings_endpoints(api, mongo, evg_api)

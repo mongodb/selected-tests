@@ -1,25 +1,26 @@
 """Model of Evergreen TestMapping that needs to be analyzed."""
 import structlog
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pymongo.errors import DuplicateKeyError
 from pymongo import IndexModel, ASCENDING
 
 LOGGER = structlog.get_logger()
-WORK_ITEM_TTL = 14 * 24 * 60 * 60  # 2 Week TTL.
+WORK_ITEM_TTL = timedelta(weeks=2).total_seconds()
 
 
 def setup_indexes(collection):
     """
-    Create appropriate indexes for TestMappingWorkItems.
+    Create appropriate indexes for ProjectTestMappingWorkItemms.
 
     :param collection: Collection to add indexes to.
     """
     index = IndexModel([("project", ASCENDING)], unique=True)
     collection.create_indexes([index])
+    LOGGER.info("Adding indexes for collection", collection=collection.name)
 
 
-class TestMappingWorkItem(object):
+class ProjectTestMappingWorkItemm(object):
     """A work item for an evergreen test_mapping."""
 
     def __init__(
@@ -76,7 +77,7 @@ class TestMappingWorkItem(object):
         :param module: The name of the module to analyze.
         :param module_source_file_regex: Regex pattern to match changed module source files against.
         :param module_test_file_regex: Regex pattern to match changed module test files against.
-        :return: TestMappingWorkItem instance for work item.
+        :return: ProjectTestMappingWorkItemm instance for work item.
         """
         return cls(
             None,
@@ -99,10 +100,7 @@ class TestMappingWorkItem(object):
         :param collection: Mongo collection containing queue.
         :return: True if item was new record was added to collection.
         """
-        LOGGER.info(
-            f"Adding new test_mapping work item for {self.project}, {self.source_file_regex}",
-            project=self.project,
-        )
+        LOGGER.info("Adding new test_mapping work item for project", project=self.project)
         try:
             result = collection.insert_one(
                 {

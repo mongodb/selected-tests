@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest.mock import MagicMock
 from pymongo.errors import DuplicateKeyError
 
-import selectedtests.app.test_mapping_work_item as under_test
+import selectedtests.app.project_test_mapping_work_item as under_test
 
 PROJECT = "my-project"
 SOURCE_FILE_REGEX = ".*source"
@@ -21,9 +21,9 @@ class TestSetupIndexes:
         collection.create_indexes.assert_called_once()
 
 
-class TestTestMappingWorkItem:
+class TestProjectTestMappingWorkItemm:
     def test_create_new_test_mappings(self):
-        work_item = under_test.TestMappingWorkItem.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
             PROJECT,
             SOURCE_FILE_REGEX,
             TEST_FILE_REGEX,
@@ -46,7 +46,7 @@ class TestTestMappingWorkItem:
         collection = MagicMock()
         collection.insert_one.return_value.acknowledged = True
 
-        work_item = under_test.TestMappingWorkItem.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
             PROJECT, SOURCE_FILE_REGEX, TEST_FILE_REGEX
         )
         new_item = work_item.insert(collection)
@@ -59,7 +59,7 @@ class TestTestMappingWorkItem:
         collection = MagicMock()
         collection.insert_one.return_value.acknowledged = True
 
-        work_item = under_test.TestMappingWorkItem.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
             PROJECT, SOURCE_FILE_REGEX, TEST_FILE_REGEX
         )
         new_item = work_item.insert(collection)
@@ -74,7 +74,7 @@ class TestTestMappingWorkItem:
             "E11000 duplicate key error collection"
         )
 
-        work_item = under_test.TestMappingWorkItem.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
             PROJECT, SOURCE_FILE_REGEX, TEST_FILE_REGEX
         )
         new_item = work_item.insert(collection)
