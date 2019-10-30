@@ -11,7 +11,7 @@ WORK_ITEM_TTL = timedelta(weeks=2).total_seconds()
 
 def setup_indexes(collection):
     """
-    Create appropriate indexes for ProjectTestMappingWorkItemms.
+    Create appropriate indexes for ProjectTestMappingWorkItems.
 
     :param collection: Collection to add indexes to.
     """
@@ -20,7 +20,7 @@ def setup_indexes(collection):
     LOGGER.info("Adding indexes for collection", collection=collection.name)
 
 
-class ProjectTestMappingWorkItemm(object):
+class ProjectTestMappingWorkItem(object):
     """A work item for an evergreen test_mapping."""
 
     def __init__(
@@ -77,7 +77,7 @@ class ProjectTestMappingWorkItemm(object):
         :param module: The name of the module to analyze.
         :param module_source_file_regex: Regex pattern to match changed module source files against.
         :param module_test_file_regex: Regex pattern to match changed module test files against.
-        :return: ProjectTestMappingWorkItemm instance for work item.
+        :return: ProjectTestMappingWorkItem instance for work item.
         """
         return cls(
             None,

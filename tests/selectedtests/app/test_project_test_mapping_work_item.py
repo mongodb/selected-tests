@@ -21,9 +21,9 @@ class TestSetupIndexes:
         collection.create_indexes.assert_called_once()
 
 
-class TestProjectTestMappingWorkItemm:
+class TestProjectTestMappingWorkItem:
     def test_create_new_test_mappings(self):
-        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItem.new_test_mappings(
             PROJECT,
             SOURCE_FILE_REGEX,
             TEST_FILE_REGEX,
@@ -46,7 +46,7 @@ class TestProjectTestMappingWorkItemm:
         collection = MagicMock()
         collection.insert_one.return_value.acknowledged = True
 
-        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItem.new_test_mappings(
             PROJECT, SOURCE_FILE_REGEX, TEST_FILE_REGEX
         )
         new_item = work_item.insert(collection)
@@ -59,7 +59,7 @@ class TestProjectTestMappingWorkItemm:
         collection = MagicMock()
         collection.insert_one.return_value.acknowledged = True
 
-        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItem.new_test_mappings(
             PROJECT, SOURCE_FILE_REGEX, TEST_FILE_REGEX
         )
         new_item = work_item.insert(collection)
@@ -74,7 +74,7 @@ class TestProjectTestMappingWorkItemm:
             "E11000 duplicate key error collection"
         )
 
-        work_item = under_test.ProjectTestMappingWorkItemm.new_test_mappings(
+        work_item = under_test.ProjectTestMappingWorkItem.new_test_mappings(
             PROJECT, SOURCE_FILE_REGEX, TEST_FILE_REGEX
         )
         new_item = work_item.insert(collection)

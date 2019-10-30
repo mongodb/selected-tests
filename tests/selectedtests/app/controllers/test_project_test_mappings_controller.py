@@ -11,7 +11,7 @@ def ns(relative_name):
     return NS + "." + relative_name
 
 
-@patch(ns("ProjectTestMappingWorkItemm"))
+@patch(ns("ProjectTestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_work_item_inserted(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: testing.FlaskClient
@@ -32,7 +32,7 @@ def test_work_item_inserted(
     assert f"Work item added for project '{project}'" in response.get_data(as_text=True)
 
 
-@patch(ns("ProjectTestMappingWorkItemm"))
+@patch(ns("ProjectTestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_no_module_passed_in(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: testing.FlaskClient
@@ -59,7 +59,7 @@ def test_project_not_found(get_evg_project_mock, app_client: testing.FlaskClient
     assert "Evergreen project not found" in response.get_data(as_text=True)
 
 
-@patch(ns("ProjectTestMappingWorkItemm"))
+@patch(ns("ProjectTestMappingWorkItem"))
 @patch(ns("get_evg_project"))
 def test_project_cannot_be_inserted(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: testing.FlaskClient

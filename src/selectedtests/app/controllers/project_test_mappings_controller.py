@@ -6,7 +6,7 @@ from flask_restplus import abort, Api, fields, Resource
 from evergreen.api import EvergreenApi
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.app.project_test_mapping_work_item import ProjectTestMappingWorkItemm
+from selectedtests.app.project_test_mapping_work_item import ProjectTestMappingWorkItem
 from selectedtests.evergreen_helper import get_evg_project
 
 
@@ -60,7 +60,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                 work_item_params = json.loads(request.get_data().decode("utf8"))
 
                 source_file_regex = work_item_params.get("source_file_regex")
-                work_item = ProjectTestMappingWorkItemm.new_test_mappings(
+                work_item = ProjectTestMappingWorkItem.new_test_mappings(
                     project,
                     source_file_regex,
                     work_item_params.get("test_file_regex"),
