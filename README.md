@@ -52,6 +52,10 @@ Its options are described below.
   --output-file TEXT              Path to a file where the task mappings should be written to.
                                   Example: 'output.txt'
 
+  --build-variant-regex           Regex to determine what build variants to analyze. Comapres to their display name.
+                                  Example: 'src.*'
+                                  Defaults to: '!.*'  
+                                
   --help                          Show this message and exit.
 ```
 
