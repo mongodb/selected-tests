@@ -2,6 +2,7 @@ import git
 import json
 import os
 import pytest
+import re
 
 from unittest.mock import MagicMock
 from typing import List, Dict
@@ -208,3 +209,8 @@ def repo_with_files_added_two_days_ago():
         return repo
 
     return _repo
+
+
+@pytest.fixture(scope="module")
+def required_builds_regex():
+    return re.compile("!.*")

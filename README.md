@@ -52,6 +52,10 @@ Its options are described below.
   --output-file TEXT              Path to a file where the task mappings should be written to.
                                   Example: 'output.txt'
 
+  --build-variant-regex           Regex to determine what build variants to analyze. Compares to their display name.
+                                  Example: 'src.*'
+                                  Defaults to: '!.*'  
+                                
   --help                          Show this message and exit.
 ```
 
@@ -157,6 +161,15 @@ new state of the service before that change can be merged to master.
 
 Documentation for how the swagger documentation is done can be found
 [here](https://flask-restplus.readthedocs.io/en/stable/swagger.html).
+
+## Merging code to master
+
+Merges to the selected-tests repo should be done via the Evergreen [Commit Queue](https://github.com/evergreen-ci/evergreen/wiki/Commit-Queue).
+
+When your PR is ready to merge, add a comment with the following:
+```
+evergreen merge
+```
 
 ## Deploy
 

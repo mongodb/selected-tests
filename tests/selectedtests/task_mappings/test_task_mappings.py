@@ -149,6 +149,34 @@ class TestCreateTaskMappings:
 
         assert 0 == len(mappings.mappings)
 
+    @patch(ns("_filter_non_matching_distros"))
+    @patch(ns("init_repo"))
+    @patch(ns("_get_diff"))
+    @patch(ns("_get_filtered_files"))
+    def test_build_variant_regex_passed_correctly(
+        self, filtered_mock, diff_mock, init_repo_mock, non_matching_filter_mock
+    ):
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
+        ]
+        evg_api_mock.versions_by_project.return_value.reverse()
+        filtered_mock.return_value = []
+        non_matching_filter_mock.return_value = []
+
+        project_name = "project"
+
+        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+
+        build_regex = re.compile("is_this_passed_correctly")
+
+        under_test.TaskMappings.create_task_mappings(
+            evg_api_mock, project_name, start, end, None, "", None, build_regex
+        )
+
+        assert build_regex == non_matching_filter_mock.call_args[0][1]
+
     @patch(ns("init_repo"))
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
@@ -343,12 +371,12 @@ class TestMapTasksToFiles:
 
 
 class TestFilterDistros:
-    def test_filter_non_required_distros(self):
+    def test_filter_non_matching_distros(self, required_builds_regex):
         required_distros = [MagicMock(display_name=f"!distro{i}") for i in range(5)]
         optional_distros = [MagicMock(display_name=f"distro{i}") for i in range(10)]
 
-        fitered_distros = under_test._filter_non_required_distros(
-            required_distros + optional_distros
+        fitered_distros = under_test._filter_non_matching_distros(
+            required_distros + optional_distros, required_builds_regex
         )
 
         assert len(required_distros) == len(fitered_distros)
@@ -360,7 +388,9 @@ class TestFilterDistros:
     def test_filter_all_distros(self):
         optional_distros = [MagicMock(display_name=f"distro{i}") for i in range(10)]
 
-        filtered_distros = under_test._filter_non_required_distros(optional_distros)
+        filtered_distros = under_test._filter_non_matching_distros(
+            optional_distros, re.compile("#")
+        )
 
         assert 0 == len(filtered_distros)
         for distro in optional_distros:
@@ -369,7 +399,7 @@ class TestFilterDistros:
 
 class TestGetFlippedTasks:
     @patch(ns("_get_flipped_tasks_per_build"))
-    def test_get_flipped_tasks(self, _get_flips_mock):
+    def test_get_flipped_tasks(self, _get_flips_mock, required_builds_regex):
         prev_version_mock = MagicMock()
         version_mock = MagicMock()
         next_version_mock = MagicMock()
@@ -392,7 +422,7 @@ class TestGetFlippedTasks:
         version_mock.get_builds.return_value = all_distros
 
         flipped_tasks = under_test._get_flipped_tasks(
-            prev_version_mock, version_mock, next_version_mock
+            prev_version_mock, version_mock, next_version_mock, required_builds_regex
         )
 
         assert len(required_distros) == len(flipped_tasks)
