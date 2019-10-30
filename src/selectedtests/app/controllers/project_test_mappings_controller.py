@@ -23,7 +23,6 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
     test_mappings_work_item = ns.model(
         "TestMappingsWorkItem",
         {
-            "project": fields.String(description="The evergreen project identifier", required=True),
             "source_file_regex": fields.String(
                 description="Regex describing folder containing source files in given project",
                 required=True,
@@ -32,14 +31,12 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                 description="Regex describing folder containing test files in given project.",
                 required=True,
             ),
-            "module": fields.String(description="Module to include in the analysis", required=True),
+            "module": fields.String(description="Module to include in the analysis"),
             "module_source_file_regex": fields.String(
-                description="Regex describing folder containing source files in given module",
-                required=True,
+                description="Regex describing folder containing source files in given module"
             ),
             "module_test_file_regex": fields.String(
-                description="Regex describing folder containing test files in given module",
-                required=True,
+                description="Regex describing folder containing test files in given module"
             ),
         },
     )
@@ -50,7 +47,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(200, "Success", test_mappings_work_item)
         @ns.response(404, "Evergreen project not found", test_mappings_work_item)
         @ns.response(422, "Work item already exists for project", test_mappings_work_item)
-        @ns.expect(test_mappings_work_item)
+        @ns.expect(test_mappings_work_item, validate=True)
         def post(self, project):
             """Enqueue a project test mapping work item."""
             evergreen_project = get_evg_project(evg_api, project)
