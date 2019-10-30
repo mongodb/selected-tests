@@ -73,6 +73,12 @@ def cli(ctx, verbose: bool):
     "Example: 'src.*'",
 )
 @click.option(
+    "--build-variant-regex",
+    type=str,
+    help="Regex that will be used to decide what build variants are analyzed. "
+    "Example: 'src.*'. Defaults to '!.*'",
+)
+@click.option(
     "--output-file",
     type=str,
     help="Path to a file where the task mappings should be written to. Example: 'output.txt'",
@@ -85,6 +91,7 @@ def create(
     source_file_regex: str,
     module_name: str,
     module_source_file_regex: str,
+    build_variant_regex: str,
     output_file: str,
 ):
     """Create the task mappings for a given evergreen project."""
@@ -97,7 +104,6 @@ def create(
         raise click.ClickException(
             "The start or end date could not be parsed - make sure it's an iso date"
         )
-        return
 
     file_regex = re.compile(source_file_regex)
 
@@ -107,15 +113,32 @@ def create(
             raise click.ClickException(
                 "A module source file regex is required when a module is being analyzed"
             )
-            return
         else:
             module_file_regex = re.compile(module_source_file_regex)
 
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 
-    mappings = TaskMappings.create_task_mappings(
-        evg_api, evergreen_project, start_date, end_date, file_regex, module_name, module_file_regex
-    )
+    if build_variant_regex:
+        mappings = TaskMappings.create_task_mappings(
+            evg_api,
+            evergreen_project,
+            start_date,
+            end_date,
+            file_regex,
+            module_name,
+            module_file_regex,
+            re.compile(build_variant_regex),
+        )
+    else:
+        mappings = TaskMappings.create_task_mappings(
+            evg_api,
+            evergreen_project,
+            start_date,
+            end_date,
+            file_regex,
+            module_name,
+            module_file_regex,
+        )
 
     transformed_mappings = mappings.transform()
 
