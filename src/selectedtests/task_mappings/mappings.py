@@ -71,6 +71,10 @@ class TaskMappings:
                     continue
                 if base_repo is None:
                     project_info = get_evg_project(evg_api, evergreen_project)
+                    if project_info is None:
+                        raise ValueError(
+                            f"The evergreen project {evergreen_project} does not exist"
+                        )
                     base_repo = init_repo(
                         temp_dir, version.repo, version.branch, project_info.owner_name
                     )
