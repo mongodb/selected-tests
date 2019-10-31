@@ -30,7 +30,7 @@ class TestCreateTaskMappings:
         filtered_mock,
         diff_mock,
         init_repo_mock,
-        get_evg_mock,
+        get_evg_project_mock,
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -83,7 +83,7 @@ class TestCreateTaskMappings:
         filtered_mock,
         diff_mock,
         init_repo_mock,
-        get_evg_mock,
+        get_evg_project_mock,
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -133,7 +133,7 @@ class TestCreateTaskMappings:
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
     def test_no_flipped_tasks_creates_no_mappings(
-        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock, get_evg_mock
+        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock, get_evg_project_mock
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -160,7 +160,12 @@ class TestCreateTaskMappings:
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     def test_build_variant_regex_passed_correctly(
-        self, filtered_mock, diff_mock, init_repo_mock, non_matching_filter_mock, get_evg_mock
+        self,
+        filtered_mock,
+        diff_mock,
+        init_repo_mock,
+        non_matching_filter_mock,
+        get_evg_project_mock,
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -189,7 +194,7 @@ class TestCreateTaskMappings:
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
     def test_only_versions_in_given_range_are_analyzed(
-        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock, get_evg_mock
+        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock, get_evg_project_mock
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
