@@ -6,7 +6,7 @@ from flask_restplus import abort, Api, fields, Resource
 from evergreen.api import EvergreenApi
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.app.project_test_mapping_work_item import ProjectTestMappingWorkItem
+from selectedtests.work_items.project_test_mapping_work_item import ProjectTestMappingWorkItem
 from selectedtests.evergreen_helper import get_evg_project
 
 

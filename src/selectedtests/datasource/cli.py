@@ -5,7 +5,7 @@ import structlog
 import logging
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.app.project_test_mapping_work_item import setup_indexes
+from selectedtests.work_items.project_test_mapping_work_item import setup_indexes
 
 
 def _setup_logging(verbose: bool):
@@ -33,6 +33,7 @@ def create_indexes(ctx):
     """Initialize the mongo database with proper indexes."""
     # Creating index no-ops if index already exists
     setup_indexes(ctx.obj["mongo"].test_mappings_queue())
+    setup_indexes(ctx.obj["mongo"].task_mappings_queue())
 
 
 def main():
