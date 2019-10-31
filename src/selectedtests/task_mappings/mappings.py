@@ -37,8 +37,8 @@ class TaskMappings:
         start_date: datetime,
         end_date: datetime,
         file_regex: Pattern,
-        module_name: str,
-        module_file_regex: Pattern,
+        module_name: str = None,
+        module_file_regex: Pattern = None,
         build_regex: Pattern = compile("!.*"),
     ):
         """

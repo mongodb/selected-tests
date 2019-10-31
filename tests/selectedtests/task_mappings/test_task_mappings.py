@@ -14,6 +14,35 @@ def ns(relative_name):
     return NS + "." + relative_name
 
 
+class TestFullRunThrough:
+    @patch(ns("init_repo"))
+    @patch(ns("_get_filtered_files"))
+    def test_integration(
+        self, filtered_files_mock, init_repo_mock, evg_versions, expected_task_mappings_output
+    ):
+        mock_evg_api = MagicMock()
+        mock_evg_api.versions_by_project.return_value = evg_versions
+
+        project_name = "mongodb-mongo-master"
+        mock_evg_api.all_projects.return_value = [
+            MagicMock(identifier=project_name),
+            MagicMock(identifier="fake_name"),
+        ]
+
+        filtered_files_mock.return_value = ["src/file1", "src/file2"]
+
+        output = under_test.TaskMappings.create_task_mappings(
+            mock_evg_api,
+            project_name,
+            datetime.fromisoformat("2019-10-11T19:10:38"),
+            datetime.fromisoformat("2019-10-11T19:30:38"),
+            re.compile("src.*"),
+        )
+
+        transformed_out = output.transform()
+        assert expected_task_mappings_output == transformed_out
+
+
 class TestCreateTaskMappings:
     @patch(ns("_get_evg_project_and_init_repo"))
     @patch(ns("_get_diff"))
