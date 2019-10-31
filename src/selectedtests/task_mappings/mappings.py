@@ -1,7 +1,7 @@
 """Method to create the task mappings for a given evergreen project."""
 from datetime import datetime
 from typing import List, Dict, Generator
-import tempfile
+from tempfile import TemporaryDirectory
 from re import Pattern, match, compile
 
 from evergreen.api import Version, Build, Task, EvergreenApi
@@ -63,21 +63,20 @@ class TaskMappings:
         branch = ""
         repo_name = ""
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with TemporaryDirectory() as temp_dir:
             for next_version, version, prev_version in windowed_iter(project_versions, 3):
                 if version.create_time < start_date:
                     break
                 if version.create_time > end_date:
                     continue
                 if base_repo is None:
-                    project_info = get_evg_project(evg_api, evergreen_project)
-                    if project_info is None:
-                        raise ValueError(
-                            f"The evergreen project {evergreen_project} does not exist"
+                    try:
+                        base_repo = _get_evg_project_and_init_repo(
+                            evg_api, evergreen_project, temp_dir
                         )
-                    base_repo = init_repo(
-                        temp_dir, version.repo, version.branch, project_info.owner_name
-                    )
+                    except ValueError as e:
+                        LOGGER.exception(str(e))
+                        raise e
                     branch = version.branch
                     repo_name = version.repo
 
@@ -139,6 +138,17 @@ class TaskMappings:
             new_mapping["tasks"] = new_tasks
             task_mappings.append(new_mapping)
         return task_mappings
+
+
+def _get_evg_project_and_init_repo(
+    evg_api: EvergreenApi, evergreen_project: str, temp_dir: TemporaryDirectory
+):
+    project_info = get_evg_project(evg_api, evergreen_project)
+    if project_info is None:
+        raise ValueError(f"The evergreen project {evergreen_project} does not exist")
+    return init_repo(
+        temp_dir, project_info.repo_name, project_info.branch_name, project_info.owner_name
+    )
 
 
 def _get_filtered_files(diff: DiffIndex, regex: Pattern) -> List[str]:
