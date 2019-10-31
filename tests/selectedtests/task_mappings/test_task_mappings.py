@@ -14,8 +14,37 @@ def ns(relative_name):
     return NS + "." + relative_name
 
 
-class TestCreateTaskMappings:
+class TestFullRunThrough:
     @patch(ns("init_repo"))
+    @patch(ns("_get_filtered_files"))
+    def test_integration(
+        self, filtered_files_mock, init_repo_mock, evg_versions, expected_task_mappings_output
+    ):
+        mock_evg_api = MagicMock()
+        mock_evg_api.versions_by_project.return_value = evg_versions
+
+        project_name = "mongodb-mongo-master"
+        mock_evg_api.all_projects.return_value = [
+            MagicMock(identifier=project_name),
+            MagicMock(identifier="fake_name"),
+        ]
+
+        filtered_files_mock.return_value = ["src/file1", "src/file2"]
+
+        output = under_test.TaskMappings.create_task_mappings(
+            mock_evg_api,
+            project_name,
+            datetime.fromisoformat("2019-10-11T19:10:38"),
+            datetime.fromisoformat("2019-10-11T19:30:38"),
+            re.compile("src.*"),
+        )
+
+        transformed_out = output.transform()
+        assert expected_task_mappings_output == transformed_out
+
+
+class TestCreateTaskMappings:
+    @patch(ns("_get_evg_project_and_init_repo"))
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_associated_module"))
@@ -28,7 +57,7 @@ class TestCreateTaskMappings:
         associated_module_mock,
         filtered_mock,
         diff_mock,
-        init_repo_mock,
+        get_evg_project_and_init_repo_mock,
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -66,7 +95,7 @@ class TestCreateTaskMappings:
                 for task in expected_tasks:
                     assert task in variant_output
 
-    @patch(ns("init_repo"))
+    @patch(ns("_get_evg_project_and_init_repo"))
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_associated_module"))
@@ -79,7 +108,7 @@ class TestCreateTaskMappings:
         associated_module_mock,
         filtered_mock,
         diff_mock,
-        init_repo_mock,
+        get_evg_project_and_init_repo_mock,
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -123,12 +152,12 @@ class TestCreateTaskMappings:
                 for task in expected_tasks:
                     assert task in variant_output
 
-    @patch(ns("init_repo"))
+    @patch(ns("_get_evg_project_and_init_repo"))
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
     def test_no_flipped_tasks_creates_no_mappings(
-        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock
+        self, flipped_mock, filtered_mock, diff_mock, get_evg_project_and_init_repo_mock
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -149,12 +178,12 @@ class TestCreateTaskMappings:
 
         assert 0 == len(mappings.mappings)
 
+    @patch(ns("_get_evg_project_and_init_repo"))
     @patch(ns("_filter_non_matching_distros"))
-    @patch(ns("init_repo"))
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     def test_build_variant_regex_passed_correctly(
-        self, filtered_mock, diff_mock, init_repo_mock, non_matching_filter_mock
+        self, filtered_mock, diff_mock, non_matching_filter_mock, get_evg_project_and_init_repo_mock
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
@@ -177,12 +206,12 @@ class TestCreateTaskMappings:
 
         assert build_regex == non_matching_filter_mock.call_args[0][1]
 
-    @patch(ns("init_repo"))
+    @patch(ns("_get_evg_project_and_init_repo"))
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
     def test_only_versions_in_given_range_are_analyzed(
-        self, flipped_mock, filtered_mock, diff_mock, init_repo_mock
+        self, flipped_mock, filtered_mock, diff_mock, get_evg_project_and_init_repo_mock
     ):
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [

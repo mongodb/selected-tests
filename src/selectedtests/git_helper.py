@@ -9,9 +9,7 @@ from git import Commit, Diff, DiffIndex, Repo
 GITHUB_BASE_URL = "https://github.com"
 
 
-def init_repo(
-    temp_dir: TemporaryDirectory, repo_name: str, branch: str, org_name: str = "mongodb"
-) -> Repo:
+def init_repo(temp_dir: TemporaryDirectory, repo_name: str, branch: str, org_name: str) -> Repo:
     """
     Create the given repo in the given directory and checkout the given branch.
 

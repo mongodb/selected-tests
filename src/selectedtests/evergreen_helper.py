@@ -1,9 +1,9 @@
 """Evergreen.py helper."""
-from typing import Dict
-from evergreen.api import EvergreenApi
+from typing import Optional
+from evergreen.api import EvergreenApi, Project
 
 
-def get_evg_project(evg_api: EvergreenApi, project: str) -> Dict:
+def get_evg_project(evg_api: EvergreenApi, project: str) -> Optional[Project]:
     """
     Fetch an Evergreen project's info from the Evergreen API.
 
