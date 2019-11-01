@@ -54,8 +54,12 @@ def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(404, "Evergreen project not found", response_body)
         @ns.response(422, "Work item already exists for project", response_body)
         @ns.expect(task_mappings_work_item, validate=True)
-        def post(self, project):
-            """Enqueue a project task mapping work item."""
+        def post(self, project: str):
+            """
+            Enqueue a project task mapping work item.
+
+            :param project: The name of an evergreen project.
+            """
             evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
                 abort(404, custom="Evergreen project not found")
