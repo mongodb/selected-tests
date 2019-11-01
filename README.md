@@ -14,6 +14,9 @@ pip install -e .
 - Evergreen credentials
   - You can find your credentials in your User Settings in the Evergreen UI. The cli looks for them
   in the usual default location, i.e. '~/.evergreen.yml'
+- Location of a mongodb instance
+  - The location of the instance should be in an environment variable called 
+  ```SELECTED_TESTS_MONGO_URI```
 ```
 python src/selectedtests/app/app.py
 ```

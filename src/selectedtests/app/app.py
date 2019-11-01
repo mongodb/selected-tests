@@ -10,6 +10,9 @@ from selectedtests.app.controllers.health_controller import add_health_endpoints
 from selectedtests.app.controllers.project_test_mappings_controller import (
     add_project_test_mappings_endpoints,
 )
+from selectedtests.app.controllers.project_task_mappings_controller import (
+    add_project_task_mappings_endpoints,
+)
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 DEFAULT_PORT = 8080
@@ -35,6 +38,7 @@ def create_app(mongo: MongoWrapper, evg_api: EvergreenApi) -> Flask:
 
     add_health_endpoints(api)
     add_project_test_mappings_endpoints(api, mongo, evg_api)
+    add_project_task_mappings_endpoints(api, mongo, evg_api)
 
     return app
 
