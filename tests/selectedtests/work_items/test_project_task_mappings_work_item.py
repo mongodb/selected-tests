@@ -11,7 +11,7 @@ MODULE_SOURCE_FILE_REGEX = ".*source"
 BUILD_VARIANT_REGEX = "!.*"
 
 
-class TestProjectTestMappingWorkItem:
+class TestProjectTaskMappingWorkItem:
     def test_create_new_task_mappings(self):
         work_item = under_test.ProjectTaskMappingWorkItem.new_task_mappings(
             PROJECT, SOURCE_FILE_REGEX, MODULE, MODULE_SOURCE_FILE_REGEX, BUILD_VARIANT_REGEX

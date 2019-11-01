@@ -1,4 +1,4 @@
-"""Model of Evergreen TestMapping that needs to be analyzed."""
+"""Model of Evergreen TaskMapping that needs to be analyzed."""
 import structlog
 
 from datetime import datetime, timedelta
@@ -60,7 +60,7 @@ class ProjectTaskMappingWorkItem(object):
         :param module: The name of the module to analyze.
         :param module_source_file_regex: Regex pattern to match changed module source files against.
         :param build_variant_regex: Regex pattern to match build variants' display name against.
-        :return: ProjectTestMappingWorkItem instance for work item.
+        :return: ProjectTaskMappingWorkItem instance for work item.
         """
         return cls(
             None,
