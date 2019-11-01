@@ -43,9 +43,7 @@ def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
 
     response_body = ns.model(
         "TaskMappingsResponseBody",
-        {
-            "custom": fields.String(description="Message describing the result of the request"),
-        }
+        {"custom": fields.String(description="Message describing the result of the request")},
     )
 
     @ns.route("/<project>/task-mappings")
