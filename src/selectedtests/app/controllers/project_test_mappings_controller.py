@@ -47,12 +47,17 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         },
     )
 
+    response_body = ns.model(
+        "TestMappingsResponseBody",
+        {"custom": fields.String(description="Message describing the result of the request")},
+    )
+
     @ns.route("/<project>/test-mappings")
     @api.param("project", "The evergreen project identifier")
     class TestMappingsWorkItem(Resource):
-        @ns.response(200, "Success", test_mappings_work_item)
-        @ns.response(404, "Evergreen project not found", test_mappings_work_item)
-        @ns.response(422, "Work item already exists for project", test_mappings_work_item)
+        @ns.response(200, "Success", response_body)
+        @ns.response(404, "Evergreen project not found", response_body)
+        @ns.response(422, "Work item already exists for project", response_body)
         @ns.expect(test_mappings_work_item, validate=True)
         def post(self, project):
             """Enqueue a project test mapping work item."""
@@ -72,6 +77,6 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                     work_item_params.get("module_test_file_regex"),
                 )
                 if work_item.insert(mongo.test_mappings_queue()):
-                    return jsonify({f"Work item added for project '{project}'": True})
+                    return jsonify({"custom": f"Work item added for project '{project}'"})
                 else:
                     abort(422, custom=f"Work item already exists for project '{project}'")

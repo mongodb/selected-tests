@@ -50,6 +50,7 @@ def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
     @api.param("project", "The evergreen project identifier")
     class TaskMappingsWorkItem(Resource):
         @ns.response(200, "Success", response_body)
+        @ns.response(400, "Bad request", response_body)
         @ns.response(404, "Evergreen project not found", response_body)
         @ns.response(422, "Work item already exists for project", response_body)
         @ns.expect(task_mappings_work_item, validate=True)

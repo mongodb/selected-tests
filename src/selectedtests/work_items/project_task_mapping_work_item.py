@@ -48,9 +48,9 @@ class ProjectTaskMappingWorkItem(object):
         cls,
         project: str,
         source_file_regex: str,
-        module: str = None,
-        module_source_file_regex: str = None,
-        build_variant_regex: str = None,
+        module: str = "",
+        module_source_file_regex: str = "",
+        build_variant_regex: str = "",
     ):
         """
         Create a new work item.
@@ -85,12 +85,10 @@ class ProjectTaskMappingWorkItem(object):
             "created_on": self.created_on,
             "project": self.project,
             "source_file_regex": self.source_file_regex,
+            "module": self.module,
+            "module_source_file_regex": self.module_source_file_regex,
+            "build_variant_regex": self.build_variant_regex,
         }
-        if self.module:
-            to_insert["module"] = self.module
-            to_insert["module_source_file_regex"] = self.module_source_file_regex
-        if self.build_variant_regex:
-            to_insert["build_variant_regex"] = self.build_variant_regex
         try:
             result = collection.insert_one(to_insert)
             return result.acknowledged
