@@ -73,7 +73,7 @@ class ProjectTaskMappingWorkItem(object):
             build_variant_regex,
         )
 
-    def insert(self, collection):
+    def insert(self, collection) -> bool:
         """
         Add this work item to the Mongo collection.
 
