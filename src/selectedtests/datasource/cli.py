@@ -5,7 +5,7 @@ import structlog
 import logging
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.work_items.project_test_mapping_work_item import setup_indexes
+from selectedtests.work_items.process_work_items import setup_indexes
 
 
 def _setup_logging(verbose: bool):

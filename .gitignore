@@ -7,4 +7,5 @@
 __pycache__
 config.yml
 pip-wheel-metadata
+tags
 venv

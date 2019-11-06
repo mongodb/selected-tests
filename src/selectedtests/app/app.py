@@ -4,6 +4,7 @@ import os
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from evergreen.api import EvergreenApi, RetryingEvergreenApi
+from evergreen.config import EvgAuth
 
 from selectedtests.app.swagger_api import Swagger_Api
 from selectedtests.app.controllers.health_controller import add_health_endpoints
@@ -43,6 +44,17 @@ def create_app(mongo: MongoWrapper, evg_api: EvergreenApi) -> Flask:
     return app
 
 
+def _get_evg_api() -> EvergreenApi:
+    """
+    Create an instance of the evergreen API based on environment variables.
+
+    :return: Evergreen API instance.
+    """
+    evg_user = os.environ.get("EVG_API_USER")
+    evg_api_key = os.environ.get("EVG_API_KEY")
+    return RetryingEvergreenApi.get_api(auth=EvgAuth(evg_user, evg_api_key))
+
+
 def _get_mongo_wrapper() -> MongoWrapper:
     """
     Get an instance of the mongo wrapper based on environment variables.
@@ -56,7 +68,7 @@ def _get_mongo_wrapper() -> MongoWrapper:
 def main():
     """Run the server."""
     mongo = _get_mongo_wrapper()
-    evg_api = RetryingEvergreenApi.get_api(use_config_file=True)
+    evg_api = _get_evg_api()
     return create_app(mongo, evg_api)
 
 

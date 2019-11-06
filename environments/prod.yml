@@ -1,3 +1,8 @@
+env:
+  EVG_API_USER: evergreen-user
+envSecrets:
+  EVG_API_KEY: selected-tests-secrets
+  SELECTED_TESTS_MONGO_URI: selected-tests-secrets
 prometheusRules:
   - alert: HighNumberBadStatusCodeResponses
     expr: sum(increase(traefik_backend_requests_total{backend="selected-tests.server-tig.prod.corp.mongodb.com/", code=~"5.*|4.*"}[1h])) > 10

@@ -53,6 +53,7 @@ setup(
             'task-mappings = selectedtests.task_mappings.cli:main',
             'test-mappings = selectedtests.test_mappings.cli:main',
             'init-mongo = selectedtests.datasource.cli:main',
+            'work-items = selectedtests.work_items.cli:main',
         ],
     }
 )

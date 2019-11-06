@@ -56,25 +56,45 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
     @api.param("project", "The evergreen project identifier")
     class TestMappingsWorkItem(Resource):
         @ns.response(200, "Success", response_body)
+        @ns.response(400, "Bad request", response_body)
         @ns.response(404, "Evergreen project not found", response_body)
         @ns.response(422, "Work item already exists for project", response_body)
         @ns.expect(test_mappings_work_item, validate=True)
-        def post(self, project):
-            """Enqueue a project test mapping work item."""
+        def post(self, project: str):
+            """
+            Enqueue a project test mapping work item.
+
+            :param project: The name of an evergreen project.
+            """
             evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
                 abort(404, custom="Evergreen project not found")
             else:
                 work_item_params = json.loads(request.get_data().decode("utf8"))
 
-                source_file_regex = work_item_params.get("source_file_regex")
+                module = work_item_params.get("module")
+                module_source_file_regex = work_item_params.get("module_source_file_regex")
+                if module is not None and module_source_file_regex is None:
+                    abort(
+                        400,
+                        custom="The module_source_file_regex param is required if "
+                        "a module name is passed in",
+                    )
+                module_test_file_regex = work_item_params.get("module_test_file_regex")
+                if module is not None and module_test_file_regex is None:
+                    abort(
+                        400,
+                        custom="The module_test_file_regex param is required if "
+                        "a module name is passed in",
+                    )
+
                 work_item = ProjectTestMappingWorkItem.new_test_mappings(
                     project,
-                    source_file_regex,
+                    work_item_params.get("source_file_regex"),
                     work_item_params.get("test_file_regex"),
-                    work_item_params.get("module"),
-                    work_item_params.get("module_source_file_regex"),
-                    work_item_params.get("module_test_file_regex"),
+                    module,
+                    module_source_file_regex,
+                    module_test_file_regex,
                 )
                 if work_item.insert(mongo.test_mappings_queue()):
                     return jsonify({"custom": f"Work item added for project '{project}'"})

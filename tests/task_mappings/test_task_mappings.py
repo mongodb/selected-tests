@@ -76,11 +76,11 @@ class TestCreateTaskMappings:
         flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
         project_name = "project"
 
-        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, start, end, None, "module", None
+            evg_api_mock, project_name, after, before, None, "module", None
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
@@ -128,11 +128,11 @@ class TestCreateTaskMappings:
         flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
         project_name = "project"
 
-        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, start, end, None, "", None
+            evg_api_mock, project_name, after, before, None, "", None
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
@@ -169,11 +169,11 @@ class TestCreateTaskMappings:
         flipped_mock.return_value = {}
         project_name = "project"
 
-        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, start, end, None, "", None
+            evg_api_mock, project_name, after, before, None, "", None
         )
 
         assert 0 == len(mappings.mappings)
@@ -195,13 +195,13 @@ class TestCreateTaskMappings:
 
         project_name = "project"
 
-        start = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        end = datetime.combine(date(1, 1, 1), time(1, 3, 0))
+        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
+        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         build_regex = re.compile("is_this_passed_correctly")
 
         under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, start, end, None, "", None, build_regex
+            evg_api_mock, project_name, after, before, None, "", None, build_regex
         )
 
         assert build_regex == non_matching_filter_mock.call_args[0][1]
@@ -221,8 +221,8 @@ class TestCreateTaskMappings:
         evg_api_mock.versions_by_project.return_value.reverse()
 
         # This time range will only analyze the version where i=3 in the versions made above
-        desired_start = datetime.combine(date(1, 1, 1), time(2, 30, 0))
-        desired_end = datetime.combine(date(1, 1, 1), time(3, 30, 0))
+        desired_after = datetime.combine(date(1, 1, 1), time(2, 30, 0))
+        desired_before = datetime.combine(date(1, 1, 1), time(3, 30, 0))
 
         # We check for revision=3 here as that's the only version that should be analyzed
         # in the given time range
@@ -247,7 +247,7 @@ class TestCreateTaskMappings:
         project_name = "project"
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, desired_start, desired_end, None, "", None
+            evg_api_mock, project_name, desired_after, desired_before, None, "", None
         )
 
         assert len(expected_files) == len(mappings.mappings)
