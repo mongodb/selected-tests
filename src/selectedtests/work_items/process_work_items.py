@@ -70,14 +70,13 @@ def _process_one_work_item(
     :param before_date: The date up to which we should analyze commits of the project.
     :return: Whether all work items have been processed.
     """
-    log = LOGGER
-    log.info("Starting test mapping work item processing")
+    LOGGER.info("Starting test mapping work item processing")
     work_item = ProjectTestMappingWorkItem.next(mongo.test_mappings_queue())
     if not work_item:
-        log.info("No more test mapping work items found")
+        LOGGER.info("No more test mapping work items found")
         return True
 
-    log = log.bind(project=work_item.project, module=work_item.module)
+    log = LOGGER.bind(project=work_item.project, module=work_item.module)
     log.info("Starting test mapping work item processing for work_item")
     if _run_create_test_mappings(evg_api, mongo, work_item, after_date, before_date, log):
         work_item.complete(mongo.test_mappings_queue())
@@ -101,7 +100,6 @@ def _run_create_test_mappings(
     :param work_item: An instance of ProjectTestMappingWorkItem.
     :param after_date: The date at which to start analyzing commits of the project.
     :param before_date: The date up to which we should analyze commits of the project.
-    :return: Whether test mappings were created successfully.
     """
     source_re = re.compile(work_item.source_file_regex)
     test_re = re.compile(work_item.test_file_regex)
@@ -125,4 +123,3 @@ def _run_create_test_mappings(
     if test_mappings_list:
         mongo.test_mappings().insert_many(test_mappings_list)
     log.info("Finished test mapping work item processing")
-    return True

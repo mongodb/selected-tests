@@ -11,8 +11,8 @@ def ns(relative_name):
 
 
 class TestCli:
-    @patch(ns("RetryingEvergreenApi"))
-    @patch(ns("MongoWrapper"))
+    @patch(ns("get_evg_api"))
+    @patch(ns("get_mongo_wrapper"))
     @patch(ns("process_queued_work_items"))
     def test_arguments_passed_in(
         self, process_queued_work_items_mock, mongo_wrapper_mock, evg_api_mock

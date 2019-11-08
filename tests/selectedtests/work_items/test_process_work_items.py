@@ -91,12 +91,11 @@ class TestRunCreateTaskMappings:
         logger_mock = MagicMock()
         work_item_mock = MagicMock(source_file_regex="src", test_file_regex="test", module=None)
 
-        mapping_creation_complete = under_test._run_create_test_mappings(
+        under_test._run_create_test_mappings(
             evg_api_mock, mongo_mock, work_item_mock, None, None, logger_mock
         )
 
         mongo_mock.test_mappings.return_value.insert_many.assert_called_once_with(["mock-mapping"])
-        assert mapping_creation_complete
 
     @patch(ns("generate_test_mappings"))
     def test_no_mappings_are_created(self, generate_test_mappings_mock):
@@ -109,9 +108,8 @@ class TestRunCreateTaskMappings:
         )
         work_item_mock = MagicMock(source_file_regex="src", test_file_regex="test", module=None)
 
-        mapping_creation_complete = under_test._run_create_test_mappings(
+        under_test._run_create_test_mappings(
             evg_api_mock, mongo_mock, work_item_mock, None, None, logger_mock
         )
 
         mongo_mock.test_mappings.return_value.insert_many.assert_not_called()
-        assert mapping_creation_complete

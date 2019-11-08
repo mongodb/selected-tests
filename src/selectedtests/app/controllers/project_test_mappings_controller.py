@@ -74,14 +74,14 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
 
                 module = work_item_params.get("module")
                 module_source_file_regex = work_item_params.get("module_source_file_regex")
-                if module is not None and module_source_file_regex is None:
+                if module and not module_source_file_regex:
                     abort(
                         400,
                         custom="The module_source_file_regex param is required if "
                         "a module name is passed in",
                     )
                 module_test_file_regex = work_item_params.get("module_test_file_regex")
-                if module is not None and module_test_file_regex is None:
+                if module and not module_test_file_regex:
                     abort(
                         400,
                         custom="The module_test_file_regex param is required if "

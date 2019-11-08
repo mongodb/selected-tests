@@ -213,7 +213,6 @@ class TestMappings(object):
         file_intersection = defaultdict(lambda: defaultdict(int))
         file_count = defaultdict(int)
 
-        LOGGER.debug(f"searching from {after_date} unil {before_date}")
         for commit in repo.iter_commits(repo.head.commit):
             LOGGER.debug(
                 "Investigating commit",
