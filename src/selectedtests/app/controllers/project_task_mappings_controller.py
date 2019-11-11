@@ -67,7 +67,7 @@ def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                 work_item_params = json.loads(request.get_data().decode("utf8"))
                 module = work_item_params.get("module")
                 module_source_file_regex = work_item_params.get("module_source_file_regex")
-                if module is not None and module_source_file_regex is None:
+                if module and not module_source_file_regex:
                     abort(
                         400,
                         custom="The module_source_file_regex param is required if "

@@ -1,0 +1,9 @@
+globalEnv:
+  EVG_API_USER: evergreen-user
+globalEnvSecrets:
+  EVG_API_KEY: selected-tests-secrets
+  SELECTED_TESTS_MONGO_URI: selected-tests-secrets
+cronJobs:
+  - name: process-work-items
+    schedule: "0 1 * * *"
+    command: ["/bin/sh", "cronjobs/process_test_mapping_work_items.sh"]

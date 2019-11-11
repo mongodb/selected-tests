@@ -5,17 +5,11 @@ from unittest.mock import patch, MagicMock
 from selectedtests.test_mappings.cli import cli
 
 NS = "selectedtests.test_mappings.cli"
-MAPPINGS_NS = "selectedtests.test_mappings.mappings"
 
 
 def ns(relative_name):
     """Return a full name from a name relative to the tested module"s name space."""
     return NS + "." + relative_name
-
-
-def m_ns(relative_name):
-    """Return a full name to mappings from a name relative to the tested module"s name space."""
-    return MAPPINGS_NS + "." + relative_name
 
 
 class TestCli:
@@ -46,9 +40,9 @@ class TestCli:
                     ".*",
                     "--output-file",
                     output_file,
-                    "--start",
+                    "--after",
                     "2019-10-11T19:10:38",
-                    "--end",
+                    "--before",
                     "2019-10-11T19:30:38",
                 ],
             )
@@ -84,15 +78,15 @@ class TestCli:
                     ".*",
                     "--output-file",
                     output_file,
-                    "--start",
+                    "--after",
                     "2019",
-                    "--end",
+                    "--before",
                     "2019",
                 ],
             )
             assert result.exit_code == 1
             assert (
-                "The start or end date could not be parsed - make sure it's an iso date"
+                "The after or before date could not be parsed - make sure it's an iso date"
                 in result.stdout
             )
 
@@ -119,9 +113,9 @@ class TestCli:
                     ".*",
                     "--output-file",
                     output_file,
-                    "--start",
+                    "--after",
                     "2019-10-11T19:10:38",
-                    "--end",
+                    "--before",
                     "2019-10-11T19:30:38",
                 ],
             )

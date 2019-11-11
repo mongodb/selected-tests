@@ -34,8 +34,8 @@ class TaskMappings:
         cls,
         evg_api: EvergreenApi,
         evergreen_project: str,
-        start_date: datetime,
-        end_date: datetime,
+        after_date: datetime,
+        before_date: datetime,
         file_regex: Pattern,
         module_name: str = None,
         module_file_regex: Pattern = None,
@@ -46,8 +46,8 @@ class TaskMappings:
 
         :param evg_api: An instance of the evg_api client
         :param evergreen_project: The name of the evergreen project to analyze.
-        :param start_date: The date at which to start analyzing versions of the project.
-        :param end_date: The date up to which we should analyze versions of the project.
+        :param after_date: The date at which to start analyzing versions of the project.
+        :param before_date: The date up to which we should analyze versions of the project.
         :param file_regex: Regex pattern to match changed files against.
         :param module_name: Name of the module associated with the evergreen project to also analyze
         :param module_file_regex: Regex pattern to match changed files of the module against.
@@ -65,9 +65,9 @@ class TaskMappings:
 
         with TemporaryDirectory() as temp_dir:
             for next_version, version, prev_version in windowed_iter(project_versions, 3):
-                if version.create_time < start_date:
+                if version.create_time < after_date:
                     break
-                if version.create_time > end_date:
+                if version.create_time > before_date:
                     continue
                 if base_repo is None:
                     try:

@@ -39,9 +39,9 @@ class TestCli:
                     ".*",
                     "--output-file",
                     output_file,
-                    "--start",
+                    "--after",
                     "2019-10-11T19:10:38",
-                    "--end",
+                    "--before",
                     "2019-10-11T19:30:38",
                 ],
             )
@@ -73,15 +73,15 @@ class TestCli:
                     ".*",
                     "--output-file",
                     output_file,
-                    "--start",
+                    "--after",
                     "2019",
-                    "--end",
+                    "--before",
                     "2019",
                 ],
             )
             assert result.exit_code == 1
             assert (
-                "The start or end date could not be parsed - make sure it's an iso date"
+                "The after or before date could not be parsed - make sure it's an iso date"
                 in result.stdout
             )
 
@@ -106,9 +106,9 @@ class TestCli:
                     ".*",
                     "--output-file",
                     output_file,
-                    "--start",
+                    "--after",
                     "2019-10-11T19:10:38",
-                    "--end",
+                    "--before",
                     "2019-10-11T19:30:38",
                 ],
             )

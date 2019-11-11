@@ -31,3 +31,10 @@ class TestMongoWrapper:
         wrapper = under_test.MongoWrapper(client_mock)
 
         assert client_mock.selected_tests.task_mappings_queue == wrapper.task_mappings_queue()
+
+    def test_getting_test_mappings_collection(self):
+        client_mock = MagicMock()
+
+        wrapper = under_test.MongoWrapper(client_mock)
+
+        assert client_mock.selected_tests.test_mappings == wrapper.test_mappings()

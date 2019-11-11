@@ -41,14 +41,14 @@ def cli(ctx, verbose: bool):
 @click.pass_context
 @click.argument("evergreen_project", required=True)
 @click.option(
-    "--start",
+    "--after",
     type=str,
     help="The date to begin analyzing the project at - has to be an iso date. "
     "Example: 2019-10-11T19:10:38",
     required=True,
 )
 @click.option(
-    "--end",
+    "--before",
     type=str,
     help="The date to stop analyzing the project at - has to be an iso date. "
     "Example: 2019-10-11T19:10:38",
@@ -86,8 +86,8 @@ def cli(ctx, verbose: bool):
 def create(
     ctx,
     evergreen_project: str,
-    start: str,
-    end: str,
+    after: str,
+    before: str,
     source_file_regex: str,
     module_name: str,
     module_source_file_regex: str,
@@ -98,11 +98,11 @@ def create(
     evg_api = ctx.obj["evg_api"]
 
     try:
-        start_date = datetime.fromisoformat(start)
-        end_date = datetime.fromisoformat(end)
+        after_date = datetime.fromisoformat(after)
+        before_date = datetime.fromisoformat(before)
     except ValueError:
         raise click.ClickException(
-            "The start or end date could not be parsed - make sure it's an iso date"
+            "The after or before date could not be parsed - make sure it's an iso date"
         )
 
     file_regex = re.compile(source_file_regex)
@@ -122,8 +122,8 @@ def create(
         mappings = TaskMappings.create_task_mappings(
             evg_api,
             evergreen_project,
-            start_date,
-            end_date,
+            after_date,
+            before_date,
             file_regex,
             module_name,
             module_file_regex,
@@ -133,8 +133,8 @@ def create(
         mappings = TaskMappings.create_task_mappings(
             evg_api,
             evergreen_project,
-            start_date,
-            end_date,
+            after_date,
+            before_date,
             file_regex,
             module_name,
             module_file_regex,

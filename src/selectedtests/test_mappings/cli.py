@@ -39,14 +39,14 @@ def cli(ctx, verbose: str):
 @click.pass_context
 @click.argument("evergreen_project", required=True)
 @click.option(
-    "--start",
+    "--after",
     type=str,
     help="The date to begin analyzing the project at - has to be an iso date. "
     "Example: 2019-10-11T19:10:38",
     required=True,
 )
 @click.option(
-    "--end",
+    "--before",
     type=str,
     help="The date to stop analyzing the project at - has to be an iso date. "
     "Example: 2019-10-11T19:10:38",
@@ -82,8 +82,8 @@ def cli(ctx, verbose: str):
 def create(
     ctx,
     evergreen_project: str,
-    start: str,
-    end: str,
+    after: str,
+    before: str,
     source_file_regex: str,
     test_file_regex: str,
     module_name: str,
@@ -95,11 +95,11 @@ def create(
     evg_api = ctx.obj["evg_api"]
 
     try:
-        start_date = datetime.fromisoformat(start).replace(tzinfo=pytz.UTC)
-        end_date = datetime.fromisoformat(end).replace(tzinfo=pytz.UTC)
+        after_date = datetime.fromisoformat(after).replace(tzinfo=pytz.UTC)
+        before_date = datetime.fromisoformat(before).replace(tzinfo=pytz.UTC)
     except ValueError:
         raise click.ClickException(
-            "The start or end date could not be parsed - make sure it's an iso date"
+            "The after or before date could not be parsed - make sure it's an iso date"
         )
         return
 
@@ -128,8 +128,8 @@ def create(
         evergreen_project,
         source_re,
         test_re,
-        start_date,
-        end_date,
+        after_date,
+        before_date,
         module_name,
         module_source_re,
         module_test_re,
