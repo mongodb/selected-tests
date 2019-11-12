@@ -18,7 +18,7 @@ class TestCli:
     def test_arguments_passed_in(self, create_task_mappings_mock, evg_api):
         mock_evg_api = MagicMock()
         evg_api.get_api.return_value = mock_evg_api
-        expected_result = {"result": "mock-response"}
+        expected_result = ["mock-response"]
         created_task_mock = MagicMock()
         created_task_mock.transform.return_value = expected_result
         create_task_mappings_mock.return_value = created_task_mock
