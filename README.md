@@ -134,7 +134,6 @@ A cron job should run the `process-test-mappings` and `process-task-mappings` co
 day. This will gather the unprocessed test mapping create and task mapping create requests and
 process them so that test and task mappings for those projects are added to the db.
 
-
 ```
 $ work-items process-test-mappings
 $ work-items process-task-mappings
