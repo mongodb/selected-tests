@@ -44,7 +44,7 @@ def process_task_mappings(ctx):
     # create_time, which is stored in a UTC date format that is not UTC offset-aware. So before_date
     # and after_date do not need to be offset-aware.
     before_date = datetime.utcnow()
-    after_date = before_date - timedelta(days=1)  # 6 months
+    after_date = before_date - timedelta(days=6 * 30)  # 6 months
     process_queued_task_mapping_work_items(
         ctx.obj["evg_api"], ctx.obj["mongo"], after_date, before_date
     )

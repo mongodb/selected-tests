@@ -14,7 +14,7 @@ pipeline:
       event: push
 
   deploy_to_staging:
-    image: quay.io/ipedrazas/drone-helm
+    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
     # The release name should be unique across the namespace, the app or repo name is recommended
     release: selected-tests
     namespace: server-tig
@@ -46,7 +46,7 @@ pipeline:
       event: push
 
   deploy_to_prod:
-    image: quay.io/ipedrazas/drone-helm
+    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
     # The release name should be unique across the namespace, the app or repo name is recommended
     release: selected-tests
     namespace: server-tig
@@ -67,7 +67,7 @@ pipeline:
 
   deploy_production_cronjobs:
     group: deploy
-    image: quay.io/ipedrazas/drone-helm
+    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
     # The release name should be unique across the namespace, the app or repo name is recommended
     release: selected-tests
     namespace: server-tig
