@@ -69,7 +69,7 @@ pipeline:
     group: deploy
     image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
     # The release name should be unique across the namespace, the app or repo name is recommended
-    release: selected-tests
+    release: selected-tests-cronjobs
     namespace: server-tig
     environment:
       - API_SERVER=https://api.prod.corp.mongodb.com
@@ -77,10 +77,10 @@ pipeline:
     secrets: [ prod_kubernetes_token ]
     helm_repos: mongodb=https://10gen.github.io/helm-charts
     chart: mongodb/cronjobs
-    chart_version: 1.3.0
+    chart_version: 1.5.1
     tiller_ns: server-tig
     client_only: true
-    values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME},ingress.enabled=true,ingress.hosts[0]=selected-tests.server-tig.prod.corp.mongodb.com"
+    values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}"
     values_files: ["cronjobs.yml"]
     when:
       branch: master
