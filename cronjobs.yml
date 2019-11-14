@@ -8,5 +8,5 @@ cronJobs:
     schedule: "0 1 * * *"
     command: ["/bin/sh", "cronjobs/process_test_mapping_work_items.sh"]
   - name: process-task-mappings
-    schedule: "0 13 * * *"
+    schedule: "0 2 * * *"
     command: ["/bin/sh", "cronjobs/process_task_mapping_work_items.sh"]
