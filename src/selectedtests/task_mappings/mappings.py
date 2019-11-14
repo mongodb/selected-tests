@@ -2,7 +2,8 @@
 from datetime import datetime
 from typing import List, Dict, Generator
 from tempfile import TemporaryDirectory
-from re import Pattern, match, compile
+from re import match, compile
+from typing import Pattern
 
 from evergreen.api import Version, Build, Task, EvergreenApi
 from evergreen.manifest import ManifestModule
@@ -54,6 +55,13 @@ class TaskMappings:
         :param build_regex: Regex pattern to match build variant names against. Defaults to "!.*"
         :return: An instance of the task mappings class
         """
+        log = LOGGER.bind(
+            project=evergreen_project,
+            module=module_name,
+            after_date=after_date,
+            before_date=before_date,
+        )
+        log.info("Starting to generate task mappings")
         project_versions: Generator[Version] = evg_api.versions_by_project(evergreen_project)
 
         task_mappings = {}
@@ -137,6 +145,7 @@ class TaskMappings:
                     )
             new_mapping["tasks"] = new_tasks
             task_mappings.append(new_mapping)
+        LOGGER.info("Generated task mappings list", task_mappings_length=len(task_mappings))
         return task_mappings
 
 

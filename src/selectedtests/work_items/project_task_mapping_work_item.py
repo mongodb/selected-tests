@@ -3,6 +3,7 @@ import structlog
 
 from datetime import datetime, timedelta
 from pymongo.errors import DuplicateKeyError
+from pymongo.collection import Collection, ReturnDocument
 
 LOGGER = structlog.get_logger()
 WORK_ITEM_TTL = timedelta(weeks=2).total_seconds()
@@ -73,6 +74,33 @@ class ProjectTaskMappingWorkItem(object):
             build_variant_regex,
         )
 
+    @classmethod
+    def next(cls, collection: Collection):
+        """
+        Find a Work Item on the queue ready for work, or None if nothing is ready.
+
+        :param collection: Mongo collection where queue is found.
+        :return: Work item ready for work, or None.
+        """
+        data = collection.find_one_and_update(
+            {"start_time": None},
+            {"$currentDate": {"start_time": True}},
+            sort=[("created_on", 1)],
+            return_document=ReturnDocument.AFTER,
+        )
+        if data:
+            return cls(
+                data.get("start_time", None),
+                data.get("end_time", None),
+                data["created_on"],
+                data["project"],
+                data["source_file_regex"],
+                data["module"],
+                data["module_source_file_regex"],
+                data["build_variant_regex"],
+            )
+        return None
+
     def insert(self, collection) -> bool:
         """
         Add this work item to the Mongo collection.
@@ -94,3 +122,11 @@ class ProjectTaskMappingWorkItem(object):
             return result.acknowledged
         except DuplicateKeyError:
             return False
+
+    def complete(self, collection: Collection):
+        """
+        Mark this work item as complete.
+
+        :param collection: Mongo collection containing queue.
+        """
+        collection.update_one({"project": self.project}, {"$currentDate": {"end_time": True}})

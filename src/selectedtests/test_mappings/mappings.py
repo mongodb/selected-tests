@@ -48,7 +48,7 @@ def generate_test_mappings(
         after_date=after_date,
         before_date=before_date,
     )
-    log.info("Starting test mapping processing")
+    log.info("Starting to generate test mappings")
     with TemporaryDirectory() as temp_dir:
         test_mappings_list = generate_project_test_mappings(
             evg_api, evergreen_project, temp_dir, source_re, test_re, after_date, before_date

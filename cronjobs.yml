@@ -4,6 +4,9 @@ globalEnvSecrets:
   EVG_API_KEY: selected-tests-secrets
   SELECTED_TESTS_MONGO_URI: selected-tests-secrets
 cronJobs:
-  - name: process-work-items
+  - name: process-test-mappings
     schedule: "0 1 * * *"
     command: ["/bin/sh", "cronjobs/process_test_mapping_work_items.sh"]
+  - name: process-task-mappings
+    schedule: "0 2 * * *"
+    command: ["/bin/sh", "cronjobs/process_task_mapping_work_items.sh"]
