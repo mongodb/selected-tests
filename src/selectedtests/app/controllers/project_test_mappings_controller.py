@@ -62,7 +62,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(200, "Success")
         @ns.response(400, "Bad request")
         @ns.response(404, "Evergreen project not found")
-        @ns.expect(parser, validate=True)
+        @ns.expect(parser)
         def get(self, project: str):
             """
             Get a list of correlated tests for an input list of changed source files.
