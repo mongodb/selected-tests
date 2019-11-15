@@ -4,7 +4,7 @@ import json
 from flask import jsonify, request
 from flask_restplus import abort, Api, fields, Resource, reqparse
 from evergreen.api import EvergreenApi
-
+from decimal import Decimal
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.evergreen_helper import get_evg_project
 from selectedtests.test_mappings.get_mappings import get_correlated_test_mappings
@@ -55,6 +55,12 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         help="List of source files to calculate correlated tasks for",
         required=True,
     )
+    parser.add_argument(
+        "threshold",
+        type=Decimal,
+        location="args",
+        help="Minimum threshold desired for test_file_seen_count / source_file_seen_count ratio",
+    )
 
     @ns.route("/<project>/test-mappings")
     @api.param("project", "The evergreen project identifier")
@@ -74,14 +80,19 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                 abort(404, custom="Evergreen project not found")
             else:
                 changed_files_string = request.args.get("changed_files")
-                if changed_files_string:
+                if not changed_files_string:
+                    abort(400, custom="Missing changed_files query param")
+                else:
+                    threshold = request.args.get("threshold", 0)
+                    try:
+                        threshold = Decimal(threshold)
+                    except TypeError:
+                        abort(400, custom="Threshold query param must be a decimal")
                     changed_files = changed_files_string.split(",")
                     test_mappings = get_correlated_test_mappings(
-                        mongo.test_mappings(), changed_files, project
+                        mongo.test_mappings(), changed_files, project, threshold
                     )
                     return jsonify({"test_mappings": test_mappings})
-                else:
-                    abort(400, custom="The changed_files query param is required")
 
         @ns.response(200, "Success")
         @ns.response(400, "Bad request")

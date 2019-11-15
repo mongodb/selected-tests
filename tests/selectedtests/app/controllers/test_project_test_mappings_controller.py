@@ -14,7 +14,25 @@ def ns(relative_name):
 
 @patch(ns("get_correlated_test_mappings"))
 @patch(ns("get_evg_project"))
-def test_GET_test_mappings_found(
+def test_GET_test_mappings_found_with_threshold_param(
+    get_evg_project_mock, get_correlated_test_mappings_mock, app_client: testing.FlaskClient
+):
+    project = "valid-evergreen-project"
+    get_evg_project_mock.return_value = MagicMock(identifier=project)
+    get_correlated_test_mappings_mock.return_value = ["test_mapping_1", "test_mapping_2"]
+
+    response = app_client.get(
+        f"/projects/{project}/test-mappings?changed_files=src/file1.js,src/file2.js&threshold=.5"
+    )
+    assert response.status_code == 200
+    assert '{"test_mappings":["test_mapping_1","test_mapping_2"]}' in response.get_data(
+        as_text=True
+    )
+
+
+@patch(ns("get_correlated_test_mappings"))
+@patch(ns("get_evg_project"))
+def test_GET_test_mappings_found_without_threshold_param(
     get_evg_project_mock, get_correlated_test_mappings_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
@@ -32,14 +50,14 @@ def test_GET_test_mappings_found(
 
 @patch(ns("get_correlated_test_mappings"))
 @patch(ns("get_evg_project"))
-def test_GET_missing_query_param(
+def test_GET_missing_changed_files_query_param(
     get_evg_project_mock, get_correlated_test_mappings_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
 
     response = app_client.get(f"/projects/{project}/test-mappings")
     assert response.status_code == 400
-    assert "The changed_files query param is required" in response.get_data(as_text=True)
+    assert "Missing changed_files query param" in response.get_data(as_text=True)
 
 
 @patch(ns("get_correlated_test_mappings"))
