@@ -2,12 +2,13 @@
 import json
 
 from flask import jsonify, request
-from flask_restplus import abort, Api, fields, Resource
+from flask_restplus import abort, Api, fields, Resource, reqparse
 from evergreen.api import EvergreenApi
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.work_items.project_test_mapping_work_item import ProjectTestMappingWorkItem
 from selectedtests.evergreen_helper import get_evg_project
+from selectedtests.test_mappings.get_mappings import get_correlated_test_mappings
+from selectedtests.work_items.project_test_mapping_work_item import ProjectTestMappingWorkItem
 
 
 def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: EvergreenApi):
@@ -47,24 +48,51 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         },
     )
 
-    response_body = ns.model(
-        "TestMappingsResponseBody",
-        {"custom": fields.String(description="Message describing the result of the request")},
+    parser = reqparse.RequestParser()
+    parser.add_argument(
+        "changed_files",
+        location="args",
+        help="List of source files to calculate correlated tasks for",
+        required=True,
     )
 
     @ns.route("/<project>/test-mappings")
     @api.param("project", "The evergreen project identifier")
-    class TestMappingsWorkItem(Resource):
-        @ns.response(200, "Success", response_body)
-        @ns.response(400, "Bad request", response_body)
-        @ns.response(404, "Evergreen project not found", response_body)
-        @ns.response(422, "Work item already exists for project", response_body)
+    class TestMappings(Resource):
+        @ns.response(200, "Success")
+        @ns.response(400, "Bad request")
+        @ns.response(404, "Evergreen project not found")
+        @ns.expect(parser, validate=True)
+        def get(self, project: str):
+            """
+            Get a list of correlated tests for an input list of changed source files.
+
+            :param project: The evergreen project identifier.
+            """
+            evergreen_project = get_evg_project(evg_api, project)
+            if not evergreen_project:
+                abort(404, custom="Evergreen project not found")
+            else:
+                changed_files_string = request.args.get("changed_files")
+                if changed_files_string:
+                    changed_files = changed_files_string.split(",")
+                    test_mappings = get_correlated_test_mappings(
+                        mongo.test_mappings(), changed_files, project
+                    )
+                    return jsonify({"test_mappings": test_mappings})
+                else:
+                    abort(400, custom="The changed_files query param is required")
+
+        @ns.response(200, "Success")
+        @ns.response(400, "Bad request")
+        @ns.response(404, "Evergreen project not found")
+        @ns.response(422, "Work item already exists for project")
         @ns.expect(test_mappings_work_item, validate=True)
         def post(self, project: str):
             """
             Enqueue a project test mapping work item.
 
-            :param project: The name of an evergreen project.
+            :param project: The evergreen project identifier.
             """
             evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
