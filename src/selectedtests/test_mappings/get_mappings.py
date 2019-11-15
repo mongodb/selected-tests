@@ -1,11 +1,8 @@
 """Script to get test mappings."""
 from typing import List
+from bson import json_util
+
 from pymongo.collection import Collection
-
-
-def _parse_test_mapping(test_mapping: dict) -> dict:
-    exclude_keys = ["_id"]
-    return {k: test_mapping[k] for k in set(list(test_mapping.keys())) - set(exclude_keys)}
 
 
 def get_correlated_test_mappings(
@@ -21,8 +18,8 @@ def get_correlated_test_mappings(
     """
     test_mappings = []
     for changed_file in changed_source_files:
-        test_mappings_data = collection.find({"project": project, "source_file": changed_file})
-        test_mappings.extend(
-            [_parse_test_mapping(test_mapping) for test_mapping in test_mappings_data]
+        test_mappings_data = collection.find(
+            {"project": project, "source_file": changed_file}, {"_id": False}
         )
-    return test_mappings
+        test_mappings.extend(test_mappings_data)
+    return json_util.dumps(test_mappings)
