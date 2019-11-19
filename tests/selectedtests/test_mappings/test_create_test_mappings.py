@@ -6,9 +6,9 @@ from datetime import datetime, time, timedelta
 from tempfile import TemporaryDirectory
 from unittest.mock import patch, MagicMock
 
-import selectedtests.test_mappings.mappings as under_test
+import selectedtests.test_mappings.create_mappings as under_test
 
-NS = "selectedtests.test_mappings.mappings"
+NS = "selectedtests.test_mappings.create_mappings"
 SOURCE_RE = re.compile(".*source")
 TEST_RE = re.compile(".*test")
 ONE_DAY_AGO = datetime.combine(datetime.now() - timedelta(days=1), time()).replace(tzinfo=pytz.UTC)

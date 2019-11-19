@@ -8,7 +8,7 @@ import structlog
 
 from datetime import datetime
 from evergreen.api import RetryingEvergreenApi
-from selectedtests.test_mappings.mappings import generate_test_mappings
+from selectedtests.test_mappings.create_mappings import generate_test_mappings
 
 LOGGER = structlog.get_logger(__name__)
 

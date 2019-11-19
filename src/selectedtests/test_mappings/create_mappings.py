@@ -7,7 +7,6 @@ from collections import defaultdict
 from typing import Pattern
 from git import Repo
 from tempfile import TemporaryDirectory
-
 from evergreen.api import EvergreenApi
 from evergreen.manifest import ManifestModule
 from selectedtests.git_helper import init_repo, modified_files_for_commit
