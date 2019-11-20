@@ -42,7 +42,7 @@ class TaskMappings:
         file_regex: Pattern,
         module_name: str = None,
         module_file_regex: Pattern = None,
-        build_regex: Pattern = compile("!.*"),
+        build_regex: Pattern = None,
     ):
         """
         Create the task mappings for an evergreen project. Optionally looks at an associated module.
@@ -54,7 +54,7 @@ class TaskMappings:
         :param file_regex: Regex pattern to match changed files against.
         :param module_name: Name of the module associated with the evergreen project to also analyze
         :param module_file_regex: Regex pattern to match changed files of the module against.
-        :param build_regex: Regex pattern to match build variant names against. Defaults to "!.*"
+        :param build_regex: Regex pattern to match build variant names against. Defaults to None.
         :return: An instance of the task mappings class
         """
         log = LOGGER.bind(
@@ -271,6 +271,8 @@ def _filter_non_matching_distros(builds: List[Build], build_regex: Pattern) -> L
     :param build_regex: Regex to match the builds' display_names against
     :return: A list of the builds that are required.
     """
+    if not build_regex:
+        return builds
     return [build for build in builds if match(build_regex, build.display_name)]
 
 

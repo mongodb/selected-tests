@@ -116,29 +116,22 @@ def create(
         else:
             module_file_regex = re.compile(module_source_file_regex)
 
+    build_regex = None
+    if build_variant_regex:
+       build_regex = re.compile(build_variant_regex)
+
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 
-    if build_variant_regex:
-        mappings = TaskMappings.create_task_mappings(
-            evg_api,
-            evergreen_project,
-            after_date,
-            before_date,
-            file_regex,
-            module_name,
-            module_file_regex,
-            re.compile(build_variant_regex),
-        )
-    else:
-        mappings = TaskMappings.create_task_mappings(
-            evg_api,
-            evergreen_project,
-            after_date,
-            before_date,
-            file_regex,
-            module_name,
-            module_file_regex,
-        )
+    mappings = TaskMappings.create_task_mappings(
+        evg_api,
+        evergreen_project,
+        after_date,
+        before_date,
+        file_regex,
+        module_name,
+        module_file_regex,
+        build_regex,
+    )
 
     transformed_mappings = mappings.transform()
 
