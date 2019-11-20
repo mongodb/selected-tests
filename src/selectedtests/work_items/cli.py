@@ -34,8 +34,11 @@ def cli(ctx, verbose: str, mongo_uri: str):
 @click.option(
     "--src-regex", type=str, required=True, help="Regular expression for project source files."
 )
+@click.option(
+    "--test-file-regex", type=str, required=True, help="Regular expression for project test files."
+)
 @click.pass_context
-def create_test_mapping(ctx, project: str, src_regex: str):
+def create_test_mapping(ctx, project: str, src_regex: str, test_file_regex: str):
     """
     Add a project to the queue to be tracked for test mappings.
 
@@ -45,18 +48,19 @@ def create_test_mapping(ctx, project: str, src_regex: str):
     :param ctx: Command Context.
     :param project: Evergreen project to add to queue.
     :param src_regex: Regular expression for project source files.
+    :param test_file_regex: Regular expression for project test files.
     """
     evergreen_project = get_evg_project(ctx.obj["evg_api"], project)
     if not evergreen_project:
         raise ValueError("Evergreen project not found")
 
-    work_item = ProjectTestMappingWorkItem.new_test_mappings(project, src_regex)
+    work_item = ProjectTestMappingWorkItem.new_test_mappings(project, src_regex, test_file_regex)
     work_item.insert(ctx.obj["mongo"].test_mappings_queue())
 
 
 @cli.command()
 @click.option(
-    "--weeks-back", type=int, default=DEFAULT_WEEKS_BACK, help="Number off weeks back to process."
+    "--weeks-back", type=int, default=DEFAULT_WEEKS_BACK, help="Number of weeks back to process."
 )
 @click.pass_context
 def process_test_mappings(ctx, weeks_back):
@@ -102,7 +106,7 @@ def create_task_mapping(ctx, project: str, src_regex: str, build_regex: str):
 
 @cli.command()
 @click.option(
-    "--weeks-back", type=int, default=DEFAULT_WEEKS_BACK, help="Number off weeks back to process."
+    "--weeks-back", type=int, default=DEFAULT_WEEKS_BACK, help="Number of weeks back to process."
 )
 @click.pass_context
 def process_task_mappings(ctx, weeks_back):
