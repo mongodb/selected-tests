@@ -1,6 +1,5 @@
 """Cli entry point to setup db indexes."""
 import click
-import os
 import structlog
 import logging
 
@@ -17,11 +16,11 @@ def _setup_logging(verbose: bool):
 
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
+@click.option("--mongo-uri", required=True, type=str, help="Mongo URI to connect to.")
 @click.pass_context
-def cli(ctx, verbose: str):
+def cli(ctx, verbose: bool, mongo_uri: str):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
-    mongo_uri = os.environ.get("SELECTED_TESTS_MONGO_URI")
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
 
     _setup_logging(verbose)
@@ -38,4 +37,4 @@ def create_indexes(ctx):
 
 def main():
     """Entry point for setting up selected-tests db indexes."""
-    return cli(obj={})
+    return cli(obj={}, auto_envvar_prefix="SELECTED_TESTS")
