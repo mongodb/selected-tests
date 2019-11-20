@@ -82,11 +82,11 @@ def _process_one_task_mapping_work_item(
     """
     Process a task mapping work item.
 
+    :param work_item: Task mapping to create.
     :param evg_api: An instance of the evg_api client
     :param mongo: An instance of MongoWrapper.
     :param after_date: The date at which to start analyzing commits of the project.
     :param before_date: The date up to which we should analyze commits of the project.
-    :return: Whether all work items have been processed.
     """
     log = LOGGER.bind(project=work_item.project, module=work_item.module)
     log.info("Starting task mapping work item processing for work_item")
@@ -147,40 +147,46 @@ def process_queued_test_mapping_work_items(
     """
     _clear_in_progress_work(mongo.test_mappings_queue())
     try:
-        while True:
-            out_of_work = _process_one_test_mapping_work_item(
-                evg_api, mongo, after_date, before_date
-            )
-            if out_of_work:
-                break
+        for work_item in _generate_test_mapping_work_items(mongo):
+            _process_one_test_mapping_work_item(work_item, evg_api, mongo, after_date, before_date)
     except:  # noqa: E722
         LOGGER.warning("Unexpected exception processing test mapping work item", exc_info=1)
 
 
+def _generate_test_mapping_work_items(mongo: MongoWrapper) -> Iterable[ProjectTestMappingWorkItem]:
+    """
+    Generate test mapping work items that need to be processed.
+
+    :param mongo: Mongo db containing work item queue.
+    :return: Iterator over test mapping work items.
+    """
+    work_item = ProjectTestMappingWorkItem.next(mongo.test_mappings_queue())
+    while work_item:
+        yield work_item
+        work_item = ProjectTestMappingWorkItem.next(mongo.test_mappings_queue())
+
+
 def _process_one_test_mapping_work_item(
-    evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime, before_date: datetime
-) -> bool:
+    work_item: ProjectTestMappingWorkItem,
+    evg_api: EvergreenApi,
+    mongo: MongoWrapper,
+    after_date: datetime,
+    before_date: datetime,
+):
     """
     Process a test mapping work item.
 
+    :param work_item: Test mapping to create.
     :param evg_api: An instance of the evg_api client
     :param mongo: An instance of MongoWrapper.
     :param after_date: The date at which to start analyzing commits of the project.
     :param before_date: The date up to which we should analyze commits of the project.
     :return: Whether all work items have been processed.
     """
-    LOGGER.info("Finding next test mapping work item to process")
-    work_item = ProjectTestMappingWorkItem.next(mongo.test_mappings_queue())
-    if not work_item:
-        LOGGER.info("No more test mapping work items found")
-        return True
-
     log = LOGGER.bind(project=work_item.project, module=work_item.module)
     log.info("Starting test mapping work item processing for work_item")
     if _run_create_test_mappings(evg_api, mongo, work_item, after_date, before_date, log):
         work_item.complete(mongo.test_mappings_queue())
-
-    return False
 
 
 def _run_create_test_mappings(
