@@ -2,7 +2,6 @@
 import os
 import structlog
 import logging
-from typing import Optional
 
 from evergreen.api import RetryingEvergreenApi
 from evergreen.config import EvgAuth
