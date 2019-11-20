@@ -21,15 +21,18 @@ class TestSetupIndexes:
 
 class TestProcessQueuedTaskMappingWorkItems:
     @patch(ns("_process_one_task_mapping_work_item"))
-    def test_analyze_runs_while_work_available(self, mock_process_one_task_mapping_work_item):
+    @patch(ns("_generate_task_mapping_work_items"))
+    def test_analyze_runs_while_work_available(
+        self, mock_gen_task_map_work_items, mock_process_one_task_mapping_work_item
+    ):
         n_work_items = 3
-        mock_process_one_task_mapping_work_item.side_effect = [False] * n_work_items + [True]
+        mock_gen_task_map_work_items.return_value = [MagicMock() for _ in range(n_work_items)]
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
         under_test.process_queued_task_mapping_work_items(evg_api_mock, mongo_mock, None, None)
 
-        assert n_work_items + 1 == mock_process_one_task_mapping_work_item.call_count
+        assert n_work_items == mock_process_one_task_mapping_work_item.call_count
 
     @patch(ns("_process_one_task_mapping_work_item"))
     def test_analyze_does_not_throw_exceptions(self, mock_process_one_task_mapping_work_item):
@@ -40,52 +43,57 @@ class TestProcessQueuedTaskMappingWorkItems:
         under_test.process_queued_task_mapping_work_items(evg_api_mock, mongo_mock, None, None)
 
 
-class TestProcessOneTaskMappingWorkItem:
-    @patch(ns("ProjectTaskMappingWorkItem"))
-    def test_returns_true_if_no_work(self, work_item_mock):
-        work_item_mock.next.return_value = None
-        evg_api_mock = MagicMock()
+class TestGenerateTaskMappingWorkItems:
+    @patch(ns("ProjectTaskMappingWorkItem.next"))
+    def test_no_work_items_available(self, next_mock):
         mongo_mock = MagicMock()
+        next_mock.return_value = None
 
-        work_done = under_test._process_one_task_mapping_work_item(
-            evg_api_mock, mongo_mock, None, None
-        )
+        found_items = [item for item in under_test._generate_task_mapping_work_items(mongo_mock)]
 
-        assert work_done
+        assert 0 == len(found_items)
 
-    @patch(ns("ProjectTaskMappingWorkItem"))
+    @patch(ns("ProjectTaskMappingWorkItem.next"))
+    def test_items_generated_until_exhausted(self, next_mock):
+        mongo_mock = MagicMock()
+        n_items = 5
+        next_mock.side_effect = [MagicMock() for _ in range(n_items)] + [None]
+
+        found_items = [item for item in under_test._generate_task_mapping_work_items(mongo_mock)]
+
+        assert n_items == len(found_items)
+
+
+class TestProcessOneTaskMappingWorkItem:
     @patch(ns("_run_create_task_mappings"))
     def test_work_items_completed_successfully_are_marked_complete(
-        self, run_create_task_mappings_mock, work_item_mock
+        self, run_create_task_mappings_mock
     ):
-        work_item_mock.next.return_value = MagicMock()
+        work_item_mock = MagicMock()
         run_create_task_mappings_mock.return_value = True
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        work_done = under_test._process_one_task_mapping_work_item(
-            evg_api_mock, mongo_mock, None, None
+        under_test._process_one_task_mapping_work_item(
+            work_item_mock, evg_api_mock, mongo_mock, None, None
         )
 
-        work_item_mock.next.return_value.complete.assert_called_once()
-        assert not work_done
+        work_item_mock.complete.assert_called_once()
 
-    @patch(ns("ProjectTaskMappingWorkItem"))
     @patch(ns("_run_create_task_mappings"))
     def test_work_items_completed_unsuccessfully_are_marked_not_complete(
-        self, run_create_task_mappings_mock, work_item_mock
+        self, run_create_task_mappings_mock
     ):
-        work_item_mock.next.return_value = MagicMock()
+        work_item_mock = MagicMock()
         run_create_task_mappings_mock.return_value = False
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        work_done = under_test._process_one_task_mapping_work_item(
-            evg_api_mock, mongo_mock, None, None
+        under_test._process_one_task_mapping_work_item(
+            work_item_mock, evg_api_mock, mongo_mock, None, None
         )
 
         work_item_mock.next.return_value.complete.assert_not_called()
-        assert not work_done
 
 
 class TestRunCreateTaskMappings:
@@ -128,15 +136,18 @@ class TestRunCreateTaskMappings:
 
 class TestProcessQueuedTestMappingWorkItems:
     @patch(ns("_process_one_test_mapping_work_item"))
-    def test_analyze_runs_while_work_available(self, mock_process_one_test_mapping_work_item):
+    @patch(ns("_generate_test_mapping_work_items"))
+    def test_analyze_runs_while_work_available(
+        self, mock_gen_test_map_work_items, mock_process_one_test_mapping_work_item
+    ):
         n_work_items = 3
-        mock_process_one_test_mapping_work_item.side_effect = [False] * n_work_items + [True]
+        mock_gen_test_map_work_items.return_value = [MagicMock() for _ in range(n_work_items)]
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
         under_test.process_queued_test_mapping_work_items(evg_api_mock, mongo_mock, None, None)
 
-        assert n_work_items + 1 == mock_process_one_test_mapping_work_item.call_count
+        assert n_work_items == mock_process_one_test_mapping_work_item.call_count
 
     @patch(ns("_process_one_test_mapping_work_item"))
     def test_analyze_does_not_throw_exceptions(self, mock_process_one_test_mapping_work_item):
@@ -148,51 +159,35 @@ class TestProcessQueuedTestMappingWorkItems:
 
 
 class TestProcessOneTestMappingWorkItem:
-    @patch(ns("ProjectTestMappingWorkItem"))
-    def test_returns_true_if_no_work(self, work_item_mock):
-        work_item_mock.next.return_value = None
-        evg_api_mock = MagicMock()
-        mongo_mock = MagicMock()
-
-        work_done = under_test._process_one_test_mapping_work_item(
-            evg_api_mock, mongo_mock, None, None
-        )
-
-        assert work_done
-
-    @patch(ns("ProjectTestMappingWorkItem"))
     @patch(ns("_run_create_test_mappings"))
     def test_work_items_completed_successfully_are_marked_complete(
-        self, run_create_test_mappings_mock, work_item_mock
+        self, run_create_test_mappings_mock
     ):
-        work_item_mock.next.return_value = MagicMock()
+        work_item_mock = MagicMock()
         run_create_test_mappings_mock.return_value = True
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        work_done = under_test._process_one_test_mapping_work_item(
-            evg_api_mock, mongo_mock, None, None
+        under_test._process_one_test_mapping_work_item(
+            work_item_mock, evg_api_mock, mongo_mock, None, None
         )
 
-        work_item_mock.next.return_value.complete.assert_called_once()
-        assert not work_done
+        work_item_mock.complete.assert_called_once()
 
-    @patch(ns("ProjectTestMappingWorkItem"))
     @patch(ns("_run_create_test_mappings"))
     def test_work_items_completed_unsuccessfully_are_marked_not_complete(
-        self, run_create_test_mappings_mock, work_item_mock
+        self, run_create_test_mappings_mock
     ):
-        work_item_mock.next.return_value = MagicMock()
+        work_item_mock = MagicMock()
         run_create_test_mappings_mock.return_value = False
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        work_done = under_test._process_one_test_mapping_work_item(
-            evg_api_mock, mongo_mock, None, None
+        under_test._process_one_test_mapping_work_item(
+            work_item_mock, evg_api_mock, mongo_mock, None, None
         )
 
-        work_item_mock.next.return_value.complete.assert_not_called()
-        assert not work_done
+        work_item_mock.complete.assert_not_called()
 
 
 class TestRunCreateTestMappings:
