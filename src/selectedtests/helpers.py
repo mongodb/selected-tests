@@ -2,6 +2,7 @@
 import os
 import structlog
 import logging
+from typing import Optional
 
 from evergreen.api import RetryingEvergreenApi
 from evergreen.config import EvgAuth
@@ -19,13 +20,14 @@ def get_evg_api():
     return RetryingEvergreenApi.get_api(auth=EvgAuth(evg_user, evg_api_key))
 
 
-def get_mongo_wrapper() -> MongoWrapper:
+def get_mongo_wrapper(mongo_uri: Optional[str] = None) -> MongoWrapper:
     """
     Get an instance of the mongo wrapper based on environment variables.
 
     :return: MongoWrapper instance.
     """
-    mongo_uri = os.environ.get("SELECTED_TESTS_MONGO_URI")
+    if not mongo_uri:
+        mongo_uri = os.environ.get("SELECTED_TESTS_MONGO_URI")
     return MongoWrapper.connect(mongo_uri)
 
 

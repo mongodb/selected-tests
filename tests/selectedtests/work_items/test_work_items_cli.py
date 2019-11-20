@@ -12,7 +12,7 @@ def ns(relative_name):
 
 class TestCli:
     @patch(ns("get_evg_api"))
-    @patch(ns("get_mongo_wrapper"))
+    @patch(ns("MongoWrapper.connect"))
     @patch(ns("process_queued_test_mapping_work_items"))
     def test_process_test_mappings(
         self, process_queued_test_mapping_work_items_mock, mongo_wrapper_mock, evg_api_mock
@@ -23,11 +23,11 @@ class TestCli:
 
         runner = CliRunner()
         with runner.isolated_filesystem():
-            result = runner.invoke(cli, ["process-test-mappings"])
+            result = runner.invoke(cli, ["--mongo-uri=localhost", "process-test-mappings"])
             assert result.exit_code == 0
 
     @patch(ns("get_evg_api"))
-    @patch(ns("get_mongo_wrapper"))
+    @patch(ns("MongoWrapper.connect"))
     @patch(ns("process_queued_task_mapping_work_items"))
     def test_process_task_mappings(
         self, process_queued_task_mapping_work_items_mock, mongo_wrapper_mock, evg_api_mock
@@ -38,5 +38,5 @@ class TestCli:
 
         runner = CliRunner()
         with runner.isolated_filesystem():
-            result = runner.invoke(cli, ["process-task-mappings"])
+            result = runner.invoke(cli, ["--mongo-uri=localhost", "process-task-mappings"])
             assert result.exit_code == 0
