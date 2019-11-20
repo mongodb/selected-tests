@@ -1,6 +1,7 @@
 """Method to create the task mappings for a given evergreen project."""
+from concurrent.futures import ThreadPoolExecutor as Executor
 from datetime import datetime
-from typing import List, Dict, Generator
+from typing import List, Dict, Set
 from tempfile import TemporaryDirectory
 from re import match, compile
 from typing import Pattern
@@ -16,6 +17,7 @@ from selectedtests.evergreen_helper import get_evg_project
 
 LOGGER = get_logger(__name__)
 
+MAX_WORKERS = 16
 SEEN_COUNT_KEY = "seen_count"
 TASK_BUILDS_KEY = "builds"
 
@@ -62,57 +64,66 @@ class TaskMappings:
             before_date=before_date,
         )
         log.info("Starting to generate task mappings")
-        project_versions: Generator[Version] = evg_api.versions_by_project(evergreen_project)
+        project_versions = evg_api.versions_by_project_time_window(
+            evergreen_project, before_date, after_date
+        )
 
         task_mappings = {}
 
-        base_repo: Repo = None
         module_repo: Repo = None
-        branch = ""
-        repo_name = ""
+        branch = None
+        repo_name = None
 
         with TemporaryDirectory() as temp_dir:
-            for next_version, version, prev_version in windowed_iter(project_versions, 3):
-                if version.create_time < after_date:
-                    break
-                if version.create_time > before_date:
-                    continue
-                if base_repo is None:
+            try:
+                base_repo = _get_evg_project_and_init_repo(evg_api, evergreen_project, temp_dir)
+            except ValueError:
+                LOGGER.warning("Unexpected exception", exc_info=True)
+                raise
+
+            jobs = []
+            with Executor(max_workers=MAX_WORKERS) as exe:
+                for next_version, version, prev_version in windowed_iter(project_versions, 3):
+                    if not branch or not repo_name:
+                        branch = version.branch
+                        repo_name = version.repo
+
+                    LOGGER.info(f"Processing mappings for version", version=version.version_id)
+
                     try:
-                        base_repo = _get_evg_project_and_init_repo(
-                            evg_api, evergreen_project, temp_dir
+                        diff = _get_diff(base_repo, version.revision, prev_version.revision)
+                    except ValueError:
+                        LOGGER.warning("Unexpected exception", exc_info=True)
+                        continue
+
+                    changed_files = _get_filtered_files(diff, file_regex)
+
+                    if module_name:
+                        cur_module = _get_associated_module(version, module_name)
+                        prev_module = _get_associated_module(prev_version, module_name)
+                        if cur_module is not None and module_repo is None:
+                            module_repo = init_repo(
+                                temp_dir, cur_module.repo, cur_module.branch, cur_module.owner
+                            )
+
+                        module_changed_files = _get_module_changed_files(
+                            module_repo, cur_module, prev_module, module_file_regex
                         )
-                    except ValueError as e:
-                        LOGGER.exception(str(e))
-                        raise e
-                    branch = version.branch
-                    repo_name = version.repo
+                        changed_files = changed_files.union(module_changed_files)
 
-                LOGGER.info(f"Processing mappings for version {version.version_id}")
-
-                try:
-                    diff = _get_diff(base_repo, version.revision, prev_version.revision)
-                except ValueError as e:
-                    print(e)
-                    continue
-
-                changed_files = _get_filtered_files(diff, file_regex)
-
-                if module_name is not None and module_name != "":
-                    cur_module = _get_associated_module(version, module_name)
-                    prev_module = _get_associated_module(prev_version, module_name)
-                    if cur_module is not None and module_repo is None:
-                        module_repo = init_repo(
-                            temp_dir, cur_module.repo, cur_module.branch, cur_module.owner
+                    jobs.append(
+                        exe.submit(
+                            _process_evg_version,
+                            prev_version,
+                            version,
+                            next_version,
+                            build_regex,
+                            changed_files,
                         )
-
-                    module_changed_files = _get_module_changed_files(
-                        module_repo, cur_module, prev_module, module_file_regex
                     )
-                    changed_files.extend(module_changed_files)
 
-                flipped_tasks = _get_flipped_tasks(prev_version, version, next_version, build_regex)
-
+            for job in jobs:
+                changed_files, flipped_tasks = job.result()
                 if len(flipped_tasks) > 0:
                     _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
 
@@ -160,7 +171,7 @@ def _get_evg_project_and_init_repo(
     )
 
 
-def _get_filtered_files(diff: DiffIndex, regex: Pattern) -> List[str]:
+def _get_filtered_files(diff: DiffIndex, regex: Pattern) -> Set[str]:
     """
     Get the list of changed files.
 
@@ -168,11 +179,7 @@ def _get_filtered_files(diff: DiffIndex, regex: Pattern) -> List[str]:
     :param regex: The regex pattern to match the files found in the diff against.
     :return: A list of the changed files that matched the given regex pattern.
     """
-    re: List[str] = []
-    for file in get_changed_files(diff, LOGGER):
-        if match(regex, file):
-            re.append(file)
-    return re
+    return {file for file in get_changed_files(diff, LOGGER) if match(regex, file)}
 
 
 def _get_module_changed_files(
@@ -180,7 +187,7 @@ def _get_module_changed_files(
     cur_module: ManifestModule,
     prev_module: ManifestModule,
     module_file_regex: Pattern,
-) -> List[str]:
+) -> Set[str]:
     """
     Get the files that changed in the associated module.
 
@@ -188,19 +195,21 @@ def _get_module_changed_files(
     :param cur_module: The module version associated with the version being analyzed.
     :param prev_module: The module associated with the parent of the current version.
     :param module_file_regex: Regex pattern to match any files found in the diff against.
-    :return: List of changed files from the diff between the two module versions
+    :return: Set of changed files from the diff between the two module versions
      that match the given pattern.
     """
     if cur_module is None or prev_module is None:
-        return []
+        return set()
+
     if cur_module.revision != prev_module.revision:
         try:
             module_diff = _get_diff(module_repo, cur_module.revision, prev_module.revision)
-        except ValueError as e:
-            LOGGER.error(str(e))
-            return []
+        except ValueError:
+            LOGGER.warning("Unexpected exception", exc_info=True)
+            return set()
         return _get_filtered_files(module_diff, module_file_regex)
-    return []
+
+    return set()
 
 
 def _get_associated_module(version: Version, module_name: str) -> ManifestModule:
@@ -263,6 +272,29 @@ def _filter_non_matching_distros(builds: List[Build], build_regex: Pattern) -> L
     :return: A list of the builds that are required.
     """
     return [build for build in builds if match(build_regex, build.display_name)]
+
+
+def _process_evg_version(
+    prev_version: Version,
+    version: Version,
+    next_version: Version,
+    build_regex: Pattern,
+    changed_files: Set[str],
+) -> (Set[str], Dict):
+    """
+    Find flipped tasks for this evergreen version.
+
+    Return the tasks along with the files that were changed in the evergreen version.
+
+    :param prev_version: Previous evergreen version.
+    :param version: Evergreen version to analyze.
+    :param next_version: Next evergreen version.
+    :param build_regex: Regex of builds to look at.
+    :param changed_files: Set of files that have changed.
+    :return: Tuple with changed files and flipped tasks.
+    """
+    flipped_tasks = _get_flipped_tasks(prev_version, version, next_version, build_regex)
+    return changed_files, flipped_tasks
 
 
 def _get_flipped_tasks(

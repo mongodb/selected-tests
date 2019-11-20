@@ -41,7 +41,7 @@ setup(
         'GitPython==3.0.3',
         'boltons==19.1.0',
         'dnspython==1.16.0',
-        'evergreen.py==0.6.9',
+        'evergreen.py==0.6.14',
         'flask-restplus==0.13.0',
         'flask==1.1.1',
         'pymongo[tls]==3.8.0',

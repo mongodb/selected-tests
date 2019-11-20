@@ -1,6 +1,7 @@
 """Functions for processing project test mapping work items."""
 import re
 import structlog
+from typing import Iterable
 
 from datetime import datetime
 from typing import Any
@@ -52,19 +53,32 @@ def process_queued_task_mapping_work_items(
     """
     _clear_in_progress_work(mongo.task_mappings_queue())
     try:
-        while True:
-            out_of_work = _process_one_task_mapping_work_item(
-                evg_api, mongo, after_date, before_date
-            )
-            if out_of_work:
-                break
+        for work_item in _generate_task_mapping_work_items(mongo):
+            _process_one_task_mapping_work_item(work_item, evg_api, mongo, after_date, before_date)
     except:  # noqa: E722
         LOGGER.warning("Unexpected exception processing task mapping work item", exc_info=1)
 
 
+def _generate_task_mapping_work_items(mongo: MongoWrapper) -> Iterable[ProjectTaskMappingWorkItem]:
+    """
+    Generate task mapping work items that need to be processed.
+
+    :param mongo: Mongo db containing work item queue.
+    :return: Iterator over task mapping work items.
+    """
+    work_item = ProjectTaskMappingWorkItem.next(mongo.task_mappings_queue())
+    while work_item:
+        yield work_item
+        work_item = ProjectTaskMappingWorkItem.next(mongo.task_mappings_queue())
+
+
 def _process_one_task_mapping_work_item(
-    evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime, before_date: datetime
-) -> bool:
+    work_item: ProjectTaskMappingWorkItem,
+    evg_api: EvergreenApi,
+    mongo: MongoWrapper,
+    after_date: datetime,
+    before_date: datetime,
+):
     """
     Process a task mapping work item.
 
@@ -74,24 +88,16 @@ def _process_one_task_mapping_work_item(
     :param before_date: The date up to which we should analyze commits of the project.
     :return: Whether all work items have been processed.
     """
-    LOGGER.info("Finding next task mapping work item to process")
-    work_item = ProjectTaskMappingWorkItem.next(mongo.task_mappings_queue())
-    if not work_item:
-        LOGGER.info("No more task mapping work items found")
-        return True
-
     log = LOGGER.bind(project=work_item.project, module=work_item.module)
     log.info("Starting task mapping work item processing for work_item")
     if _run_create_task_mappings(evg_api, mongo, work_item, after_date, before_date, log):
         work_item.complete(mongo.task_mappings_queue())
 
-    return False
-
 
 def _run_create_task_mappings(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
-    work_item: ProjectTestMappingWorkItem,
+    work_item: ProjectTaskMappingWorkItem,
     after_date: datetime,
     before_date: datetime,
     log: Any,
@@ -124,6 +130,8 @@ def _run_create_task_mappings(
     if transformed_mappings:
         mongo.task_mappings().insert_many(transformed_mappings)
     log.info("Finished task mapping work item processing")
+
+    return True
 
 
 def process_queued_test_mapping_work_items(
