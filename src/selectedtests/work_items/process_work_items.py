@@ -228,3 +228,5 @@ def _run_create_test_mappings(
     if test_mappings_list:
         mongo.test_mappings().insert_many(test_mappings_list)
     log.info("Finished test mapping work item processing")
+
+    return True
