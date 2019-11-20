@@ -17,7 +17,7 @@ from selectedtests.evergreen_helper import get_evg_project
 
 LOGGER = get_logger(__name__)
 
-MAX_WORKERS = 16
+MAX_WORKERS = 32
 SEEN_COUNT_KEY = "seen_count"
 TASK_BUILDS_KEY = "builds"
 
