@@ -365,6 +365,13 @@ class TestFilterDistros:
         for distro in optional_distros:
             assert distro not in filtered_distros
 
+    def test_missing_build_regex_argument(self):
+        distros = [MagicMock(display_name=f"distro{i}") for i in range(10)]
+
+        filtered_distros = under_test._filter_non_matching_distros(distros, None)
+
+        assert len(distros) == len(filtered_distros)
+
 
 class TestGetFlippedTasks:
     @patch(ns("_get_flipped_tasks_per_build"))
