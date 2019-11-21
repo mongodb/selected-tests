@@ -175,8 +175,7 @@ class TaskMappings:
 
             for job in jobs:
                 changed_files, flipped_tasks = job.result()
-                if len(flipped_tasks) > 0:
-                    _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
+                _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
 
         return (
             TaskMappings(task_mappings, evergreen_project, repo_name, branch),
@@ -193,23 +192,24 @@ class TaskMappings:
         task_mappings = []
         for mapping in self.mappings:
             cur_mappings = self.mappings.get(mapping)
-            new_mapping = {
-                "source_file": mapping,
-                "project": self.evergreen_project,
-                "repo": self.repo_name,
-                "branch": self.branch,
-                "source_file_seen_count": cur_mappings.get(SEEN_COUNT_KEY),
-            }
-            new_tasks = []
             builds = cur_mappings.get(TASK_BUILDS_KEY)
-            for build in builds:
-                tasks = builds.get(build)
-                for task in tasks:
-                    new_tasks.append(
-                        {"name": task, "variant": build, "flip_count": tasks.get(task)}
-                    )
-            new_mapping["tasks"] = new_tasks
-            task_mappings.append(new_mapping)
+            if builds:
+                new_mapping = {
+                    "source_file": mapping,
+                    "project": self.evergreen_project,
+                    "repo": self.repo_name,
+                    "branch": self.branch,
+                    "source_file_seen_count": cur_mappings.get(SEEN_COUNT_KEY),
+                }
+                new_tasks = []
+                for build in builds:
+                    tasks = builds.get(build)
+                    for task in tasks:
+                        new_tasks.append(
+                            {"name": task, "variant": build, "flip_count": tasks.get(task)}
+                        )
+                new_mapping["tasks"] = new_tasks
+                task_mappings.append(new_mapping)
         LOGGER.info("Generated task mappings list", task_mappings_length=len(task_mappings))
         return task_mappings
 
@@ -309,12 +309,13 @@ def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mapp
             file_name, {TASK_BUILDS_KEY: {}, SEEN_COUNT_KEY: 0}
         )
         task_mappings_for_file[SEEN_COUNT_KEY] = task_mappings_for_file[SEEN_COUNT_KEY] + 1
-        build_mappings = task_mappings_for_file[TASK_BUILDS_KEY]
-        for build_name in flipped_tasks:
-            builds_to_task_mappings: Dict[str, Dict] = build_mappings.setdefault(build_name, {})
-            for cur_task in flipped_tasks.get(build_name):
-                cur_flips_for_task = builds_to_task_mappings.setdefault(cur_task, 0)
-                builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
+        if len(flipped_tasks) > 0:
+            build_mappings = task_mappings_for_file[TASK_BUILDS_KEY]
+            for build_name in flipped_tasks:
+                builds_to_task_mappings: Dict[str, Dict] = build_mappings.setdefault(build_name, {})
+                for cur_task in flipped_tasks.get(build_name):
+                    cur_flips_for_task = builds_to_task_mappings.setdefault(cur_task, 0)
+                    builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
 
 
 def _filter_non_matching_distros(builds: List[Build], build_regex: Pattern) -> List[Build]:
