@@ -1,8 +1,8 @@
 from click.testing import CliRunner
 from unittest.mock import patch, MagicMock
-from selectedtests.work_items.cli import cli
+from selectedtests.work_items.work_items_cli import cli
 
-NS = "selectedtests.work_items.cli"
+NS = "selectedtests.work_items.work_items_cli"
 
 
 def ns(relative_name):

@@ -2,9 +2,9 @@ import json
 
 from click.testing import CliRunner
 from unittest.mock import patch, MagicMock
-from selectedtests.test_mappings.cli import cli
+from selectedtests.test_mappings.test_mappings_cli import cli
 
-NS = "selectedtests.test_mappings.cli"
+NS = "selectedtests.test_mappings.test_mappings_cli"
 
 
 def ns(relative_name):
