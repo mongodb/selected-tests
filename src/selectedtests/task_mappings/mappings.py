@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor as Executor
 from datetime import datetime
 from typing import List, Dict, Set
 from tempfile import TemporaryDirectory
-from re import match, compile
+from re import match
 from typing import Pattern
 
 from evergreen.api import Version, Build, Task, EvergreenApi

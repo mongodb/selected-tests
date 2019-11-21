@@ -118,7 +118,7 @@ def create(
 
     build_regex = None
     if build_variant_regex:
-       build_regex = re.compile(build_variant_regex)
+        build_regex = re.compile(build_variant_regex)
 
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 

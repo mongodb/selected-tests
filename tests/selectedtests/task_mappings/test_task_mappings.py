@@ -354,12 +354,21 @@ class TestFilterDistros:
         for distro in optional_distros:
             assert distro not in fitered_distros
 
+    def test_filter_all_distros(self):
+        optional_distros = [MagicMock(display_name=f"distro{i}") for i in range(10)]
+
+        filtered_distros = under_test._filter_non_matching_distros(
+            optional_distros, re.compile("#")
+        )
+
+        assert 0 == len(filtered_distros)
+        for distro in optional_distros:
+            assert distro not in filtered_distros
+
     def test_missing_build_regex_argument(self):
         distros = [MagicMock(display_name=f"distro{i}") for i in range(10)]
 
-        filtered_distros = under_test._filter_non_matching_distros(
-            distros, None
-        )
+        filtered_distros = under_test._filter_non_matching_distros(distros, None)
 
         assert len(distros) == len(filtered_distros)
 
