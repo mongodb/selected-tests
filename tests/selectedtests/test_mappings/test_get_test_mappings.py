@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-import selectedtests.test_mappings.get_mappings as under_test
+import selectedtests.test_mappings.get_test_mappings as under_test
 from bson import json_util
 
 
@@ -12,8 +12,8 @@ class TestGetCorrelatedTestMappings:
             "source_file": "src/file1.js",
             "source_file_seen_count": 1,
             "test_files": [
-                {"name": "test_file_above_threshold.js", "test_file_seen_count": 1},
-                {"name": "test_file_below_threshold.js", "test_file_seen_count": 1},
+                {"name": "test1.js", "test_file_seen_count": 1},
+                {"name": "test2.js", "test_file_seen_count": 1},
             ],
         }
         collection_mock.find.side_effect = [[test_mapping]]

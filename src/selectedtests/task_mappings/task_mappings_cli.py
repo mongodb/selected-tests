@@ -9,7 +9,7 @@ from evergreen.api import RetryingEvergreenApi
 import click
 import structlog
 
-from selectedtests.task_mappings.mappings import TaskMappings
+from selectedtests.task_mappings.create_task_mappings import TaskMappings
 
 LOGGER = structlog.get_logger(__name__)
 

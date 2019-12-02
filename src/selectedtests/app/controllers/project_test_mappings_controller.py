@@ -7,7 +7,7 @@ from evergreen.api import EvergreenApi
 from decimal import Decimal
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.evergreen_helper import get_evg_project
-from selectedtests.test_mappings.get_mappings import get_correlated_test_mappings
+from selectedtests.test_mappings.get_test_mappings import get_correlated_test_mappings
 from selectedtests.work_items.project_test_mapping_work_item import ProjectTestMappingWorkItem
 
 
@@ -19,7 +19,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
     :param mongo: Mongo Wrapper instance
     :param evg_api: An instance of the evg_api client
     """
-    ns = api.namespace("projects", description="Project Test Mappings")
+    ns = api.namespace("projects", description="Project Mappings")
 
     test_mappings_work_item = ns.model(
         "TestMappingsWorkItem",
@@ -52,7 +52,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
     parser.add_argument(
         "changed_files",
         location="args",
-        help="List of source files to calculate correlated tasks for",
+        help="List of source files to calculate correlated tests for",
         required=True,
     )
     parser.add_argument(
@@ -71,7 +71,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.expect(parser)
         def get(self, project: str):
             """
-            Get a list of correlated tests for an input list of changed source files.
+            Get a list of correlated test mappings for an input list of changed source files.
 
             :param project: The evergreen project identifier.
             """

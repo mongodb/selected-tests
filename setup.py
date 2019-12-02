@@ -50,10 +50,10 @@ setup(
     entry_points={
         'console_scripts': [
             'selected-tests-service = selectedtests.app.app:main',
-            'task-mappings = selectedtests.task_mappings.cli:main',
-            'test-mappings = selectedtests.test_mappings.cli:main',
-            'init-mongo = selectedtests.datasource.cli:main',
-            'work-items = selectedtests.work_items.cli:main',
+            'task-mappings = selectedtests.task_mappings.task_mappings_cli:main',
+            'test-mappings = selectedtests.test_mappings.test_mappings_cli:main',
+            'init-mongo = selectedtests.datasource.datasource_cli:main',
+            'work-items = selectedtests.work_items.work_items_cli:main',
         ],
     }
 )

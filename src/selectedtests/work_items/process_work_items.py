@@ -9,8 +9,8 @@ from evergreen.api import EvergreenApi
 from pymongo import IndexModel, ASCENDING
 from pymongo.collection import Collection
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.test_mappings.create_mappings import generate_test_mappings
-from selectedtests.task_mappings.mappings import TaskMappings
+from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
+from selectedtests.task_mappings.create_task_mappings import TaskMappings
 from selectedtests.work_items.project_test_mapping_work_item import ProjectTestMappingWorkItem
 from selectedtests.work_items.project_task_mapping_work_item import ProjectTaskMappingWorkItem
 
@@ -122,9 +122,9 @@ def _run_create_task_mappings(
         after_date,
         before_date,
         source_re,
-        work_item.module,
-        module_source_re,
-        work_item.build_variant_regex,
+        module_name=work_item.module,
+        module_file_regex=module_source_re,
+        build_regex=work_item.build_variant_regex,
     )
     transformed_mappings = mappings.transform()
     if transformed_mappings:
@@ -221,9 +221,9 @@ def _run_create_test_mappings(
         test_re,
         after_date,
         before_date,
-        work_item.module,
-        module_source_re,
-        module_test_re,
+        module_name=work_item.module,
+        module_source_re=module_source_re,
+        module_test_re=module_test_re,
     )
     if test_mappings_list:
         mongo.test_mappings().insert_many(test_mappings_list)

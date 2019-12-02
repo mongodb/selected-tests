@@ -12,9 +12,71 @@ def ns(relative_name):
     return NS + "." + relative_name
 
 
+@patch(ns("get_correlated_task_mappings"))
+@patch(ns("get_evg_project"))
+def test_GET_task_mappings_found_with_threshold_param(
+    get_evg_project_mock, get_correlated_task_mappings_mock, app_client: testing.FlaskClient
+):
+    project = "valid-evergreen-project"
+    get_evg_project_mock.return_value = MagicMock(identifier=project)
+    get_correlated_task_mappings_mock.return_value = ["task_mapping_1", "task_mapping_2"]
+
+    response = app_client.get(
+        f"/projects/{project}/task-mappings?changed_files=src/file1.js,src/file2.js&threshold=.5"
+    )
+    assert response.status_code == 200
+    assert '{"task_mappings":["task_mapping_1","task_mapping_2"]}' in response.get_data(
+        as_text=True
+    )
+
+
+@patch(ns("get_correlated_task_mappings"))
+@patch(ns("get_evg_project"))
+def test_GET_task_mappings_found_without_threshold_param(
+    get_evg_project_mock, get_correlated_task_mappings_mock, app_client: testing.FlaskClient
+):
+    project = "valid-evergreen-project"
+    get_evg_project_mock.return_value = MagicMock(identifier=project)
+    get_correlated_task_mappings_mock.return_value = ["task_mapping_1", "task_mapping_2"]
+
+    response = app_client.get(
+        f"/projects/{project}/task-mappings?changed_files=src/file1.js,src/file2.js"
+    )
+    assert response.status_code == 200
+    assert '{"task_mappings":["task_mapping_1","task_mapping_2"]}' in response.get_data(
+        as_text=True
+    )
+
+
+@patch(ns("get_correlated_task_mappings"))
+@patch(ns("get_evg_project"))
+def test_GET_missing_changed_files_query_param(
+    get_evg_project_mock, get_correlated_task_mappings_mock, app_client: testing.FlaskClient
+):
+    project = "valid-evergreen-project"
+
+    response = app_client.get(f"/projects/{project}/task-mappings")
+    assert response.status_code == 400
+    assert "Missing changed_files query param" in response.get_data(as_text=True)
+
+
+@patch(ns("get_correlated_task_mappings"))
+@patch(ns("get_evg_project"))
+def test_GET_project_not_found(
+    get_evg_project_mock, get_correlated_task_mappings_mock, app_client: testing.FlaskClient
+):
+    get_evg_project_mock.return_value = None
+
+    response = app_client.get(
+        f"/projects/invalid-evergreen-project/task-mappings?changed_files=src/file1.js,src/file2.js"
+    )
+    assert response.status_code == 404
+    assert "Evergreen project not found" in response.get_data(as_text=True)
+
+
 @patch(ns("ProjectTaskMappingWorkItem"))
 @patch(ns("get_evg_project"))
-def test_work_item_inserted(
+def test_POST_work_item_inserted(
     get_evg_project_mock, project_task_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
@@ -38,7 +100,7 @@ def test_work_item_inserted(
 
 @patch(ns("ProjectTaskMappingWorkItem"))
 @patch(ns("get_evg_project"))
-def test_work_item_inserted_with_incorrect_params(
+def test_POST_work_item_inserted_with_incorrect_params(
     get_evg_project_mock, project_task_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
@@ -64,7 +126,7 @@ def test_work_item_inserted_with_incorrect_params(
 
 @patch(ns("ProjectTaskMappingWorkItem"))
 @patch(ns("get_evg_project"))
-def test_work_item_inserted_with_module_and_no_module_regex(
+def test_POST_work_item_inserted_with_module_and_no_module_regex(
     get_evg_project_mock, project_task_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
@@ -86,7 +148,7 @@ def test_work_item_inserted_with_module_and_no_module_regex(
 
 @patch(ns("ProjectTaskMappingWorkItem"))
 @patch(ns("get_evg_project"))
-def test_no_module_passed_in(
+def test_POST_no_module_passed_in(
     get_evg_project_mock, project_task_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     project = "valid-evergreen-project"
@@ -104,7 +166,7 @@ def test_no_module_passed_in(
 
 
 @patch(ns("get_evg_project"))
-def test_project_not_found(get_evg_project_mock, app_client: testing.FlaskClient):
+def test_POST_project_not_found(get_evg_project_mock, app_client: testing.FlaskClient):
     get_evg_project_mock.return_value = None
     test_params = dict(source_file_regex="source-file-regex")
 
@@ -119,7 +181,7 @@ def test_project_not_found(get_evg_project_mock, app_client: testing.FlaskClient
 
 @patch(ns("ProjectTaskMappingWorkItem"))
 @patch(ns("get_evg_project"))
-def test_project_cannot_be_inserted(
+def test_POST_project_cannot_be_inserted(
     get_evg_project_mock, project_task_mapping_work_item_mock, app_client: testing.FlaskClient
 ):
     get_evg_project_mock.return_value = MagicMock()
