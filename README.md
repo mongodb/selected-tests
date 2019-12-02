@@ -59,10 +59,6 @@ Its options are described below.
                                   Example: 2019-10-11T19:10:38
                                   [required]
 
-  --before TEXT                   The date to stop analyzing the project at - has to be an iso date.
-                                  Example: 2019-10-11T19:10:38
-                                  [required]
-
   --source-file-regex TEXT        Regex to determine what files mappings will be created for.
                                   Example: '^src/mongo'
                                   [required]
@@ -96,10 +92,6 @@ Its options are described below.
   --verbose                       Show logs.
 
   --after TEXT                    The date to begin analyzing the project at - has to be an iso date.
-                                  Example: 2019-10-11T19:10:38
-                                  [required]
-
-  --before TEXT                   The date to stop analyzing the project at - has to be an iso date.
                                   Example: 2019-10-11T19:10:38
                                   [required]
 

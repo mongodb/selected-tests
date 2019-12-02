@@ -41,7 +41,7 @@ def _clear_in_progress_work(collection: Collection):
 
 
 def process_queued_task_mapping_work_items(
-    evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime, before_date: datetime
+    evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime
 ):
     """
     Process task mapping work items that have not yet been processed.
@@ -49,12 +49,11 @@ def process_queued_task_mapping_work_items(
     :param evg_api: An instance of the evg_api client
     :param mongo: An instance of MongoWrapper.
     :param after_date: The date at which to start analyzing commits of the project.
-    :param before_date: The date up to which we should analyze commits of the project.
     """
     _clear_in_progress_work(mongo.task_mappings_queue())
     try:
         for work_item in _generate_task_mapping_work_items(mongo):
-            _process_one_task_mapping_work_item(work_item, evg_api, mongo, after_date, before_date)
+            _process_one_task_mapping_work_item(work_item, evg_api, mongo, after_date)
     except:  # noqa: E722
         LOGGER.warning("Unexpected exception processing task mapping work item", exc_info=1)
 
@@ -77,7 +76,6 @@ def _process_one_task_mapping_work_item(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
     after_date: datetime,
-    before_date: datetime,
 ):
     """
     Process a task mapping work item.
@@ -86,11 +84,10 @@ def _process_one_task_mapping_work_item(
     :param evg_api: An instance of the evg_api client
     :param mongo: An instance of MongoWrapper.
     :param after_date: The date at which to start analyzing commits of the project.
-    :param before_date: The date up to which we should analyze commits of the project.
     """
     log = LOGGER.bind(project=work_item.project, module=work_item.module)
     log.info("Starting task mapping work item processing for work_item")
-    if _run_create_task_mappings(evg_api, mongo, work_item, after_date, before_date, log):
+    if _run_create_task_mappings(evg_api, mongo, work_item, after_date, log):
         work_item.complete(mongo.task_mappings_queue())
 
 
@@ -99,7 +96,6 @@ def _run_create_task_mappings(
     mongo: MongoWrapper,
     work_item: ProjectTaskMappingWorkItem,
     after_date: datetime,
-    before_date: datetime,
     log: Any,
 ) -> bool:
     """
@@ -109,7 +105,6 @@ def _run_create_task_mappings(
     :param mongo: An instance of MongoWrapper.
     :param work_item: An instance of ProjectTestMappingWorkItem.
     :param after_date: The date at which to start analyzing commits of the project.
-    :param before_date: The date up to which we should analyze commits of the project.
     """
     source_re = re.compile(work_item.source_file_regex)
     module_source_re = None
@@ -120,7 +115,6 @@ def _run_create_task_mappings(
         evg_api,
         work_item.project,
         after_date,
-        before_date,
         source_re,
         module_name=work_item.module,
         module_file_regex=module_source_re,
@@ -135,7 +129,7 @@ def _run_create_task_mappings(
 
 
 def process_queued_test_mapping_work_items(
-    evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime, before_date: datetime
+    evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime
 ):
     """
     Process test mapping work items that have not yet been processed.
@@ -143,12 +137,11 @@ def process_queued_test_mapping_work_items(
     :param evg_api: An instance of the evg_api client
     :param mongo: An instance of MongoWrapper.
     :param after_date: The date at which to start analyzing commits of the project.
-    :param before_date: The date up to which we should analyze commits of the project.
     """
     _clear_in_progress_work(mongo.test_mappings_queue())
     try:
         for work_item in _generate_test_mapping_work_items(mongo):
-            _process_one_test_mapping_work_item(work_item, evg_api, mongo, after_date, before_date)
+            _process_one_test_mapping_work_item(work_item, evg_api, mongo, after_date)
     except:  # noqa: E722
         LOGGER.warning("Unexpected exception processing test mapping work item", exc_info=1)
 
@@ -171,7 +164,6 @@ def _process_one_test_mapping_work_item(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
     after_date: datetime,
-    before_date: datetime,
 ):
     """
     Process a test mapping work item.
@@ -180,12 +172,11 @@ def _process_one_test_mapping_work_item(
     :param evg_api: An instance of the evg_api client
     :param mongo: An instance of MongoWrapper.
     :param after_date: The date at which to start analyzing commits of the project.
-    :param before_date: The date up to which we should analyze commits of the project.
     :return: Whether all work items have been processed.
     """
     log = LOGGER.bind(project=work_item.project, module=work_item.module)
     log.info("Starting test mapping work item processing for work_item")
-    if _run_create_test_mappings(evg_api, mongo, work_item, after_date, before_date, log):
+    if _run_create_test_mappings(evg_api, mongo, work_item, after_date, log):
         work_item.complete(mongo.test_mappings_queue())
 
 
@@ -194,7 +185,6 @@ def _run_create_test_mappings(
     mongo: MongoWrapper,
     work_item: ProjectTestMappingWorkItem,
     after_date: datetime,
-    before_date: datetime,
     log: Any,
 ) -> bool:
     """
@@ -204,7 +194,6 @@ def _run_create_test_mappings(
     :param mongo: An instance of MongoWrapper.
     :param work_item: An instance of ProjectTestMappingWorkItem.
     :param after_date: The date at which to start analyzing commits of the project.
-    :param before_date: The date up to which we should analyze commits of the project.
     """
     source_re = re.compile(work_item.source_file_regex)
     test_re = re.compile(work_item.test_file_regex)
@@ -220,7 +209,6 @@ def _run_create_test_mappings(
         source_re,
         test_re,
         after_date,
-        before_date,
         module_name=work_item.module,
         module_source_re=module_source_re,
         module_test_re=module_test_re,

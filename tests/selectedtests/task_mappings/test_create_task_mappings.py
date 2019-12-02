@@ -35,7 +35,6 @@ class TestFullRunThrough:
             mock_evg_api,
             project_name,
             datetime.fromisoformat("2019-10-11T19:10:38"),
-            datetime.fromisoformat("2019-10-11T19:30:38"),
             re.compile("src.*"),
         )
 
@@ -77,10 +76,14 @@ class TestCreateTaskMappings:
         project_name = "project"
 
         after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, after, before, None, "module", None
+            evg_api_mock,
+            project_name,
+            after,
+            file_regex=None,
+            module_name="module",
+            module_file_regex=None,
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
@@ -129,10 +132,14 @@ class TestCreateTaskMappings:
         project_name = "project"
 
         after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, after, before, None, "", None
+            evg_api_mock,
+            project_name,
+            after,
+            file_regex=None,
+            module_name="",
+            module_file_regex=None,
         )
 
         assert len(expected_file_list) == len(mappings.mappings)
@@ -170,10 +177,14 @@ class TestCreateTaskMappings:
         project_name = "project"
 
         after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         mappings = under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, after, before, None, "", None
+            evg_api_mock,
+            project_name,
+            after,
+            file_regex=None,
+            module_name="",
+            module_file_regex=None,
         )
 
         assert 0 == len(mappings.mappings)
@@ -196,12 +207,17 @@ class TestCreateTaskMappings:
         project_name = "project"
 
         after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-        before = datetime.combine(date(1, 1, 1), time(1, 3, 0))
 
         build_regex = re.compile("is_this_passed_correctly")
 
         under_test.TaskMappings.create_task_mappings(
-            evg_api_mock, project_name, after, before, None, "", None, build_regex
+            evg_api_mock,
+            project_name,
+            after,
+            file_regex=None,
+            module_name="",
+            module_file_regex=None,
+            build_regex=build_regex,
         )
 
         assert build_regex == non_matching_filter_mock.call_args[0][1]

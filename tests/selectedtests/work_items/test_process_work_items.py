@@ -30,7 +30,7 @@ class TestProcessQueuedTaskMappingWorkItems:
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        under_test.process_queued_task_mapping_work_items(evg_api_mock, mongo_mock, None, None)
+        under_test.process_queued_task_mapping_work_items(evg_api_mock, mongo_mock, after_date=None)
 
         assert n_work_items == mock_process_one_task_mapping_work_item.call_count
 
@@ -40,7 +40,7 @@ class TestProcessQueuedTaskMappingWorkItems:
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        under_test.process_queued_task_mapping_work_items(evg_api_mock, mongo_mock, None, None)
+        under_test.process_queued_task_mapping_work_items(evg_api_mock, mongo_mock, after_date=None)
 
 
 class TestGenerateTaskMappingWorkItems:
@@ -75,7 +75,7 @@ class TestProcessOneTaskMappingWorkItem:
         mongo_mock = MagicMock()
 
         under_test._process_one_task_mapping_work_item(
-            work_item_mock, evg_api_mock, mongo_mock, None, None
+            work_item_mock, evg_api_mock, mongo_mock, after_date=None
         )
 
         work_item_mock.complete.assert_called_once()
@@ -90,7 +90,7 @@ class TestProcessOneTaskMappingWorkItem:
         mongo_mock = MagicMock()
 
         under_test._process_one_task_mapping_work_item(
-            work_item_mock, evg_api_mock, mongo_mock, None, None
+            work_item_mock, evg_api_mock, mongo_mock, after_date=None
         )
 
         work_item_mock.next.return_value.complete.assert_not_called()
@@ -108,7 +108,7 @@ class TestRunCreateTaskMappings:
         work_item_mock = MagicMock(source_file_regex="src", module=None)
 
         under_test._run_create_task_mappings(
-            evg_api_mock, mongo_mock, work_item_mock, None, None, logger_mock
+            evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
         mongo_mock.task_mappings.return_value.insert_many.assert_called_once_with(["mock-response"])
@@ -127,7 +127,7 @@ class TestRunCreateTaskMappings:
         work_item_mock = MagicMock(source_file_regex="src", module=None)
 
         under_test._run_create_task_mappings(
-            evg_api_mock, mongo_mock, work_item_mock, None, None, logger_mock
+            evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
         mongo_mock.task_mappings.return_value.insert_many.assert_not_called()
@@ -145,7 +145,7 @@ class TestProcessQueuedTestMappingWorkItems:
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        under_test.process_queued_test_mapping_work_items(evg_api_mock, mongo_mock, None, None)
+        under_test.process_queued_test_mapping_work_items(evg_api_mock, mongo_mock, after_date=None)
 
         assert n_work_items == mock_process_one_test_mapping_work_item.call_count
 
@@ -155,7 +155,7 @@ class TestProcessQueuedTestMappingWorkItems:
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
-        under_test.process_queued_test_mapping_work_items(evg_api_mock, mongo_mock, None, None)
+        under_test.process_queued_test_mapping_work_items(evg_api_mock, mongo_mock, after_date=None)
 
 
 class TestProcessOneTestMappingWorkItem:
@@ -169,7 +169,7 @@ class TestProcessOneTestMappingWorkItem:
         mongo_mock = MagicMock()
 
         under_test._process_one_test_mapping_work_item(
-            work_item_mock, evg_api_mock, mongo_mock, None, None
+            work_item_mock, evg_api_mock, mongo_mock, after_date=None
         )
 
         work_item_mock.complete.assert_called_once()
@@ -184,7 +184,7 @@ class TestProcessOneTestMappingWorkItem:
         mongo_mock = MagicMock()
 
         under_test._process_one_test_mapping_work_item(
-            work_item_mock, evg_api_mock, mongo_mock, None, None
+            work_item_mock, evg_api_mock, mongo_mock, after_date=None
         )
 
         work_item_mock.complete.assert_not_called()
@@ -200,7 +200,7 @@ class TestRunCreateTestMappings:
         work_item_mock = MagicMock(source_file_regex="src", test_file_regex="test", module=None)
 
         under_test._run_create_test_mappings(
-            evg_api_mock, mongo_mock, work_item_mock, None, None, logger_mock
+            evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
         mongo_mock.test_mappings.return_value.insert_many.assert_called_once_with(["mock-mapping"])
@@ -217,7 +217,7 @@ class TestRunCreateTestMappings:
         work_item_mock = MagicMock(source_file_regex="src", test_file_regex="test", module=None)
 
         under_test._run_create_test_mappings(
-            evg_api_mock, mongo_mock, work_item_mock, None, None, logger_mock
+            evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
         mongo_mock.test_mappings.return_value.insert_many.assert_not_called()

@@ -41,8 +41,6 @@ class TestCli:
                     output_file,
                     "--after",
                     "2019-10-11T19:10:38",
-                    "--before",
-                    "2019-10-11T19:30:38",
                 ],
             )
             assert result.exit_code == 0
@@ -75,14 +73,11 @@ class TestCli:
                     output_file,
                     "--after",
                     "2019",
-                    "--before",
-                    "2019",
                 ],
             )
             assert result.exit_code == 1
             assert (
-                "The after or before date could not be parsed - make sure it's an iso date"
-                in result.stdout
+                "The after date could not be parsed - make sure it's an iso date" in result.stdout
             )
 
     @patch(ns("RetryingEvergreenApi"))
@@ -108,8 +103,6 @@ class TestCli:
                     output_file,
                     "--after",
                     "2019-10-11T19:10:38",
-                    "--before",
-                    "2019-10-11T19:30:38",
                 ],
             )
             assert result.exit_code == 1
