@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 from git import Commit, Diff, DiffIndex, Repo
 
 
-GITHUB_BASE_URL = "https://github.com"
+GITHUB_BASE_URL = "git@github.com"
 
 
 def init_repo(temp_dir: TemporaryDirectory, repo_name: str, branch: str, org_name: str) -> Repo:
@@ -20,7 +20,7 @@ def init_repo(temp_dir: TemporaryDirectory, repo_name: str, branch: str, org_nam
     :return: An Repo instance that further git operations can be done on.
     """
     repo_path = os.path.join(temp_dir, repo_name)
-    url = f"{GITHUB_BASE_URL}/{org_name}/{repo_name}.git"
+    url = f"{GITHUB_BASE_URL}:{org_name}/{repo_name}.git"
     repo = Repo.clone_from(url, repo_path, branch=branch)
     return repo
 
