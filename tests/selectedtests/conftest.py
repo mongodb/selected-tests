@@ -161,7 +161,7 @@ def repo_with_no_source_files_and_one_test_file_changed():
 
 
 @pytest.fixture(scope="module")
-def repo_with_one_source_file_and_one_test_file_changed_in_same_commit():
+def repo_with_one_source_and_test_file_changed_in_same_commit():
     def _repo(temp_directory):
         repo = initialize_temp_repo(temp_directory)
         source_file = os.path.join(temp_directory, "new-source-file")
@@ -192,13 +192,13 @@ def repo_with_one_source_file_and_one_test_file_changed_in_different_commits():
     return _repo
 
 
-@pytest.fixture(scope="module")
-def repo_with_files_added_two_days_ago():
-    def _repo(temp_directory):
-        two_days_ago = str(datetime.combine(datetime.now() - timedelta(days=2), time()))
-        os.environ["GIT_AUTHOR_DATE"] = two_days_ago
-        os.environ["GIT_COMMITTER_DATE"] = two_days_ago
+@pytest.fixture(scope="function")
+def repo_with_files_added_two_days_ago(monkeypatch):
+    two_days_ago = str(datetime.combine(datetime.now() - timedelta(days=2), time()))
+    monkeypatch.setenv("GIT_AUTHOR_DATE", two_days_ago)
+    monkeypatch.setenv("GIT_COMMITTER_DATE", two_days_ago)
 
+    def _repo(temp_directory):
         repo = initialize_temp_repo(temp_directory)
         source_file = os.path.join(temp_directory, "new-source-file")
         test_file = os.path.join(temp_directory, "new-test-file")

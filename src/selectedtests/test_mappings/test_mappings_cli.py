@@ -46,13 +46,6 @@ def cli(ctx, verbose: str):
     required=True,
 )
 @click.option(
-    "--before",
-    type=str,
-    help="The date to stop analyzing the project at - has to be an iso date. "
-    "Example: 2019-10-11T19:10:38",
-    required=True,
-)
-@click.option(
     "--source-file-regex",
     type=str,
     help="Regex that will be used to map what files mappings will be created for. "
@@ -83,7 +76,6 @@ def create(
     ctx,
     evergreen_project: str,
     after: str,
-    before: str,
     source_file_regex: str,
     test_file_regex: str,
     module_name: str,
@@ -96,10 +88,9 @@ def create(
 
     try:
         after_date = datetime.fromisoformat(after).replace(tzinfo=pytz.UTC)
-        before_date = datetime.fromisoformat(before).replace(tzinfo=pytz.UTC)
     except ValueError:
         raise click.ClickException(
-            "The after or before date could not be parsed - make sure it's an iso date"
+            "The after date could not be parsed - make sure it's an iso date"
         )
         return
 
@@ -129,7 +120,6 @@ def create(
         source_re,
         test_re,
         after_date,
-        before_date,
         module_name,
         module_source_re,
         module_test_re,

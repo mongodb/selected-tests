@@ -38,7 +38,6 @@ class TaskMappings:
         evg_api: EvergreenApi,
         evergreen_project: str,
         after_date: datetime,
-        before_date: datetime,
         file_regex: Pattern,
         module_name: str = None,
         module_file_regex: Pattern = None,
@@ -50,22 +49,16 @@ class TaskMappings:
         :param evg_api: An instance of the evg_api client
         :param evergreen_project: The name of the evergreen project to analyze.
         :param after_date: The date at which to start analyzing versions of the project.
-        :param before_date: The date up to which we should analyze versions of the project.
         :param file_regex: Regex pattern to match changed files against.
         :param module_name: Name of the module associated with the evergreen project to also analyze
         :param module_file_regex: Regex pattern to match changed files of the module against.
         :param build_regex: Regex pattern to match build variant names against. Defaults to None.
         :return: An instance of the task mappings class
         """
-        log = LOGGER.bind(
-            project=evergreen_project,
-            module=module_name,
-            after_date=after_date,
-            before_date=before_date,
-        )
+        log = LOGGER.bind(project=evergreen_project, module=module_name, after_date=after_date)
         log.info("Starting to generate task mappings")
         project_versions = evg_api.versions_by_project_time_window(
-            evergreen_project, before_date, after_date
+            evergreen_project, datetime.utcnow(), after_date
         )
 
         task_mappings = {}

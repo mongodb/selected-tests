@@ -65,14 +65,12 @@ def create_test_mapping(ctx, project: str, src_regex: str, test_file_regex: str)
 @click.pass_context
 def process_test_mappings(ctx, weeks_back):
     """Process test mapping work items that have not yet been processed."""
-    # For test mappings, before_date and after_date are compared against git commit
-    # committed_datetime, which is stored in a UTC date format that is UTC offset-aware. So
-    # before_date and after_date need to be offset-aware, which is why we add tzinfo below.
-    before_date = datetime.utcnow().replace(tzinfo=pytz.UTC)
-    after_date = before_date - timedelta(weeks=weeks_back)
-    process_queued_test_mapping_work_items(
-        ctx.obj["evg_api"], ctx.obj["mongo"], after_date, before_date
-    )
+    # For test mappings, after_date is compared against git commit committed_datetime, which is
+    # stored in a UTC date format that is UTC offset-aware. So after_date needs to be offset-aware,
+    # which is why we add tzinfo below.
+    now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+    after_date = now - timedelta(weeks=weeks_back)
+    process_queued_test_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
 
 
 @cli.command()
@@ -111,14 +109,11 @@ def create_task_mapping(ctx, project: str, src_regex: str, build_regex: str):
 @click.pass_context
 def process_task_mappings(ctx, weeks_back):
     """Process task mapping work items that have not yet been processed."""
-    # For task mappings, before_date and after_date are compared against evergreen version
-    # create_time, which is stored in a UTC date format that is not UTC offset-aware. So before_date
-    # and after_date do not need to be offset-aware.
-    before_date = datetime.utcnow()
-    after_date = before_date - timedelta(weeks=weeks_back)
-    process_queued_task_mapping_work_items(
-        ctx.obj["evg_api"], ctx.obj["mongo"], after_date, before_date
-    )
+    # For task mappings, after_date is compared against evergreen version create_time, which is
+    # stored in a UTC date format that is not UTC offset-aware. So after_date does not need to be
+    # offset-aware.
+    after_date = datetime.utcnow() - timedelta(weeks=weeks_back)
+    process_queued_task_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
 
 
 def main():
