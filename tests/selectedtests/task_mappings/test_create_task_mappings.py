@@ -493,6 +493,60 @@ class TestFlippedTasksPerBuild:
 
         assert len(flipped_tasks) == 0
 
+    def test_no_get_flipped_tasks_if_prev_version_does_not_contain_variant(self):
+        build_variant = "test"
+        tasks = [
+            _mock_task(display_name=str(i), activated=True, status="Success") for i in range(12)
+        ]
+        build_mock = MagicMock(build_variant=build_variant)
+        build_mock.get_tasks.return_value = tasks
+
+        prev_version = MagicMock()
+        prev_version.build_by_variant.side_effect = KeyError
+
+        next_version = MagicMock()
+        next_build = MagicMock()
+        next_build.get_tasks.return_value = [
+            _mock_task(
+                display_name=str(i), activated=True, status="Success" if (i % 3 == 0) else "Failed"
+            )
+            for i in range(11)
+        ]
+        next_version.build_by_variant.return_value = next_build
+
+        flipped_tasks = under_test._get_flipped_tasks_per_build(
+            build_mock, prev_version, next_version
+        )
+
+        assert len(flipped_tasks) == 0
+
+    def test_no_get_flipped_tasks_if_next_version_does_not_contain_variant(self):
+        build_variant = "test"
+        tasks = [
+            _mock_task(display_name=str(i), activated=True, status="Success") for i in range(12)
+        ]
+        build_mock = MagicMock(build_variant=build_variant)
+        build_mock.get_tasks.return_value = tasks
+
+        prev_version = MagicMock()
+        prev_build = MagicMock()
+        prev_build.get_tasks.return_value = [
+            _mock_task(
+                display_name=str(i), activated=True, status="Success" if (i % 2 == 0) else "Failed"
+            )
+            for i in range(11)
+        ]
+        prev_version.build_by_variant.return_value = prev_build
+
+        next_version = MagicMock()
+        next_version.build_by_variant.side_effect = KeyError
+
+        flipped_tasks = under_test._get_flipped_tasks_per_build(
+            build_mock, prev_version, next_version
+        )
+
+        assert len(flipped_tasks) == 0
+
 
 class TestCreateTaskMap:
     def test_create_task_map(self):

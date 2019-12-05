@@ -326,8 +326,21 @@ def _get_flipped_tasks_per_build(
     :param next_version: The child version of the version the given build belongs to.
     :return: A list of all the flipped tasks that happened in the given build.
     """
-    prev_build: Build = prev_version.build_by_variant(build.build_variant)
-    next_build: Build = next_version.build_by_variant(build.build_variant)
+    try:
+        prev_build: Build = prev_version.build_by_variant(build.build_variant)
+    except KeyError:
+        LOGGER.warning(
+            "Previous version does not contain a build for this build variant", exc_info=True
+        )
+        return []
+
+    try:
+        next_build: Build = next_version.build_by_variant(build.build_variant)
+    except KeyError:
+        LOGGER.warning(
+            "Next version does not contain a build for this build variant", exc_info=True
+        )
+        return []
 
     prev_tasks = _create_task_map(prev_build.get_tasks())
     next_tasks = _create_task_map(next_build.get_tasks())
