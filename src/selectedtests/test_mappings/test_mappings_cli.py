@@ -2,10 +2,14 @@
 import click
 import json
 import logging
+import pytz
 import re
 import structlog
 
+from datetime import datetime
+
 from selectedtests.helpers import get_evg_api
+from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
 
 LOGGER = structlog.get_logger(__name__)
@@ -37,9 +41,10 @@ def cli(ctx, verbose: str):
 @click.pass_context
 @click.argument("evergreen_project", required=True)
 @click.option(
-    "--after-project-commit",
+    "--after",
     type=str,
-    help="The commit at which to start analyzing commits of the project.",
+    help="The date to begin analyzing the project at - has to be an iso date. "
+    "Example: 2019-10-11T19:10:38",
     required=True,
 )
 @click.option(
@@ -58,11 +63,6 @@ def cli(ctx, verbose: str):
     help="The name of the associated module that should be analyzed. Example: enterprise",
 )
 @click.option(
-    "--after-module-commit",
-    type=str,
-    help="The commit at which to start analyzing commits of the module.",
-)
-@click.option(
     "--module-source-file-regex",
     type=str,
     help="Regex that will be used to map what module files mappings will be created. "
@@ -77,11 +77,10 @@ def cli(ctx, verbose: str):
 def create(
     ctx,
     evergreen_project: str,
-    after_project_commit: str,
+    after: str,
     source_file_regex: str,
     test_file_regex: str,
     module_name: str,
-    after_module_commit: str,
     module_source_file_regex: str,
     module_test_file_regex: str,
     output_file: str,
@@ -89,16 +88,19 @@ def create(
     """Create the test mappings for a given evergreen project."""
     evg_api = ctx.obj["evg_api"]
 
+    try:
+        after_date = datetime.fromisoformat(after).replace(tzinfo=pytz.UTC)
+    except ValueError:
+        raise click.ClickException(
+            "The after date could not be parsed - make sure it's an iso date"
+        )
+        return
+
     source_re = re.compile(source_file_regex)
     test_re = re.compile(test_file_regex)
     module_source_re = None
     module_test_re = None
     if module_name:
-        if not after_module_commit:
-            raise click.ClickException(
-                "A module after-commit value is required when a module is being analyzed"
-            )
-            return
         if not module_source_file_regex:
             raise click.ClickException(
                 "A module source file regex is required when a module is being analyzed"
@@ -117,13 +119,13 @@ def create(
     test_mappings_list = generate_test_mappings(
         evg_api,
         evergreen_project,
-        after_project_commit,
+        CommitLimit(after_date=after_date),
         source_re,
         test_re,
-        module_name,
-        after_module_commit,
-        module_source_re,
-        module_test_re,
+        module_name=module_name,
+        module_commit_limit=CommitLimit(after_date=after_date),
+        module_source_re=module_source_re,
+        module_test_re=module_test_re,
     )
 
     json_dump = json.dumps(test_mappings_list, indent=4)

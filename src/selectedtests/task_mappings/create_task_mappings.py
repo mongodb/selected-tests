@@ -12,8 +12,9 @@ from git import Repo, DiffIndex
 from structlog import get_logger
 from tempfile import TemporaryDirectory
 
-from selectedtests.git_helper import get_changed_files, init_repo
 from selectedtests.evergreen_helper import get_evg_project
+from selectedtests.git_helper import get_changed_files, init_repo
+from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = get_logger(__name__)
 
@@ -37,7 +38,7 @@ class TaskMappings:
         cls,
         evg_api: EvergreenApi,
         evergreen_project: str,
-        after_version: str,
+        version_limit: VersionLimit,
         file_regex: Pattern,
         module_name: str = None,
         module_file_regex: Pattern = None,
@@ -48,7 +49,7 @@ class TaskMappings:
 
         :param evg_api: An instance of the evg_api client
         :param evergreen_project: The name of the evergreen project to analyze.
-        :param after_version: The version at which to start analyzing versions of the project.
+        :param version_limit: The point in time at which to start analyzing versions of the project.
         :param file_regex: Regex pattern to match changed files against.
         :param module_name: Name of the module associated with the evergreen project to also analyze
         :param module_file_regex: Regex pattern to match changed files of the module against.
@@ -56,7 +57,7 @@ class TaskMappings:
         :return: An instance of TaskMappings and version_id of the most recent version analyzed.
         """
         log = LOGGER.bind(
-            project=evergreen_project, module=module_name, after_version=after_version
+            project=evergreen_project, module=module_name, version_limit=version_limit
         )
         log.info("Starting to generate task mappings")
         project_versions = evg_api.versions_by_project(evergreen_project)
@@ -81,7 +82,7 @@ class TaskMappings:
                     if not most_recent_version_analyzed:
                         most_recent_version_analyzed = version.version_id
 
-                    if version.version_id == after_version:
+                    if version_limit.check_version_before_limit(version):
                         break
 
                     if not branch or not repo_name:

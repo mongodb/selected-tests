@@ -7,10 +7,10 @@ from evergreen.api import EvergreenApi
 from typing import Iterable, Any
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.evergreen_helper import get_version_on_date
 from selectedtests.task_mappings.create_task_mappings import TaskMappings
 from selectedtests.work_items.process_test_mapping_work_items import clear_in_progress_work
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
+from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = structlog.get_logger()
 
@@ -81,7 +81,6 @@ def _run_create_task_mappings(
     :param work_item: An instance of ProjectTestMappingWorkItem.
     :param after_date: The date at which to start analyzing commits of the project.
     """
-    after_version = get_version_on_date(evg_api, work_item.project, after_date)
     source_re = re.compile(work_item.source_file_regex)
     module_source_re = None
     if work_item.module:
@@ -90,7 +89,7 @@ def _run_create_task_mappings(
     mappings, most_recent_version_analyzed = TaskMappings.create_task_mappings(
         evg_api,
         work_item.project,
-        after_version,
+        VersionLimit(after_date=after_date),
         source_re,
         module_name=work_item.module,
         module_file_regex=module_source_re,

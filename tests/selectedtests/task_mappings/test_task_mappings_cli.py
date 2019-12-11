@@ -37,16 +37,48 @@ class TestCli:
                     ".*",
                     "--module-source-file-regex",
                     ".*",
+                    "--after",
+                    "2019-10-11T19:10:38",
                     "--output-file",
                     output_file,
-                    "--after-version",
-                    "version-sha",
                 ],
             )
             assert result.exit_code == 0
             with open(output_file, "r") as data:
                 output = json.load(data)
                 assert expected_result == output
+
+    @patch(ns("get_evg_api"))
+    @patch(ns("TaskMappings.create_task_mappings"))
+    def test_invalid_dates(self, create_task_mappings_mock, get_evg_api_mock):
+        mock_get_evg_api_mock = MagicMock()
+        get_evg_api_mock.return_value = mock_get_evg_api_mock
+        create_task_mappings_mock.return_value = "mock-response"
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            output_file = "output.txt"
+            result = runner.invoke(
+                cli,
+                [
+                    "create",
+                    "mongodb-mongo-master",
+                    "--module-name",
+                    "my-module",
+                    "--source-file-regex",
+                    ".*",
+                    "--module-source-file-regex",
+                    ".*",
+                    "--output-file",
+                    output_file,
+                    "--after",
+                    "2019",
+                ],
+            )
+            assert result.exit_code == 1
+            assert (
+                "The after date could not be parsed - make sure it's an iso date" in result.stdout
+            )
 
     @patch(ns("get_evg_api"))
     @patch(ns("TaskMappings.create_task_mappings"))
@@ -67,10 +99,10 @@ class TestCli:
                     "my-module",
                     "--source-file-regex",
                     ".*",
+                    "--after",
+                    "2019-10-11T19:10:38",
                     "--output-file",
                     output_file,
-                    "--after-version",
-                    "version-sha",
                 ],
             )
             assert result.exit_code == 1

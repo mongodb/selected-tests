@@ -2,12 +2,15 @@
 import os.path
 import json
 import logging
+from datetime import datetime
 import re
+
 import click
 import structlog
 
 from selectedtests.helpers import get_evg_api
 from selectedtests.task_mappings.create_task_mappings import TaskMappings
+from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -39,9 +42,10 @@ def cli(ctx, verbose: bool):
 @click.pass_context
 @click.argument("evergreen_project", required=True)
 @click.option(
-    "--after-version",
+    "--after",
     type=str,
-    help="The version at which to start analyzing versions of the project.",
+    help="The date to begin analyzing the project at - has to be an iso date. "
+    "Example: 2019-10-11T19:10:38",
     required=True,
 )
 @click.option(
@@ -76,7 +80,7 @@ def cli(ctx, verbose: bool):
 def create(
     ctx,
     evergreen_project: str,
-    after_version: str,
+    after: str,
     source_file_regex: str,
     module_name: str,
     module_source_file_regex: str,
@@ -85,6 +89,14 @@ def create(
 ):
     """Create the task mappings for a given evergreen project."""
     evg_api = ctx.obj["evg_api"]
+
+    try:
+        after_date = datetime.fromisoformat(after)
+    except ValueError:
+        raise click.ClickException(
+            "The after date could not be parsed - make sure it's an iso date"
+        )
+
     file_regex = re.compile(source_file_regex)
 
     module_file_regex = None
@@ -102,10 +114,10 @@ def create(
 
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 
-    mappings, most_recent_version_analyzed = TaskMappings.create_task_mappings(
+    mappings, _ = TaskMappings.create_task_mappings(
         evg_api,
         evergreen_project,
-        after_version,
+        VersionLimit(after_date=after_date),
         file_regex,
         module_name,
         module_file_regex,

@@ -89,9 +89,7 @@ class TestProcessOneTaskMappingWorkItem:
 
 class TestRunCreateTaskMappings:
     @patch(ns("TaskMappings.create_task_mappings"))
-    @patch(ns("get_version_on_date"))
-    def test_task_mappings_are_created(self, get_version_on_date_mock, create_task_mappings_mock):
-        get_version_on_date_mock.return_value = "version-six-months-ago"
+    def test_task_mappings_are_created(self, create_task_mappings_mock):
         task_mappings_mock = MagicMock()
         task_mappings_mock.transform.return_value = ["mock-response"]
         create_task_mappings_mock.return_value = (
@@ -110,9 +108,7 @@ class TestRunCreateTaskMappings:
         mongo_mock.task_mappings.return_value.insert_many.assert_called_once_with(["mock-response"])
 
     @patch(ns("TaskMappings.create_task_mappings"))
-    @patch(ns("get_version_on_date"))
-    def test_no_mappings_are_created(self, get_version_on_date_mock, create_task_mappings_mock):
-        get_version_on_date_mock.return_value = "version-six-months-ago"
+    def test_no_mappings_are_created(self, create_task_mappings_mock):
         task_mappings_mock = MagicMock()
         task_mappings_mock.transform.return_value = []
         create_task_mappings_mock.return_value = (

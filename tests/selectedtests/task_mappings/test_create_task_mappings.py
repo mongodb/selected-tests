@@ -21,6 +21,9 @@ class TestFullRunThrough:
     def test_integration(
         self, filtered_files_mock, init_repo_mock, evg_versions, expected_task_mappings_output
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         mock_evg_api = MagicMock()
         mock_evg_api.versions_by_project.return_value = evg_versions
 
@@ -39,7 +42,7 @@ class TestFullRunThrough:
         filtered_files_mock.return_value = ["src/file1", "src/file2"]
 
         output, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
-            mock_evg_api, project_name, "some-evergreen-version", re.compile("src.*")
+            mock_evg_api, project_name, version_limit_mock, re.compile("src.*")
         )
 
         transformed_out = output.transform()
@@ -63,6 +66,9 @@ class TestCreateTaskMappings:
         diff_mock,
         get_evg_project_and_init_repo_mock,
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
             MagicMock(
@@ -93,7 +99,7 @@ class TestCreateTaskMappings:
         mappings, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            "some-evergreen-version",
+            version_limit_mock,
             file_regex=None,
             module_name="module",
             module_file_regex=None,
@@ -128,6 +134,9 @@ class TestCreateTaskMappings:
         diff_mock,
         get_evg_project_and_init_repo_mock,
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
             MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
@@ -149,7 +158,7 @@ class TestCreateTaskMappings:
         mappings, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            "some-evergreen-version",
+            version_limit_mock,
             file_regex=None,
             module_name="",
             module_file_regex=None,
@@ -179,6 +188,9 @@ class TestCreateTaskMappings:
     def test_no_flipped_tasks_creates_no_mappings(
         self, flipped_mock, filtered_mock, diff_mock, get_evg_project_and_init_repo_mock
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
             MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
@@ -192,7 +204,7 @@ class TestCreateTaskMappings:
         mappings, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            "some-evergreen-version",
+            version_limit_mock,
             file_regex=None,
             module_name="",
             module_file_regex=None,
@@ -207,6 +219,9 @@ class TestCreateTaskMappings:
     def test_build_variant_regex_passed_correctly(
         self, filtered_mock, diff_mock, non_matching_filter_mock, get_evg_project_and_init_repo_mock
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
             MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
@@ -222,7 +237,7 @@ class TestCreateTaskMappings:
         under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            "some-evergreen-version",
+            version_limit_mock,
             file_regex=None,
             module_name="",
             module_file_regex=None,

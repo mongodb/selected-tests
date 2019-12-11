@@ -211,39 +211,6 @@ def repo_with_files_added_two_days_ago(monkeypatch):
     return _repo
 
 
-@pytest.fixture(scope="function")
-def repo_with_interval_commits(monkeypatch):
-    def _repo(tmpdir):
-        repo = git.Repo.init(tmpdir)
-
-        # commit something four days ago
-        four_days_ago = str(datetime.combine(datetime.now() - timedelta(days=4), time()))
-        monkeypatch.setenv("GIT_AUTHOR_DATE", four_days_ago)
-        monkeypatch.setenv("GIT_COMMITTER_DATE", four_days_ago)
-        repo.index.commit("initial commit -- no files changed")
-
-        # commit something two days ago
-        two_days_ago = str(datetime.combine(datetime.now() - timedelta(days=2), time()))
-        monkeypatch.setenv("GIT_AUTHOR_DATE", two_days_ago)
-        monkeypatch.setenv("GIT_COMMITTER_DATE", two_days_ago)
-        some_file = os.path.join(tmpdir, "some-file")
-        open(some_file, "wb").close()
-        repo.index.add([some_file])
-        commit_two_days_ago = repo.index.commit("add some file")
-
-        # commit something today
-        now = str(datetime.combine(datetime.now(), time()))
-        monkeypatch.setenv("GIT_AUTHOR_DATE", now)
-        monkeypatch.setenv("GIT_COMMITTER_DATE", now)
-        another_file = os.path.join(tmpdir, "another-file")
-        open(another_file, "wb").close()
-        repo.index.add([another_file])
-        repo.index.commit("add another file")
-        return repo, commit_two_days_ago
-
-    return _repo
-
-
 @pytest.fixture(scope="module")
 def required_builds_regex():
     return re.compile("!.*")
