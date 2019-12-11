@@ -116,7 +116,7 @@ def create(
 
     LOGGER.info(f"Creating test mappings for {evergreen_project}")
 
-    test_mappings_list, _ = generate_test_mappings(
+    test_mappings_result = generate_test_mappings(
         evg_api,
         evergreen_project,
         CommitLimit(after_date=after_date),
@@ -128,7 +128,7 @@ def create(
         module_test_re=module_test_re,
     )
 
-    json_dump = json.dumps(test_mappings_list, indent=4)
+    json_dump = json.dumps(test_mappings_result.test_mappings_list, indent=4)
 
     if output_file:
         with open(output_file, "a") as f:

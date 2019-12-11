@@ -2,6 +2,8 @@ import json
 
 from click.testing import CliRunner
 from unittest.mock import patch, MagicMock
+
+from selectedtests.test_mappings.create_test_mappings import TestMappingsResult
 from selectedtests.test_mappings.test_mappings_cli import cli
 
 NS = "selectedtests.test_mappings.test_mappings_cli"
@@ -18,7 +20,11 @@ class TestCli:
     def test_arguments_passed_in(self, generate_test_mappings_mock, get_evg_api_mock):
         mock_evg_api = MagicMock()
         get_evg_api_mock.return_value = mock_evg_api
-        generate_test_mappings_mock.return_value = "mock-response"
+        generate_test_mappings_mock.return_value = TestMappingsResult(
+            test_mappings_list=["mock-mapping"],
+            most_recent_project_commit_analyzed="last-project-sha-analyzed",
+            most_recent_module_commit_analyzed="last-module-sha-analyzed",
+        )
 
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -47,14 +53,18 @@ class TestCli:
             assert result.exit_code == 0
             with open(output_file, "r") as data:
                 output = json.load(data)
-                assert output == "mock-response"
+                assert output == ["mock-mapping"]
 
     @patch(ns("get_evg_api"))
     @patch(ns("generate_test_mappings"))
     def test_invalid_dates(self, generate_test_mappings_mock, get_evg_api_mock):
         mock_evg_api = MagicMock()
         get_evg_api_mock.return_value = mock_evg_api
-        generate_test_mappings_mock.return_value = "mock-response"
+        generate_test_mappings_mock.return_value = TestMappingsResult(
+            test_mappings_list=["mock-mapping"],
+            most_recent_project_commit_analyzed="last-project-sha-analyzed",
+            most_recent_module_commit_analyzed="last-module-sha-analyzed",
+        )
 
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -86,7 +96,11 @@ class TestCli:
     def test_module_regexes_not_passed_in(self, generate_test_mappings_mock, get_evg_api_mock):
         mock_evg_api = MagicMock()
         get_evg_api_mock.return_value = mock_evg_api
-        generate_test_mappings_mock.return_value = "mock-response"
+        generate_test_mappings_mock.return_value = TestMappingsResult(
+            test_mappings_list=["mock-mapping"],
+            most_recent_project_commit_analyzed="last-project-sha-analyzed",
+            most_recent_module_commit_analyzed="last-module-sha-analyzed",
+        )
 
         runner = CliRunner()
         with runner.isolated_filesystem():
