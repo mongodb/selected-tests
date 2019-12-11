@@ -86,7 +86,7 @@ def _run_create_task_mappings(
     if work_item.module:
         module_source_re = re.compile(work_item.module_source_file_regex)
 
-    mappings, most_recent_version_analyzed = TaskMappings.create_task_mappings(
+    mappings, _ = TaskMappings.create_task_mappings(
         evg_api,
         work_item.project,
         VersionLimit(after_date=after_date),

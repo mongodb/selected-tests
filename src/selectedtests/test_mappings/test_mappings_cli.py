@@ -116,7 +116,7 @@ def create(
 
     LOGGER.info(f"Creating test mappings for {evergreen_project}")
 
-    test_mappings_list = generate_test_mappings(
+    test_mappings_list, _ = generate_test_mappings(
         evg_api,
         evergreen_project,
         CommitLimit(after_date=after_date),
