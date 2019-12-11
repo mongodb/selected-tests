@@ -161,7 +161,7 @@ def repo_with_no_source_files_and_one_test_file_changed():
 
 
 @pytest.fixture(scope="module")
-def repo_with_one_source_and_test_file_changed_in_same_commit():
+def repo_with_source_and_test_file_changed_in_same_commit():
     def _repo(temp_directory):
         repo = initialize_temp_repo(temp_directory)
         source_file = os.path.join(temp_directory, "new-source-file")
@@ -176,7 +176,7 @@ def repo_with_one_source_and_test_file_changed_in_same_commit():
 
 
 @pytest.fixture(scope="module")
-def repo_with_one_source_file_and_one_test_file_changed_in_different_commits():
+def repo_with_source_and_test_file_changed_in_different_commits():
     def _repo(temp_directory):
         repo = initialize_temp_repo(temp_directory)
         source_file = os.path.join(temp_directory, "new-source-file")
@@ -207,6 +207,39 @@ def repo_with_files_added_two_days_ago(monkeypatch):
         repo.index.add([source_file, test_file])
         repo.index.commit("add source and test file in same commit 2 days ago")
         return repo
+
+    return _repo
+
+
+@pytest.fixture(scope="function")
+def repo_with_interval_commits(monkeypatch):
+    def _repo(tmpdir):
+        repo = git.Repo.init(tmpdir)
+
+        # commit something four days ago
+        four_days_ago = str(datetime.combine(datetime.now() - timedelta(days=4), time()))
+        monkeypatch.setenv("GIT_AUTHOR_DATE", four_days_ago)
+        monkeypatch.setenv("GIT_COMMITTER_DATE", four_days_ago)
+        repo.index.commit("initial commit -- no files changed")
+
+        # commit something two days ago
+        two_days_ago = str(datetime.combine(datetime.now() - timedelta(days=2), time()))
+        monkeypatch.setenv("GIT_AUTHOR_DATE", two_days_ago)
+        monkeypatch.setenv("GIT_COMMITTER_DATE", two_days_ago)
+        some_file = os.path.join(tmpdir, "some-file")
+        open(some_file, "wb").close()
+        repo.index.add([some_file])
+        commit_two_days_ago = repo.index.commit("add some file")
+
+        # commit something today
+        now = str(datetime.combine(datetime.now(), time()))
+        monkeypatch.setenv("GIT_AUTHOR_DATE", now)
+        monkeypatch.setenv("GIT_COMMITTER_DATE", now)
+        another_file = os.path.join(tmpdir, "another-file")
+        open(another_file, "wb").close()
+        repo.index.add([another_file])
+        repo.index.commit("add another file")
+        return repo, commit_two_days_ago
 
     return _repo
 

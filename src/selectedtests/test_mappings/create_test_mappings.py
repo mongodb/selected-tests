@@ -1,65 +1,83 @@
 """Test Mappings class to create test mappings."""
-import structlog
 import os.path
+import structlog
 
-from datetime import datetime
-from collections import defaultdict
-from typing import Pattern
-from git import Repo
 from tempfile import TemporaryDirectory
+from typing import Pattern, Tuple
+from collections import defaultdict, namedtuple
 from evergreen.api import EvergreenApi
-from evergreen.manifest import ManifestModule
+from git import Repo
+
 from selectedtests.git_helper import init_repo, modified_files_for_commit
-from selectedtests.evergreen_helper import get_evg_project
+from selectedtests.evergreen_helper import get_evg_project, get_evg_module_for_project
 
 LOGGER = structlog.get_logger(__name__)
+TestMappingsResult = namedtuple(
+    "ProjectMappingsResult",
+    [
+        "test_mappings_list",
+        "most_recent_project_commit_analyzed",
+        "most_recent_module_commit_analyzed",
+    ],
+)
 
 
 def generate_test_mappings(
     evg_api: EvergreenApi,
     evergreen_project: str,
+    after_project_commit: str,
     source_re: Pattern,
     test_re: Pattern,
-    after_date: datetime,
-    module_name: str = "",
+    module_name: str = None,
+    after_module_commit: str = None,
     module_source_re: Pattern = None,
     module_test_re: Pattern = None,
-):
+) -> TestMappingsResult:
     """
     Generate test mappings for an evergreen project and its associated module if module is provided.
 
-    :param evg_api: An instance of the evg_api client
+    :param evg_api: An instance of the evg_api client.
     :param evergreen_project: The name of the evergreen project to analyze.
-    :param module_name: The name of the module to analyze.
-    :param temp_dir: The place where to clone the repo to.
+    :param after_project_commit: The commit sha at which to start analyzing commits of the project.
     :param source_re: Regex pattern to match changed source files against.
     :param test_re: Regex pattern to match changed test files against.
+    :param module_name: The name of the module to analyze.
+    :param after_module_commit: The commit sha at which to start analyzing commits of the module.
     :param module_source_re: Regex pattern to match changed module source files against.
     :param module_test_re: Regex pattern to match changed module test files against.
-    :param after_date: The date at which to start analyzing commits of the project.
-    :return: A list of test mappings for the evergreen project and (optionally) its module
+    :return: An instance of TestMappingsResult.
     """
-    log = LOGGER.bind(project=evergreen_project, module=module_name, after_date=after_date)
+    log = LOGGER.bind(
+        project=evergreen_project,
+        module=module_name,
+        after_project_commit=after_project_commit,
+        after_module_commit=after_module_commit,
+    )
     log.info("Starting to generate test mappings")
+    most_recent_project_commit = None
+    most_recent_module_commit = None
     with TemporaryDirectory() as temp_dir:
-        test_mappings_list = generate_project_test_mappings(
-            evg_api, evergreen_project, temp_dir, source_re, test_re, after_date
+        test_mappings_list, most_recent_project_commit = generate_project_test_mappings(
+            evg_api, evergreen_project, temp_dir, source_re, test_re, after_project_commit
         )
 
         if module_name:
-            test_mappings_list.extend(
-                generate_module_test_mappings(
-                    evg_api,
-                    evergreen_project,
-                    module_name,
-                    temp_dir,
-                    module_source_re,
-                    module_test_re,
-                    after_date,
-                )
+            module_test_mappings_list, most_recent_module_commit = generate_module_test_mappings(
+                evg_api,
+                evergreen_project,
+                module_name,
+                temp_dir,
+                module_source_re,
+                module_test_re,
+                after_module_commit,
             )
+            test_mappings_list.extend(module_test_mappings_list)
     log.info("Generated test mappings list", test_mappings_length=len(test_mappings_list))
-    return test_mappings_list
+    return TestMappingsResult(
+        test_mappings_list=test_mappings_list,
+        most_recent_project_commit_analyzed=most_recent_project_commit,
+        most_recent_module_commit_analyzed=most_recent_module_commit,
+    )
 
 
 def generate_project_test_mappings(
@@ -68,8 +86,8 @@ def generate_project_test_mappings(
     temp_dir: TemporaryDirectory,
     source_re: Pattern,
     test_re: Pattern,
-    after_date: datetime,
-):
+    after_commit: str,
+) -> Tuple[list, str]:
     """
     Generate test mappings for an evergreen project.
 
@@ -78,17 +96,22 @@ def generate_project_test_mappings(
     :param temp_dir: The place where to clone the repo to.
     :param source_re: Regex pattern to match changed source files against.
     :param test_re: Regex pattern to match changed test files against.
-    :param after_date: The date at which to start analyzing commits of the project.
-    :return: A list of test mappings for the evergreen project
+    :param after_commit: The commit sha at which to start analyzing commits of the project's repo.
+    :return: A list of test mappings for the project and the most recent commit sha analyzed.
     """
     evg_project = get_evg_project(evg_api, evergreen_project)
     project_repo = init_repo(
         temp_dir, evg_project.repo_name, evg_project.branch_name, evg_project.owner_name
     )
-    project_test_mappings = TestMappings.create_mappings(
-        project_repo, source_re, test_re, after_date, evergreen_project, evg_project.branch_name
+    most_recent_project_commit_analyzed = project_repo.head.commit.hexsha
+    LOGGER.info(
+        "Calculated most_recent_project_commit_analyzed",
+        most_recent_project_commit_analyzed=most_recent_project_commit_analyzed,
     )
-    return project_test_mappings.get_mappings()
+    project_test_mappings = TestMappings.create_mappings(
+        project_repo, source_re, test_re, after_commit, evergreen_project, evg_project.branch_name
+    )
+    return project_test_mappings.get_mappings(), most_recent_project_commit_analyzed
 
 
 def generate_module_test_mappings(
@@ -98,8 +121,8 @@ def generate_module_test_mappings(
     temp_dir: TemporaryDirectory,
     module_source_re: Pattern,
     module_test_re: Pattern,
-    after_date: datetime,
-):
+    after_commit: str,
+) -> Tuple[list, str]:
     """
     Generate test mappings for an evergreen module.
 
@@ -109,30 +132,25 @@ def generate_module_test_mappings(
     :param temp_dir: The place where to clone the repo to.
     :param module_source_re: Regex pattern to match changed module source files against.
     :param module_test_re: Regex pattern to match changed module test files against.
-    :param after_date: The date at which to start analyzing commits of the project.
-    :return: A list of test mappings for the evergreen module
+    :param after_commit: The commit sha at which to start analyzing commits of the module's repo.
+    :return: A list of test mappings for the project and the most recent commit sha analyzed.
     """
-    module = _get_module(evg_api, evergreen_project, module_name)
+    module = get_evg_module_for_project(evg_api, evergreen_project, module_name)
     module_repo = init_repo(temp_dir, module.repo, module.branch, module.owner)
-    module_test_mappings = TestMappings.create_mappings(
-        module_repo, module_source_re, module_test_re, after_date, evergreen_project, module.branch
+    most_recent_module_commit_analyzed = module_repo.head.commit.hexsha
+    LOGGER.info(
+        "Calculated most_recent_module_commit_analyzed",
+        most_recent_module_commit_analyzed=most_recent_module_commit_analyzed,
     )
-    return module_test_mappings.get_mappings()
-
-
-def _get_module(evg_api: EvergreenApi, project: str, module_repo: str) -> ManifestModule:
-    """
-    Fetch the module associated with an Evergreen project.
-
-    :param evg_api: An instance of the evg_api client
-    :param project: The name of the evergreen project to analyze.
-    :param module_repo: Name of the module to analyze
-    :return: evg_api client instance of the module
-    """
-    version_iterator = evg_api.versions_by_project(project)
-    recent_version = next(version_iterator)
-    modules = recent_version.get_manifest().modules
-    return modules.get(module_repo)
+    module_test_mappings = TestMappings.create_mappings(
+        module_repo,
+        module_source_re,
+        module_test_re,
+        after_commit,
+        evergreen_project,
+        module.branch,
+    )
+    return module_test_mappings.get_mappings(), most_recent_module_commit_analyzed
 
 
 class TestMappings(object):
@@ -168,7 +186,7 @@ class TestMappings(object):
         repo: Repo,
         source_re: Pattern,
         test_re: Pattern,
-        after_date: datetime,
+        after_commit: str,
         project: str,
         branch: str,
     ):
@@ -178,7 +196,7 @@ class TestMappings(object):
         :param repo: The repo that contains the source code for the evergreen project.
         :param source_re: Regex pattern to match changed source files against.
         :param test_re: Regex pattern to match changed test files against.
-        :param after_date: The date at which to start analyzing commits of the project.
+        :param after_commit: The commit sha at which to start analyzing commits of the repo.
         :param project: The name of the evergreen project to analyze.
         :param branch: The branch of the git repo used for the evergreen project.
         :return: An instance of the test mappings class
@@ -187,15 +205,15 @@ class TestMappings(object):
         file_count = defaultdict(int)
 
         for commit in repo.iter_commits(repo.head.commit):
+            if commit.hexsha == after_commit:
+                break
+
             LOGGER.debug(
                 "Investigating commit",
                 summary=commit.message.splitlines()[0],
                 ts=commit.committed_datetime,
                 id=commit.hexsha,
             )
-
-            if commit.committed_datetime < after_date:
-                break
 
             tests_changed = set()
             src_changed = set()

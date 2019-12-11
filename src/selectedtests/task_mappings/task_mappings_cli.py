@@ -2,13 +2,11 @@
 import os.path
 import json
 import logging
-from datetime import datetime
 import re
-
-from evergreen.api import RetryingEvergreenApi
 import click
 import structlog
 
+from selectedtests.helpers import get_evg_api
 from selectedtests.task_mappings.create_task_mappings import TaskMappings
 
 LOGGER = structlog.get_logger(__name__)
@@ -32,7 +30,7 @@ def _setup_logging(verbose: bool):
 def cli(ctx, verbose: bool):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
-    ctx.obj["evg_api"] = RetryingEvergreenApi.get_api(use_config_file=True)
+    ctx.obj["evg_api"] = get_evg_api()
 
     _setup_logging(verbose)
 
@@ -41,10 +39,9 @@ def cli(ctx, verbose: bool):
 @click.pass_context
 @click.argument("evergreen_project", required=True)
 @click.option(
-    "--after",
+    "--after-version",
     type=str,
-    help="The date to begin analyzing the project at - has to be an iso date. "
-    "Example: 2019-10-11T19:10:38",
+    help="The version at which to start analyzing versions of the project.",
     required=True,
 )
 @click.option(
@@ -79,7 +76,7 @@ def cli(ctx, verbose: bool):
 def create(
     ctx,
     evergreen_project: str,
-    after: str,
+    after_version: str,
     source_file_regex: str,
     module_name: str,
     module_source_file_regex: str,
@@ -88,14 +85,6 @@ def create(
 ):
     """Create the task mappings for a given evergreen project."""
     evg_api = ctx.obj["evg_api"]
-
-    try:
-        after_date = datetime.fromisoformat(after)
-    except ValueError:
-        raise click.ClickException(
-            "The after date could not be parsed - make sure it's an iso date"
-        )
-
     file_regex = re.compile(source_file_regex)
 
     module_file_regex = None
@@ -113,10 +102,10 @@ def create(
 
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 
-    mappings = TaskMappings.create_task_mappings(
+    mappings, most_recent_version_analyzed = TaskMappings.create_task_mappings(
         evg_api,
         evergreen_project,
-        after_date,
+        after_version,
         file_regex,
         module_name,
         module_file_regex,

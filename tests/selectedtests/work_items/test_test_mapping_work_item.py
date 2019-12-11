@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest.mock import MagicMock
 from pymongo.errors import DuplicateKeyError
 
-import selectedtests.work_items.project_test_mapping_work_item as under_test
+import selectedtests.work_items.test_mapping_work_item as under_test
 
 PROJECT = "my-project"
 SOURCE_FILE_REGEX = ".*source"
