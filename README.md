@@ -55,8 +55,8 @@ Its options are described below.
 ```
   --verbose                       Show logs.
 
-  --after-version TEXT            The version at which to start analyzing versions of the project.
-                                  Example: 'evergreen.py_6505f0820840b25c753bcd062b597219edc1206b'
+  --after TEXT                    The date to begin analyzing the project at - has to be an iso date.
+                                  Example: 2019-10-11T19:10:38
                                   [required]
 
   --source-file-regex TEXT        Regex to determine what files mappings will be created for.
@@ -91,7 +91,8 @@ Its options are described below.
 ```
   --verbose                       Show logs.
 
-  --after-project-commit TEXT     The commit sha at which to start analyzing commits of the project.
+  --after TEXT                    The date to begin analyzing the project at - has to be an iso date.
+                                  Example: 2019-10-11T19:10:38
                                   [required]
 
   --source-file-regex TEXT        Regex to determine which source files the mappings will be created for.
@@ -104,8 +105,6 @@ Its options are described below.
 
   --module-name TEXT              The name of the associated module that should be analyzed.
                                   Example: enterprise
-
-  --after-module-commit TEXT      The commit at which to start analyzing commits of the module.
 
   --module-source-file-regex TEXT Regex to determine which module souce files the mappings will be created for.
                                   Example: '^src'
