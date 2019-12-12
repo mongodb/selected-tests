@@ -89,7 +89,7 @@ def _run_create_task_mappings(
     mappings, _ = TaskMappings.create_task_mappings(
         evg_api,
         work_item.project,
-        VersionLimit(after_date=after_date),
+        VersionLimit(stop_at_date=after_date),
         source_re,
         module_name=work_item.module,
         module_file_regex=module_source_re,

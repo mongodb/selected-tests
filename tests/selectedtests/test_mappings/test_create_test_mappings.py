@@ -232,11 +232,11 @@ class TestGenerateTestMappings:
         test_mappings_result = under_test.generate_test_mappings(
             mock_evg_api,
             "mongodb-mongo-master",
-            CommitLimit(after_commit_sha="some-project-commit-sha"),
+            CommitLimit(stop_at_commit_sha="some-project-commit-sha"),
             SOURCE_RE,
             TEST_RE,
             "my-module",
-            CommitLimit(after_commit_sha="some-module-commit-sha"),
+            CommitLimit(stop_at_commit_sha="some-module-commit-sha"),
             SOURCE_RE,
             TEST_RE,
         )
@@ -259,7 +259,7 @@ class TestGenerateTestMappings:
         test_mappings_result = under_test.generate_test_mappings(
             mock_evg_api,
             "mongodb-mongo-master",
-            CommitLimit(after_commit_sha="some-project-commit-sha"),
+            CommitLimit(stop_at_commit_sha="some-project-commit-sha"),
             SOURCE_RE,
             TEST_RE,
         )

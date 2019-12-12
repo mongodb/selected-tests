@@ -117,7 +117,7 @@ def create(
     mappings, _ = TaskMappings.create_task_mappings(
         evg_api,
         evergreen_project,
-        VersionLimit(after_date=after_date),
+        VersionLimit(stop_at_date=after_date),
         file_regex,
         module_name,
         module_file_regex,

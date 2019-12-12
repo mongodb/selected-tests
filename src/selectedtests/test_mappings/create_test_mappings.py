@@ -86,7 +86,7 @@ def generate_project_test_mappings(
     temp_dir: TemporaryDirectory,
     source_re: Pattern,
     test_re: Pattern,
-    commit_limit: str,
+    commit_limit: CommitLimit,
 ) -> Tuple[list, str]:
     """
     Generate test mappings for an evergreen project.
@@ -121,7 +121,7 @@ def generate_module_test_mappings(
     temp_dir: TemporaryDirectory,
     module_source_re: Pattern,
     module_test_re: Pattern,
-    commit_limit: str,
+    commit_limit: CommitLimit,
 ) -> Tuple[list, str]:
     """
     Generate test mappings for an evergreen module.
@@ -186,7 +186,7 @@ class TestMappings(object):
         repo: Repo,
         source_re: Pattern,
         test_re: Pattern,
-        commit_limit: str,
+        commit_limit: CommitLimit,
         project: str,
         branch: str,
     ):

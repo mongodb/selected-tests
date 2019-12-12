@@ -119,11 +119,11 @@ def create(
     test_mappings_result = generate_test_mappings(
         evg_api,
         evergreen_project,
-        CommitLimit(after_date=after_date),
+        CommitLimit(stop_at_date=after_date),
         source_re,
         test_re,
         module_name=module_name,
-        module_commit_limit=CommitLimit(after_date=after_date),
+        module_commit_limit=CommitLimit(stop_at_date=after_date),
         module_source_re=module_source_re,
         module_test_re=module_test_re,
     )
