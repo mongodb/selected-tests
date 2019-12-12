@@ -14,7 +14,7 @@ from selectedtests.test_mappings.commit_limit import CommitLimit
 
 LOGGER = structlog.get_logger(__name__)
 TestMappingsResult = namedtuple(
-    "ProjectMappingsResult",
+    "TestMappingsResult",
     [
         "test_mappings_list",
         "most_recent_project_commit_analyzed",
