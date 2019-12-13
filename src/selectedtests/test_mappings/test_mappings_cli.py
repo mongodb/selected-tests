@@ -7,7 +7,9 @@ import re
 import structlog
 
 from datetime import datetime
-from evergreen.api import RetryingEvergreenApi
+
+from selectedtests.helpers import get_evg_api
+from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
 
 LOGGER = structlog.get_logger(__name__)
@@ -30,7 +32,7 @@ def _setup_logging(verbose: bool):
 def cli(ctx, verbose: str):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
-    ctx.obj["evg_api"] = RetryingEvergreenApi.get_api(use_config_file=True)
+    ctx.obj["evg_api"] = get_evg_api()
 
     _setup_logging(verbose)
 
@@ -114,18 +116,19 @@ def create(
 
     LOGGER.info(f"Creating test mappings for {evergreen_project}")
 
-    test_mappings_list = generate_test_mappings(
+    test_mappings_result = generate_test_mappings(
         evg_api,
         evergreen_project,
+        CommitLimit(stop_at_date=after_date),
         source_re,
         test_re,
-        after_date,
-        module_name,
-        module_source_re,
-        module_test_re,
+        module_name=module_name,
+        module_commit_limit=CommitLimit(stop_at_date=after_date),
+        module_source_re=module_source_re,
+        module_test_re=module_test_re,
     )
 
-    json_dump = json.dumps(test_mappings_list, indent=4)
+    json_dump = json.dumps(test_mappings_result.test_mappings_list, indent=4)
 
     if output_file:
         with open(output_file, "a") as f:

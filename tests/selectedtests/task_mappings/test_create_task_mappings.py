@@ -1,7 +1,8 @@
-from unittest.mock import MagicMock, patch
-from datetime import datetime, date, time
 import re
+from datetime import datetime, date, time
+
 from copy import deepcopy
+from unittest.mock import MagicMock, patch
 
 from selectedtests.task_mappings import create_task_mappings as under_test
 
@@ -20,8 +21,17 @@ class TestFullRunThrough:
     def test_integration(
         self, filtered_files_mock, init_repo_mock, evg_versions, expected_task_mappings_output
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         mock_evg_api = MagicMock()
-        mock_evg_api.versions_by_project_time_window.return_value = evg_versions
+        mock_evg_api.versions_by_project.return_value = evg_versions
+
+        # evg_versions is a list containing previous, current, and next version. Since we
+        # use a windowed_iter of 3 to loop through these, current version is the
+        # only one analyzed.
+        current_version = evg_versions[1]
+        only_version_analyzed = current_version
 
         project_name = "mongodb-mongo-master"
         mock_evg_api.all_projects.return_value = [
@@ -31,15 +41,13 @@ class TestFullRunThrough:
 
         filtered_files_mock.return_value = ["src/file1", "src/file2"]
 
-        output = under_test.TaskMappings.create_task_mappings(
-            mock_evg_api,
-            project_name,
-            datetime.fromisoformat("2019-10-11T19:10:38"),
-            re.compile("src.*"),
+        output, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
+            mock_evg_api, project_name, version_limit_mock, re.compile("src.*")
         )
 
         transformed_out = output.transform()
         assert expected_task_mappings_output == transformed_out
+        assert most_recent_version_analyzed == only_version_analyzed.version_id
 
 
 class TestCreateTaskMappings:
@@ -58,13 +66,26 @@ class TestCreateTaskMappings:
         diff_mock,
         get_evg_project_and_init_repo_mock,
     ):
-        evg_api_mock = MagicMock()
-        evg_api_mock.versions_by_project_time_window.return_value = [
-            MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
-        ]
-        evg_api_mock.versions_by_project_time_window.return_value.reverse()
-        associated_module_mock.return_value = None
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
 
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(
+                version_id=f"version-{i}",
+                create_time=datetime.combine(date(1, 1, 1), time(1, 2, i)),
+            )
+            for i in range(3)
+        ]
+        # This sets versions_by_project to return versions with the version_ids
+        # in the following order: ['version-2', 'version-1', 'version-0']
+        evg_api_mock.versions_by_project.return_value.reverse()
+
+        # Since we use a windowed_iter of 3 to loop through these, the version at index 1 is the
+        # only one analyzed.
+        only_version_analyzed = evg_api_mock.versions_by_project.return_value[1]
+
+        associated_module_mock.return_value = None
         module_changed_mock.return_value = {"module_file"}
         filtered_mock.return_value = {f"file{i}" for i in range(2)}
 
@@ -75,16 +96,16 @@ class TestCreateTaskMappings:
         flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
         project_name = "project"
 
-        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-
-        mappings = under_test.TaskMappings.create_task_mappings(
+        mappings, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            after,
+            version_limit_mock,
             file_regex=None,
             module_name="module",
             module_file_regex=None,
         )
+
+        assert most_recent_version_analyzed == only_version_analyzed.version_id
 
         assert len(expected_file_list) == len(mappings.mappings)
         for file in expected_file_list:
@@ -113,11 +134,14 @@ class TestCreateTaskMappings:
         diff_mock,
         get_evg_project_and_init_repo_mock,
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         evg_api_mock = MagicMock()
-        evg_api_mock.versions_by_project_time_window.return_value = [
+        evg_api_mock.versions_by_project.return_value = [
             MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
         ]
-        evg_api_mock.versions_by_project_time_window.return_value.reverse()
+        evg_api_mock.versions_by_project.return_value.reverse()
 
         # We still mock the two below so that we can check to make sure even if the version has a
         # module and that module has changed files in it, we don't actually add the changed files
@@ -131,12 +155,10 @@ class TestCreateTaskMappings:
         flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
         project_name = "project"
 
-        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-
-        mappings = under_test.TaskMappings.create_task_mappings(
+        mappings, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            after,
+            version_limit_mock,
             file_regex=None,
             module_name="",
             module_file_regex=None,
@@ -166,6 +188,9 @@ class TestCreateTaskMappings:
     def test_no_flipped_tasks_creates_no_mappings(
         self, flipped_mock, filtered_mock, diff_mock, get_evg_project_and_init_repo_mock
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         evg_api_mock = MagicMock()
         evg_api_mock.versions_by_project.return_value = [
             MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
@@ -176,12 +201,10 @@ class TestCreateTaskMappings:
         flipped_mock.return_value = {}
         project_name = "project"
 
-        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-
-        mappings = under_test.TaskMappings.create_task_mappings(
+        mappings, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            after,
+            version_limit_mock,
             file_regex=None,
             module_name="",
             module_file_regex=None,
@@ -196,8 +219,11 @@ class TestCreateTaskMappings:
     def test_build_variant_regex_passed_correctly(
         self, filtered_mock, diff_mock, non_matching_filter_mock, get_evg_project_and_init_repo_mock
     ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
         evg_api_mock = MagicMock()
-        evg_api_mock.versions_by_project_time_window.return_value = [
+        evg_api_mock.versions_by_project.return_value = [
             MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
         ]
         evg_api_mock.versions_by_project.return_value.reverse()
@@ -206,14 +232,12 @@ class TestCreateTaskMappings:
 
         project_name = "project"
 
-        after = datetime.combine(date(1, 1, 1), time(1, 1, 0))
-
         build_regex = re.compile("is_this_passed_correctly")
 
         under_test.TaskMappings.create_task_mappings(
             evg_api_mock,
             project_name,
-            after,
+            version_limit_mock,
             file_regex=None,
             module_name="",
             module_file_regex=None,

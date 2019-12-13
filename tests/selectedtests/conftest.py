@@ -161,7 +161,7 @@ def repo_with_no_source_files_and_one_test_file_changed():
 
 
 @pytest.fixture(scope="module")
-def repo_with_one_source_and_test_file_changed_in_same_commit():
+def repo_with_source_and_test_file_changed_in_same_commit():
     def _repo(temp_directory):
         repo = initialize_temp_repo(temp_directory)
         source_file = os.path.join(temp_directory, "new-source-file")
@@ -176,7 +176,7 @@ def repo_with_one_source_and_test_file_changed_in_same_commit():
 
 
 @pytest.fixture(scope="module")
-def repo_with_one_source_file_and_one_test_file_changed_in_different_commits():
+def repo_with_source_and_test_file_changed_in_different_commits():
     def _repo(temp_directory):
         repo = initialize_temp_repo(temp_directory)
         source_file = os.path.join(temp_directory, "new-source-file")

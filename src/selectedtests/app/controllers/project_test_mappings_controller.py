@@ -8,7 +8,7 @@ from decimal import Decimal
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.evergreen_helper import get_evg_project
 from selectedtests.test_mappings.get_test_mappings import get_correlated_test_mappings
-from selectedtests.work_items.project_test_mapping_work_item import ProjectTestMappingWorkItem
+from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
 
 def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: EvergreenApi):

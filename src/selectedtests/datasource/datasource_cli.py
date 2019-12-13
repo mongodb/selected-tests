@@ -3,8 +3,22 @@ import click
 import structlog
 import logging
 
+from pymongo.collection import Collection
+from pymongo import IndexModel, ASCENDING
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.work_items.process_work_items import setup_indexes
+
+LOGGER = structlog.get_logger()
+
+
+def setup_indexes(collection: Collection):
+    """
+    Create appropriate indexes for ProjectTestMappingWorkItems.
+
+    :param collection: Collection to add indexes to.
+    """
+    index = IndexModel([("project", ASCENDING)], unique=True)
+    collection.create_indexes([index])
+    LOGGER.info("Adding indexes for collection", collection=collection.name)
 
 
 def _setup_logging(verbose: bool):

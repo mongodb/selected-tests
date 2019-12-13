@@ -5,11 +5,12 @@ import logging
 from datetime import datetime
 import re
 
-from evergreen.api import RetryingEvergreenApi
 import click
 import structlog
 
+from selectedtests.helpers import get_evg_api
 from selectedtests.task_mappings.create_task_mappings import TaskMappings
+from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -32,7 +33,7 @@ def _setup_logging(verbose: bool):
 def cli(ctx, verbose: bool):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
-    ctx.obj["evg_api"] = RetryingEvergreenApi.get_api(use_config_file=True)
+    ctx.obj["evg_api"] = get_evg_api()
 
     _setup_logging(verbose)
 
@@ -113,10 +114,10 @@ def create(
 
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
 
-    mappings = TaskMappings.create_task_mappings(
+    mappings, _ = TaskMappings.create_task_mappings(
         evg_api,
         evergreen_project,
-        after_date,
+        VersionLimit(stop_at_date=after_date),
         file_regex,
         module_name,
         module_file_regex,
