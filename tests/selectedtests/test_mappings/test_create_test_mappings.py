@@ -233,12 +233,12 @@ class TestGenerateTestMappings:
             mock_evg_api,
             "mongodb-mongo-master",
             CommitLimit(stop_at_commit_sha="some-project-commit-sha"),
-            SOURCE_RE,
-            TEST_RE,
+            ".*src",
+            ".*test",
             "my-module",
             CommitLimit(stop_at_commit_sha="some-module-commit-sha"),
-            SOURCE_RE,
-            TEST_RE,
+            ".*src",
+            ".*test",
         )
         assert test_mappings_result.test_mappings_list == [
             "mock-project-mappings",
@@ -260,8 +260,8 @@ class TestGenerateTestMappings:
             mock_evg_api,
             "mongodb-mongo-master",
             CommitLimit(stop_at_commit_sha="some-project-commit-sha"),
-            SOURCE_RE,
-            TEST_RE,
+            ".*src",
+            ".*test",
         )
         assert test_mappings_result.test_mappings_list == ["mock-project-mappings"]
         assert (

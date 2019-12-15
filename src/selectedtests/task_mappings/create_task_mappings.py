@@ -1,6 +1,8 @@
 """Method to create the task mappings for a given evergreen project."""
 from __future__ import annotations
 
+import re
+
 from re import match
 from typing import Dict, List, Pattern, Set, Tuple
 
@@ -21,6 +23,49 @@ LOGGER = get_logger(__name__)
 MAX_WORKERS = 32
 SEEN_COUNT_KEY = "seen_count"
 TASK_BUILDS_KEY = "builds"
+
+
+def generate_task_mappings(
+    evg_api: EvergreenApi,
+    evergreen_project: str,
+    version_limit: VersionLimit,
+    source_file_regex: str,
+    module_name: str = None,
+    module_source_file_regex: str = None,
+    build_variant_regex: str = None,
+) -> Tuple[List[Dict], str]:
+    """
+    Generate task mappings for an evergreen project and its associated module if module is provided.
+
+    :param evg_api: An instance of the evg_api client.
+    :param evergreen_project: The name of the evergreen project to analyze.
+    :param version_limit: The point in time at which to start analyzing versions of the project.
+    :param source_file_regex: Pattern to match changed source files against.
+    :param module_name: The name of the module to analyze.
+    :param module_source_file_regex: Pattern to match changed module source files against.
+    :param build_variant_regex: Pattern to match build variant names against. Defaults to None.
+    :return: An instance of TestMappingsResult.
+    """
+    source_re = re.compile(source_file_regex)
+    module_source_re = None
+    if module_name:
+        module_source_re = re.compile(module_source_file_regex)
+
+    build_regex = None
+    if build_variant_regex:
+        build_regex = re.compile(build_variant_regex)
+
+    mappings, most_recent_version_analyzed = TaskMappings.create_task_mappings(
+        evg_api,
+        evergreen_project,
+        version_limit,
+        source_re,
+        module_name=module_name,
+        module_file_regex=module_source_re,
+        build_regex=build_regex,
+    )
+    transformed_mappings = mappings.transform()
+    return transformed_mappings, most_recent_version_analyzed
 
 
 class TaskMappings:
@@ -57,7 +102,10 @@ class TaskMappings:
         :return: An instance of TaskMappings and version_id of the most recent version analyzed.
         """
         log = LOGGER.bind(
-            project=evergreen_project, module=module_name, version_limit=version_limit
+            project=evergreen_project,
+            module=module_name,
+            version_limit_stop_at_date=version_limit.stop_at_date,
+            version_limit_stop_at_version_id=version_limit.stop_at_version_id,
         )
         log.info("Starting to generate task mappings")
         project_versions = evg_api.versions_by_project(evergreen_project)
@@ -81,6 +129,10 @@ class TaskMappings:
                 for next_version, version, prev_version in windowed_iter(project_versions, 3):
                     if not most_recent_version_analyzed:
                         most_recent_version_analyzed = version.version_id
+                        LOGGER.info(
+                            "Calculated most_recent_version_analyzed",
+                            most_recent_version_analyzed=most_recent_version_analyzed,
+                        )
 
                     if version_limit.check_version_before_limit(version):
                         break

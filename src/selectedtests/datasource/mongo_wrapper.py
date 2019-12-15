@@ -56,3 +56,19 @@ class MongoWrapper(object):
         :return: task_mappings collection.
         """
         return self.client.selected_tests.task_mappings
+
+    def test_mappings_project_config(self):
+        """
+        Get 'test_mappings_project_config' collection on selected_tests database.
+
+        :return: test_mappings_project_config collection.
+        """
+        return self.client.selected_tests.test_mappings_project_config
+
+    def task_mappings_project_config(self):
+        """
+        Get 'task_mappings_project_config' collection on selected_tests database.
+
+        :return: task_mappings_project_config collection.
+        """
+        return self.client.selected_tests.task_mappings_project_config

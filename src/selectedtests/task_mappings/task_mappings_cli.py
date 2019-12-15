@@ -2,14 +2,14 @@
 import os.path
 import json
 import logging
+
 from datetime import datetime
-import re
 
 import click
 import structlog
 
 from selectedtests.helpers import get_evg_api
-from selectedtests.task_mappings.create_task_mappings import TaskMappings
+from selectedtests.task_mappings.create_task_mappings import generate_task_mappings
 from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = structlog.get_logger(__name__)
@@ -97,36 +97,23 @@ def create(
             "The after date could not be parsed - make sure it's an iso date"
         )
 
-    file_regex = re.compile(source_file_regex)
-
-    module_file_regex = None
     if module_name:
         if not module_source_file_regex:
             raise click.ClickException(
                 "A module source file regex is required when a module is being analyzed"
             )
-        else:
-            module_file_regex = re.compile(module_source_file_regex)
-
-    build_regex = None
-    if build_variant_regex:
-        build_regex = re.compile(build_variant_regex)
 
     LOGGER.info(f"Creating task mappings for {evergreen_project}")
-
-    mappings, _ = TaskMappings.create_task_mappings(
+    mappings, _ = generate_task_mappings(
         evg_api,
         evergreen_project,
         VersionLimit(stop_at_date=after_date),
-        file_regex,
+        source_file_regex,
         module_name,
-        module_file_regex,
-        build_regex,
+        module_source_file_regex,
+        build_variant_regex,
     )
-
-    transformed_mappings = mappings.transform()
-
-    json_dump = json.dumps(transformed_mappings, indent=4)
+    json_dump = json.dumps(mappings, indent=4)
 
     if output_file:
         with open(output_file, "a") as f:

@@ -4,6 +4,7 @@ from datetime import datetime, date, time
 from copy import deepcopy
 from unittest.mock import MagicMock, patch
 
+from selectedtests.task_mappings.version_limit import VersionLimit
 from selectedtests.task_mappings import create_task_mappings as under_test
 
 
@@ -699,3 +700,39 @@ class TestMeaningfulTaskStatus:
 
 def _mock_task(activated: bool = None, status: str = None, display_name: str = None):
     return MagicMock(activated=activated, status=status, display_name=display_name)
+
+
+class TestGenerateTaskMappings:
+    @patch(ns("TaskMappings.create_task_mappings"))
+    def test_generates_task_mappings(self, create_task_mappings_mock):
+        mock_evg_api = MagicMock()
+        created_task_mock = MagicMock()
+        created_task_mock.transform.return_value = ["mock-mappings"]
+        create_task_mappings_mock.return_value = (created_task_mock, "most-recent-version-analyzed")
+        task_mappings, most_recent_version_analyzed = under_test.generate_task_mappings(
+            mock_evg_api,
+            "mongodb-mongo-master",
+            VersionLimit(stop_at_version_id="my-version"),
+            ".*src",
+            module_name="my-module",
+            module_source_file_regex=".*src",
+            build_variant_regex=".*!",
+        )
+        assert task_mappings == ["mock-mappings"]
+        assert most_recent_version_analyzed == "most-recent-version-analyzed"
+
+    @patch(ns("TaskMappings.create_task_mappings"))
+    def test_no_module_name_passed_in(self, create_task_mappings_mock):
+        mock_evg_api = MagicMock()
+        created_task_mock = MagicMock()
+        created_task_mock.transform.return_value = ["mock-mappings"]
+        create_task_mappings_mock.return_value = (created_task_mock, "most-recent-version-analyzed")
+        task_mappings, most_recent_version_analyzed = under_test.generate_task_mappings(
+            mock_evg_api,
+            "mongodb-mongo-master",
+            VersionLimit(stop_at_version_id="my-version"),
+            ".*src",
+            build_variant_regex=".*!",
+        )
+        assert task_mappings == ["mock-mappings"]
+        assert most_recent_version_analyzed == "most-recent-version-analyzed"

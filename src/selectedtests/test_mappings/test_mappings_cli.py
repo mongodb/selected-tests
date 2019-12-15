@@ -3,7 +3,6 @@ import click
 import json
 import logging
 import pytz
-import re
 import structlog
 
 from datetime import datetime
@@ -96,10 +95,6 @@ def create(
         )
         return
 
-    source_re = re.compile(source_file_regex)
-    test_re = re.compile(test_file_regex)
-    module_source_re = None
-    module_test_re = None
     if module_name:
         if not module_source_file_regex:
             raise click.ClickException(
@@ -111,8 +106,6 @@ def create(
                 "A module test file regex is required when a module is being analyzed"
             )
             return
-        module_source_re = re.compile(module_source_file_regex)
-        module_test_re = re.compile(module_test_file_regex)
 
     LOGGER.info(f"Creating test mappings for {evergreen_project}")
 
@@ -120,12 +113,12 @@ def create(
         evg_api,
         evergreen_project,
         CommitLimit(stop_at_date=after_date),
-        source_re,
-        test_re,
+        source_file_regex,
+        test_file_regex,
         module_name=module_name,
         module_commit_limit=CommitLimit(stop_at_date=after_date),
-        module_source_re=module_source_re,
-        module_test_re=module_test_re,
+        module_source_re=module_source_file_regex,
+        module_test_re=module_test_file_regex,
     )
 
     json_dump = json.dumps(test_mappings_result.test_mappings_list, indent=4)

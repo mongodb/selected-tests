@@ -1,5 +1,6 @@
 """Test Mappings class to create test mappings."""
 import os.path
+import re
 import structlog
 
 from tempfile import TemporaryDirectory
@@ -27,12 +28,12 @@ def generate_test_mappings(
     evg_api: EvergreenApi,
     evergreen_project: str,
     project_commit_limit: CommitLimit,
-    source_re: Pattern,
-    test_re: Pattern,
+    source_file_regex: str,
+    test_file_regex: str,
     module_name: str = None,
     module_commit_limit: CommitLimit = None,
-    module_source_re: Pattern = None,
-    module_test_re: Pattern = None,
+    module_source_file_regex: str = None,
+    module_test_file_regex: str = None,
 ) -> TestMappingsResult:
     """
     Generate test mappings for an evergreen project and its associated module if module is provided.
@@ -40,21 +41,30 @@ def generate_test_mappings(
     :param evg_api: An instance of the evg_api client.
     :param evergreen_project: The name of the evergreen project to analyze.
     :param project_commit_limit: The point in time at which to start analyzing project commits.
-    :param source_re: Regex pattern to match changed source files against.
-    :param test_re: Regex pattern to match changed test files against.
+    :param source_file_regex: Regex pattern to match changed source files against.
+    :param test_file_regex: Regex pattern to match changed test files against.
     :param module_name: The name of the module to analyze.
     :param module_commit_limit: The point in time at which to start analyzing commits of the module.
-    :param module_source_re: Regex pattern to match changed module source files against.
-    :param module_test_re: Regex pattern to match changed module test files against.
+    :param module_source_file_regex: Regex pattern to match changed module source files against.
+    :param module_test_file_regex: Regex pattern to match changed module test files against.
     :return: An instance of TestMappingsResult.
     """
     log = LOGGER.bind(
         project=evergreen_project,
         module=module_name,
-        project_commit_limit=project_commit_limit,
-        module_commit_limit=module_commit_limit,
+        project_commit_limit_stop_at_date=project_commit_limit.stop_at_date,
+        project_commit_limit_stop_at_commit_sha=project_commit_limit.stop_at_commit_sha,
     )
     log.info("Starting to generate test mappings")
+
+    source_re = re.compile(source_file_regex)
+    test_re = re.compile(test_file_regex)
+    module_source_re = None
+    module_test_re = None
+    if module_name:
+        module_source_re = re.compile(module_source_file_regex)
+        module_test_re = re.compile(module_test_file_regex)
+
     most_recent_module_commit = None
     with TemporaryDirectory() as temp_dir:
         test_mappings_list, most_recent_project_commit = generate_project_test_mappings(
