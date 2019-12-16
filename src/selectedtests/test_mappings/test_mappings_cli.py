@@ -2,14 +2,17 @@
 import click
 import json
 import logging
+import os
 import pytz
 import structlog
 
 from datetime import datetime
 
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api
 from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
+from selectedtests.test_mappings.update_test_mappings import update_test_mappings_since_last_commit
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -28,7 +31,7 @@ def _setup_logging(verbose: bool):
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 @click.pass_context
-def cli(ctx, verbose: str):
+def cli(ctx, verbose: bool):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = get_evg_api()
@@ -130,6 +133,19 @@ def create(
         print(json_dump)
 
     LOGGER.info("Finished processing test mappings")
+
+
+@cli.command()
+@click.option(
+    "--mongo-uri",
+    type=str,
+    default=lambda: os.environ.get("SELECTED_TESTS_MONGO_URI"),
+    help="Mongo URI to connect to.",
+)
+@click.pass_context
+def update(ctx, mongo_uri):
+    """Process test mappings since they were last processed."""
+    update_test_mappings_since_last_commit(ctx.obj["evg_api"], MongoWrapper.connect(mongo_uri))
 
 
 def main():

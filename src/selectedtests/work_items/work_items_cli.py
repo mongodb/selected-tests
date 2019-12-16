@@ -5,11 +5,9 @@ import pytz
 from datetime import datetime, timedelta
 from selectedtests.work_items.process_test_mapping_work_items import (
     process_queued_test_mapping_work_items,
-    update_test_mappings_since_last_commit,
 )
 from selectedtests.work_items.process_task_mapping_work_items import (
     process_queued_task_mapping_work_items,
-    update_task_mappings_since_last_commit,
 )
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api, setup_logging
@@ -78,13 +76,6 @@ def process_test_mappings(ctx, weeks_back):
 
 
 @cli.command()
-@click.pass_context
-def update_test_mappings(ctx):
-    """Process test mappings since they were last processed."""
-    update_test_mappings_since_last_commit(ctx.obj["evg_api"], ctx.obj["mongo"])
-
-
-@cli.command()
 @click.option("--project", type=str, required=True, help="Evergreen project to add.")
 @click.option(
     "--src-regex", type=str, required=True, help="Regular expression for project source files."
@@ -125,13 +116,6 @@ def process_task_mappings(ctx, weeks_back):
     # offset-aware.
     after_date = datetime.utcnow() - timedelta(weeks=weeks_back)
     process_queued_task_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
-
-
-@cli.command()
-@click.pass_context
-def update_task_mappings(ctx):
-    """Process task mappings since they were last processed."""
-    update_task_mappings_since_last_commit(ctx.obj["evg_api"], ctx.obj["mongo"])
 
 
 def main():

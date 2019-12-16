@@ -12,3 +12,9 @@ cronJobs:
   - name: process-task-mappings
     schedule: "0 2 * * *"
     command: ["/bin/sh", "cronjobs/process_task_mapping_work_items.sh"]
+  - name: update-test-mappings
+    schedule: "0 3 * * *"
+    command: ["/bin/sh", "cronjobs/update_test_mappings.sh"]
+  - name: update-task-mappings
+    schedule: "0 4 * * *"
+    command: ["/bin/sh", "cronjobs/update_task_mappings.sh"]

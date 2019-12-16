@@ -131,6 +131,15 @@ $ work-items process-test-mappings
 $ work-items process-task-mappings
 ```
 
+A cron job will run daily to update the two models described above. The cron job
+will look at all git commits and mainline patch builds from the previous day and
+create new test mappings and task mappings respectively. The commands to do this
+are as follows:
+```
+$ test-mappings update
+$ task-mappings update
+```
+
 ## Run app locally
 
 ### Set up environment
