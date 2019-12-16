@@ -120,8 +120,8 @@ def create(
         test_file_regex,
         module_name=module_name,
         module_commit_limit=CommitLimit(stop_at_date=after_date),
-        module_source_re=module_source_file_regex,
-        module_test_re=module_test_file_regex,
+        module_source_file_pattern=module_source_file_regex,
+        module_test_file_pattern=module_test_file_regex,
     )
 
     json_dump = json.dumps(test_mappings_result.test_mappings_list, indent=4)

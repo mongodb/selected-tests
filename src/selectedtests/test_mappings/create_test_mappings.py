@@ -28,25 +28,25 @@ def generate_test_mappings(
     evg_api: EvergreenApi,
     evergreen_project: str,
     project_commit_limit: CommitLimit,
-    source_file_regex: str,
-    test_file_regex: str,
+    source_file_pattern: str,
+    test_file_pattern: str,
     module_name: str = None,
     module_commit_limit: CommitLimit = None,
-    module_source_file_regex: str = None,
-    module_test_file_regex: str = None,
+    module_source_file_pattern: str = None,
+    module_test_file_pattern: str = None,
 ) -> TestMappingsResult:
     """
     Generate test mappings for an evergreen project and its associated module if module is provided.
 
     :param evg_api: An instance of the evg_api client.
     :param evergreen_project: The name of the evergreen project to analyze.
-    :param project_commit_limit: The point in time at which to start analyzing project commits.
-    :param source_file_regex: Regex pattern to match changed source files against.
-    :param test_file_regex: Regex pattern to match changed test files against.
+    :param project_commit_limit: The point at which to start analyzing project commits.
+    :param source_file_pattern: Pattern to match changed source files against.
+    :param test_file_pattern: Pattern to match changed test files against.
     :param module_name: The name of the module to analyze.
-    :param module_commit_limit: The point in time at which to start analyzing commits of the module.
-    :param module_source_file_regex: Regex pattern to match changed module source files against.
-    :param module_test_file_regex: Regex pattern to match changed module test files against.
+    :param module_commit_limit: The point at which to start analyzing commits of the module.
+    :param module_source_file_pattern: Pattern to match changed module source files against.
+    :param module_test_file_pattern: Pattern to match changed module test files against.
     :return: An instance of TestMappingsResult.
     """
     log = LOGGER.bind(
@@ -57,13 +57,13 @@ def generate_test_mappings(
     )
     log.info("Starting to generate test mappings")
 
-    source_re = re.compile(source_file_regex)
-    test_re = re.compile(test_file_regex)
+    source_re = re.compile(source_file_pattern)
+    test_re = re.compile(test_file_pattern)
     module_source_re = None
     module_test_re = None
     if module_name:
-        module_source_re = re.compile(module_source_file_regex)
-        module_test_re = re.compile(module_test_file_regex)
+        module_source_re = re.compile(module_source_file_pattern)
+        module_test_re = re.compile(module_test_file_pattern)
 
     most_recent_module_commit = None
     with TemporaryDirectory() as temp_dir:
@@ -106,7 +106,7 @@ def generate_project_test_mappings(
     :param temp_dir: The place where to clone the repo to.
     :param source_re: Regex pattern to match changed source files against.
     :param test_re: Regex pattern to match changed test files against.
-    :param commit_limit: The point in time at which to start analyzing project commits's repo.
+    :param commit_limit: The point at which to start analyzing project commits's repo.
     :return: A list of test mappings for the project and the most recent commit sha analyzed.
     """
     evg_project = get_evg_project(evg_api, evergreen_project)
@@ -142,7 +142,7 @@ def generate_module_test_mappings(
     :param temp_dir: The place where to clone the repo to.
     :param module_source_re: Regex pattern to match changed module source files against.
     :param module_test_re: Regex pattern to match changed module test files against.
-    :param commit_limit: The point in time at which to start analyzing commits of the module's repo.
+    :param commit_limit: The point at which to start analyzing commits of the module's repo.
     :return: A list of test mappings for the project and the most recent commit sha analyzed.
     """
     module = get_evg_module_for_project(evg_api, evergreen_project, module_name)
@@ -206,7 +206,7 @@ class TestMappings(object):
         :param repo: The repo that contains the source code for the evergreen project.
         :param source_re: Regex pattern to match changed source files against.
         :param test_re: Regex pattern to match changed test files against.
-        :param commit_limit: The point in time at which to start analyzing commits of the repo.
+        :param commit_limit: The point at which to start analyzing commits of the repo.
         :param project: The name of the evergreen project to analyze.
         :param branch: The branch of the git repo used for the evergreen project.
         :return: An instance of the test mappings class

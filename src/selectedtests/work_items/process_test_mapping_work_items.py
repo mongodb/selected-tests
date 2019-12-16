@@ -117,8 +117,8 @@ def _seed_test_mappings_for_project(
         work_item.test_file_regex,
         module_name=work_item.module,
         module_commit_limit=CommitLimit(stop_at_date=after_date),
-        module_source_file_regex=work_item.module_source_file_regex,
-        module_test_file_regex=work_item.module_test_file_regex,
+        module_source_file_pattern=work_item.module_source_file_regex,
+        module_test_file_pattern=work_item.module_test_file_regex,
     )
     _create_project_in_test_mappings_config(mongo, work_item, test_mappings_result)
     if test_mappings_result.test_mappings_list:

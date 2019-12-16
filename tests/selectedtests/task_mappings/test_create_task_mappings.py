@@ -715,8 +715,8 @@ class TestGenerateTaskMappings:
             VersionLimit(stop_at_version_id="my-version"),
             ".*src",
             module_name="my-module",
-            module_source_file_regex=".*src",
-            build_variant_regex=".*!",
+            module_source_file_pattern=".*src",
+            build_variant_pattern=".*!",
         )
         assert task_mappings == ["mock-mappings"]
         assert most_recent_version_analyzed == "most-recent-version-analyzed"
@@ -732,7 +732,7 @@ class TestGenerateTaskMappings:
             "mongodb-mongo-master",
             VersionLimit(stop_at_version_id="my-version"),
             ".*src",
-            build_variant_regex=".*!",
+            build_variant_pattern=".*!",
         )
         assert task_mappings == ["mock-mappings"]
         assert most_recent_version_analyzed == "most-recent-version-analyzed"

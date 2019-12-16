@@ -71,8 +71,7 @@ def cli(ctx, verbose: bool):
 @click.option(
     "--build-variant-regex",
     type=str,
-    help="Regex that will be used to decide what build variants are analyzed. "
-    "Example: 'src.*'. Defaults to '!.*'",
+    help="Regex that will be used to decide what build variants are analyzed. Example: 'src.*'.",
 )
 @click.option(
     "--output-file",

@@ -1,6 +1,8 @@
 """Classes for accessing mongo collections."""
+from __future__ import annotations
 
 from pymongo import MongoClient
+from pymongo.collection import Collection
 
 
 class MongoWrapper(object):
@@ -15,7 +17,7 @@ class MongoWrapper(object):
         self.client = mongo_client
 
     @classmethod
-    def connect(cls, mongo_uri: str):
+    def connect(cls, mongo_uri: str) -> MongoWrapper:
         """
         Create wrapper for mongo client to given mongo URI.
 
@@ -25,7 +27,7 @@ class MongoWrapper(object):
         client = MongoClient(mongo_uri)
         return cls(client)
 
-    def test_mappings_queue(self):
+    def test_mappings_queue(self) -> Collection:
         """
         Get 'test_mappings_queue' collection on selected_tests database.
 
@@ -33,7 +35,7 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.test_mappings_queue
 
-    def task_mappings_queue(self):
+    def task_mappings_queue(self) -> Collection:
         """
         Get 'task_mappings_queue' collection on selected_tests database.
 
@@ -41,7 +43,7 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.task_mappings_queue
 
-    def test_mappings(self):
+    def test_mappings(self) -> Collection:
         """
         Get 'test_mappings' collection on selected_tests database.
 
@@ -49,7 +51,7 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.test_mappings
 
-    def task_mappings(self):
+    def task_mappings(self) -> Collection:
         """
         Get 'task_mappings' collection on selected_tests database.
 
@@ -57,7 +59,7 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.task_mappings
 
-    def test_mappings_project_config(self):
+    def test_mappings_project_config(self) -> Collection:
         """
         Get 'test_mappings_project_config' collection on selected_tests database.
 
@@ -65,7 +67,7 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.test_mappings_project_config
 
-    def task_mappings_project_config(self):
+    def task_mappings_project_config(self) -> Collection:
         """
         Get 'task_mappings_project_config' collection on selected_tests database.
 

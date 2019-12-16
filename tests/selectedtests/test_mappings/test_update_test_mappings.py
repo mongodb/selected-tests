@@ -49,8 +49,8 @@ class TestUpdateTestMappingsSinceLastCommit:
             "^jstests",
             module_commit_limit=my_commit_limit,
             module_name="module-1",
-            module_source_file_regex="^src",
-            module_test_file_regex="^src",
+            module_source_file_pattern="^src",
+            module_test_file_pattern="^src",
         )
         mongo_mock.test_mappings_project_config.return_value.update_one.assert_called_once_with(
             {"project": "project-1"},

@@ -44,8 +44,8 @@ def update_test_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWr
             module_commit_limit=CommitLimit(
                 stop_at_commit_sha=project_config["most_recent_module_commit_analyzed"]
             ),
-            module_source_file_regex=project_config["module_source_re"],
-            module_test_file_regex=project_config["module_source_re"],
+            module_source_file_pattern=project_config["module_source_re"],
+            module_test_file_pattern=project_config["module_source_re"],
         )
         _update_test_mappings_config(mongo, project_config["project"], test_mappings_result)
         if test_mappings_result.test_mappings_list:

@@ -99,8 +99,8 @@ def _seed_task_mappings_for_project(
         VersionLimit(stop_at_date=after_date),
         work_item.source_file_regex,
         module_name=work_item.module,
-        module_source_file_regex=work_item.module_source_file_regex,
-        build_variant_regex=work_item.build_variant_regex,
+        module_source_file_pattern=work_item.module_source_file_regex,
+        build_variant_pattern=work_item.build_variant_regex,
     )
     _create_project_in_task_mappings_config(mongo, work_item, most_recent_version_analyzed)
     if mappings:
