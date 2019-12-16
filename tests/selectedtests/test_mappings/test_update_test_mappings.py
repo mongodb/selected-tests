@@ -15,7 +15,10 @@ def ns(relative_name):  # pylint: disable=invalid-name
 class TestUpdateTestMappingsSinceLastCommit:
     @patch(ns("generate_test_mappings"))
     @patch(ns("CommitLimit"))
-    def test_mappings_are_updated(self, commit_limit_mock, generate_test_mappings_mock):
+    @patch(ns("ProjectConfig.get"))
+    def test_mappings_are_updated(
+        self, project_config_mock, commit_limit_mock, generate_test_mappings_mock
+    ):
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
         my_commit_limit = MagicMock()
@@ -23,16 +26,18 @@ class TestUpdateTestMappingsSinceLastCommit:
         project_config_list = [
             {
                 "project": "project-1",
-                "most_recent_project_commit_analyzed": "project-sha-1",
-                "source_re": "^src",
-                "test_re": "^jstests",
-                "module": "module-1",
-                "most_recent_module_commit_analyzed": "module-sha-2",
-                "module_source_re": "^src",
-                "module_test_re": "^jstests",
+                "test_config": {
+                    "most_recent_project_commit_analyzed": "project-sha-1",
+                    "source_file_regex": "^src",
+                    "test_file_regex": "^jstests",
+                    "module": "module-1",
+                    "most_recent_module_commit_analyzed": "module-sha-2",
+                    "module_source_file_regex": "^src",
+                    "module_test_file_regex": "^jstests",
+                },
             }
         ]
-        mongo_mock.test_mappings_project_config.return_value.find.return_value = project_config_list
+        mongo_mock.project_config.return_value.find.return_value = project_config_list
         generate_test_mappings_mock.return_value = TestMappingsResult(
             test_mappings_list=["mock-mapping"],
             most_recent_project_commit_analyzed="last-project-sha-analyzed",
@@ -52,13 +57,9 @@ class TestUpdateTestMappingsSinceLastCommit:
             module_source_file_pattern="^src",
             module_test_file_pattern="^src",
         )
-        mongo_mock.test_mappings_project_config.return_value.update_one.assert_called_once_with(
-            {"project": "project-1"},
-            {
-                "$set": {
-                    "most_recent_project_commit_analyzed": "last-project-sha-analyzed",
-                    "most_recent_module_commit_analyzed": "last-module-sha-analyzed",
-                }
-            },
+        test_config_mock = project_config_mock.return_value.test_config
+        test_config_mock.update_most_recent_commits_analyzed.assert_called_once_with(
+            "last-project-sha-analyzed", "last-module-sha-analyzed"
         )
+        project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
         mongo_mock.test_mappings.return_value.insert_many.assert_called_once_with(["mock-mapping"])

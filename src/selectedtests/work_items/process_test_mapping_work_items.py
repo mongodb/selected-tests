@@ -7,6 +7,7 @@ from evergreen.api import EvergreenApi
 from pymongo.collection import Collection
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.project_config import ProjectConfig
 from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
@@ -78,22 +79,6 @@ def _process_one_test_mapping_work_item(
         work_item.complete(mongo.test_mappings_queue())
 
 
-def _create_project_in_test_mappings_config(mongo, work_item, test_mappings_result):
-    result = test_mappings_result
-    mongo.test_mappings_project_config().insert_one(
-        {
-            "project": work_item.project,
-            "most_recent_project_commit_analyzed": result.most_recent_project_commit_analyzed,
-            "source_re": work_item.source_file_regex,
-            "test_re": work_item.test_file_regex,
-            "module": work_item.module,
-            "most_recent_module_commit_analyzed": result.most_recent_module_commit_analyzed,
-            "module_source_re": work_item.module_source_file_regex,
-            "module_test_re": work_item.module_test_file_regex,
-        }
-    )
-
-
 def _seed_test_mappings_for_project(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
@@ -120,7 +105,19 @@ def _seed_test_mappings_for_project(
         module_source_file_pattern=work_item.module_source_file_regex,
         module_test_file_pattern=work_item.module_test_file_regex,
     )
-    _create_project_in_test_mappings_config(mongo, work_item, test_mappings_result)
+
+    project_config = ProjectConfig.get(mongo.project_config(), work_item.project)
+    project_config.test_config.update(
+        test_mappings_result.most_recent_project_commit_analyzed,
+        work_item.source_file_regex,
+        work_item.test_file_regex,
+        work_item.module,
+        test_mappings_result.most_recent_module_commit_analyzed,
+        work_item.module_source_file_regex,
+        work_item.module_test_file_regex,
+    )
+    project_config.save(mongo.project_config())
+
     if test_mappings_result.test_mappings_list:
         mongo.test_mappings().insert_many(test_mappings_result.test_mappings_list)
     else:

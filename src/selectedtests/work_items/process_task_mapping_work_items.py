@@ -6,10 +6,11 @@ from evergreen.api import EvergreenApi
 from typing import Iterable, Any
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.project_config import ProjectConfig
 from selectedtests.task_mappings.create_task_mappings import generate_task_mappings
+from selectedtests.task_mappings.version_limit import VersionLimit
 from selectedtests.work_items.process_test_mapping_work_items import clear_in_progress_work
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
-from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = structlog.get_logger()
 
@@ -65,19 +66,6 @@ def _process_one_task_mapping_work_item(
         work_item.complete(mongo.task_mappings_queue())
 
 
-def _create_project_in_task_mappings_config(mongo, work_item, most_recent_version_analyzed):
-    mongo.task_mappings_project_config().insert_one(
-        {
-            "project": work_item.project,
-            "most_recent_version_analyzed": most_recent_version_analyzed,
-            "source_re": work_item.source_file_regex,
-            "build_re": work_item.build_variant_regex,
-            "module": work_item.module,
-            "module_source_re": work_item.module_source_file_regex,
-        }
-    )
-
-
 def _seed_task_mappings_for_project(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
@@ -102,7 +90,17 @@ def _seed_task_mappings_for_project(
         module_source_file_pattern=work_item.module_source_file_regex,
         build_variant_pattern=work_item.build_variant_regex,
     )
-    _create_project_in_task_mappings_config(mongo, work_item, most_recent_version_analyzed)
+
+    project_config = ProjectConfig.get(mongo.project_config(), work_item.project)
+    project_config.task_config.update(
+        most_recent_version_analyzed,
+        work_item.source_file_regex,
+        work_item.build_variant_regex,
+        work_item.module,
+        work_item.module_source_file_regex,
+    )
+    project_config.save(mongo.project_config())
+
     if mappings:
         mongo.task_mappings().insert_many(mappings)
     else:

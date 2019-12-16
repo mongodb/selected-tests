@@ -44,7 +44,7 @@ def generate_task_mappings(
     :param module_name: The name of the module to analyze.
     :param module_source_file_pattern: Pattern to match changed module source files against.
     :param build_variant_pattern: Pattern to match build variant names against.
-    :return: An instance of TestMappingsResult.
+    :return: An instance of TestMappingsResult and the most recent version analyzed during analysis.
     """
     source_re = re.compile(source_file_pattern)
     module_source_re = None
@@ -313,7 +313,7 @@ def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mapp
         task_mappings_for_file[SEEN_COUNT_KEY] = task_mappings_for_file[SEEN_COUNT_KEY] + 1
         build_mappings = task_mappings_for_file[TASK_BUILDS_KEY]
         for build_name in flipped_tasks:
-            builds_to_task_mappings: Dict[str:Dict] = build_mappings.setdefault(build_name, {})
+            builds_to_task_mappings: Dict[str, Dict] = build_mappings.setdefault(build_name, {})
             for cur_task in flipped_tasks.get(build_name):
                 cur_flips_for_task = builds_to_task_mappings.setdefault(cur_task, 0)
                 builds_to_task_mappings[cur_task] = cur_flips_for_task + 1

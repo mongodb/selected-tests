@@ -90,7 +90,8 @@ class TestProcessOneTaskMappingWorkItem:
 
 class TestSeedTaskMappingsForProject:
     @patch(ns("generate_task_mappings"))
-    def test_task_mappings_are_created(self, generate_task_mappings_mock):
+    @patch(ns("ProjectConfig.get"))
+    def test_task_mappings_are_created(self, project_config_mock, generate_task_mappings_mock):
         generate_task_mappings_mock.return_value = (
             ["mock-response"],
             "most-recent-version-analyzed",
@@ -104,20 +105,19 @@ class TestSeedTaskMappingsForProject:
             evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
-        mongo_mock.task_mappings_project_config.return_value.insert_one.assert_called_once_with(
-            {
-                "project": work_item_mock.project,
-                "most_recent_version_analyzed": "most-recent-version-analyzed",
-                "source_re": work_item_mock.source_file_regex,
-                "build_re": work_item_mock.build_variant_regex,
-                "module": work_item_mock.module,
-                "module_source_re": work_item_mock.module_source_file_regex,
-            }
+        project_config_mock.return_value.task_config.update.assert_called_once_with(
+            "most-recent-version-analyzed",
+            work_item_mock.source_file_regex,
+            work_item_mock.build_variant_regex,
+            work_item_mock.module,
+            work_item_mock.module_source_file_regex,
         )
+        project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
         mongo_mock.task_mappings.return_value.insert_many.assert_called_once_with(["mock-response"])
 
     @patch(ns("generate_task_mappings"))
-    def test_no_task_mappings_are_created(self, generate_task_mappings_mock):
+    @patch(ns("ProjectConfig.get"))
+    def test_no_task_mappings_are_created(self, project_config_mock, generate_task_mappings_mock):
         generate_task_mappings_mock.return_value = ([], "most-recent-version-analyzed")
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
@@ -131,14 +131,12 @@ class TestSeedTaskMappingsForProject:
             evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
-        mongo_mock.task_mappings_project_config.return_value.insert_one.assert_called_once_with(
-            {
-                "project": work_item_mock.project,
-                "most_recent_version_analyzed": "most-recent-version-analyzed",
-                "source_re": work_item_mock.source_file_regex,
-                "build_re": work_item_mock.build_variant_regex,
-                "module": work_item_mock.module,
-                "module_source_re": work_item_mock.module_source_file_regex,
-            }
+        project_config_mock.return_value.task_config.update.assert_called_once_with(
+            "most-recent-version-analyzed",
+            work_item_mock.source_file_regex,
+            work_item_mock.build_variant_regex,
+            work_item_mock.module,
+            work_item_mock.module_source_file_regex,
         )
+        project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
         mongo_mock.task_mappings.return_value.insert_many.assert_not_called()

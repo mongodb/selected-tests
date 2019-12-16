@@ -70,7 +70,8 @@ class TestProcessOneTestMappingWorkItem:
 
 class TestSeedTestMappingsForProject:
     @patch(ns("generate_test_mappings"))
-    def test_mappings_are_created(self, generate_test_mappings_mock):
+    @patch(ns("ProjectConfig.get"))
+    def test_mappings_are_created(self, project_config_mock, generate_test_mappings_mock):
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
         logger_mock = MagicMock()
@@ -85,22 +86,21 @@ class TestSeedTestMappingsForProject:
             evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
-        mongo_mock.test_mappings_project_config.return_value.insert_one.assert_called_once_with(
-            {
-                "project": work_item_mock.project,
-                "most_recent_project_commit_analyzed": "last-project-sha-analyzed",
-                "source_re": work_item_mock.source_file_regex,
-                "test_re": work_item_mock.test_file_regex,
-                "module": work_item_mock.module,
-                "most_recent_module_commit_analyzed": "last-module-sha-analyzed",
-                "module_source_re": work_item_mock.module_source_file_regex,
-                "module_test_re": work_item_mock.module_test_file_regex,
-            }
+        project_config_mock.return_value.test_config.update.assert_called_once_with(
+            "last-project-sha-analyzed",
+            work_item_mock.source_file_regex,
+            work_item_mock.test_file_regex,
+            work_item_mock.module,
+            "last-module-sha-analyzed",
+            work_item_mock.module_source_file_regex,
+            work_item_mock.module_test_file_regex,
         )
+        project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
         mongo_mock.test_mappings.return_value.insert_many.assert_called_once_with(["mock-mapping"])
 
     @patch(ns("generate_test_mappings"))
-    def test_no_test_mappings_are_created(self, generate_test_mappings_mock):
+    @patch(ns("ProjectConfig.get"))
+    def test_no_test_mappings_are_created(self, project_config_mock, generate_test_mappings_mock):
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
         logger_mock = MagicMock()
@@ -118,16 +118,14 @@ class TestSeedTestMappingsForProject:
             evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
-        mongo_mock.test_mappings_project_config.return_value.insert_one.assert_called_once_with(
-            {
-                "project": work_item_mock.project,
-                "most_recent_project_commit_analyzed": "last-project-sha-analyzed",
-                "source_re": work_item_mock.source_file_regex,
-                "test_re": work_item_mock.test_file_regex,
-                "module": work_item_mock.module,
-                "most_recent_module_commit_analyzed": "last-module-sha-analyzed",
-                "module_source_re": work_item_mock.module_source_file_regex,
-                "module_test_re": work_item_mock.module_test_file_regex,
-            }
+        project_config_mock.return_value.test_config.update.assert_called_once_with(
+            "last-project-sha-analyzed",
+            work_item_mock.source_file_regex,
+            work_item_mock.test_file_regex,
+            work_item_mock.module,
+            "last-module-sha-analyzed",
+            work_item_mock.module_source_file_regex,
+            work_item_mock.module_test_file_regex,
         )
+        project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
         mongo_mock.test_mappings.return_value.insert_many.assert_not_called()
