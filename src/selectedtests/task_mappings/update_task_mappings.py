@@ -1,3 +1,4 @@
+"""Methods to update task mappings for a project."""
 import structlog
 
 from evergreen.api import EvergreenApi
