@@ -1,6 +1,4 @@
 """Method to create the task mappings for a given evergreen project."""
-from __future__ import annotations
-
 import re
 
 from re import match
@@ -88,7 +86,7 @@ class TaskMappings:
         module_name: str = None,
         module_file_regex: Pattern = None,
         build_regex: Pattern = None,
-    ) -> Tuple[TaskMappings, str]:
+    ):
         """
         Create the task mappings for an evergreen project. Optionally looks at an associated module.
 
