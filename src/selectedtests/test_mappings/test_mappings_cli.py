@@ -1,13 +1,14 @@
 """Cli entry point for the test-mappings command."""
 import click
 import json
-import logging
 import os
 import pytz
 import structlog
 
 from datetime import datetime
+from miscutils.logging_config import Verbosity
 
+from selectedtests.config.logging_config import config_logging
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api
 from selectedtests.test_mappings.commit_limit import CommitLimit
@@ -19,15 +20,6 @@ LOGGER = structlog.get_logger(__name__)
 EXTERNAL_LIBRARIES = ["evergreen.api", "urllib3"]
 
 
-def _setup_logging(verbose: bool):
-    """Set up logging configuration."""
-    structlog.configure(logger_factory=structlog.stdlib.LoggerFactory())
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(level=level)
-    for external_lib in EXTERNAL_LIBRARIES:
-        logging.getLogger(external_lib).setLevel(logging.WARNING)
-
-
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 @click.pass_context
@@ -36,7 +28,8 @@ def cli(ctx, verbose: bool):
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = get_evg_api()
 
-    _setup_logging(verbose)
+    verbosity = Verbosity.DEBUG if verbose else Verbosity.INFO
+    config_logging(verbosity, human_readable=False)
 
 
 @cli.command()

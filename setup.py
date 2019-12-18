@@ -44,6 +44,7 @@ setup(
         'evergreen.py==0.6.14',
         'flask-restplus==0.13.0',
         'flask==1.1.1',
+        'misc-utils-py == 0.1.1',
         'pymongo[tls]==3.8.0',
         'structlog==19.1.0',
     ],

@@ -1,7 +1,5 @@
 """Helper functions for Cli entry points."""
 import os
-import structlog
-import logging
 
 from evergreen.api import RetryingEvergreenApi
 from evergreen.config import EvgAuth
@@ -27,10 +25,3 @@ def get_mongo_wrapper() -> MongoWrapper:
     """
     mongo_uri = os.environ.get("SELECTED_TESTS_MONGO_URI")
     return MongoWrapper.connect(mongo_uri)
-
-
-def setup_logging(verbose: bool):
-    """Set up logging configuration."""
-    structlog.configure(logger_factory=structlog.stdlib.LoggerFactory())
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(level=level)

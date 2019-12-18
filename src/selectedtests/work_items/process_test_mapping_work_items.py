@@ -5,6 +5,7 @@ import structlog
 
 from evergreen.api import EvergreenApi
 from pymongo.collection import Collection
+from structlog.threadlocal import tmp_bind
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.project_config import ProjectConfig
@@ -73,10 +74,10 @@ def _process_one_test_mapping_work_item(
     :param after_date: The date at which to start analyzing commits of the project.
     :return: Whether all work items have been processed.
     """
-    log = LOGGER.bind(project=work_item.project, module=work_item.module)
-    log.info("Starting test mapping work item processing for work_item")
-    if _seed_test_mappings_for_project(evg_api, mongo, work_item, after_date, log):
-        work_item.complete(mongo.test_mappings_queue())
+    with tmp_bind(LOGGER, project=work_item.project, evergreen_module=work_item.module) as log:
+        log.info("Starting test mapping work item processing for work_item")
+        if _seed_test_mappings_for_project(evg_api, mongo, work_item, after_date, log):
+            work_item.complete(mongo.test_mappings_queue())
 
 
 def _seed_test_mappings_for_project(
