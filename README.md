@@ -75,7 +75,6 @@ Its options are described below.
 
   --build-variant-regex           Regex to determine what build variants to analyze. Compares to their display name.
                                   Example: 'src.*'
-                                  Defaults to: '!.*'
 
   --help                          Show this message and exit.
 ```
@@ -129,6 +128,15 @@ process them so that test and task mappings for those projects are added to the 
 ```
 $ work-items process-test-mappings
 $ work-items process-task-mappings
+```
+
+A cron job will run daily to update the two models described above. The cron job
+will look at all git commits and mainline patch builds from the previous day and
+create new test mappings and task mappings respectively. The commands to do this
+are as follows:
+```
+$ test-mappings update
+$ task-mappings update
 ```
 
 ## Run app locally

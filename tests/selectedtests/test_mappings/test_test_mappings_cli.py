@@ -17,7 +17,7 @@ def ns(relative_name):
 class TestCli:
     @patch(ns("get_evg_api"))
     @patch(ns("generate_test_mappings"))
-    def test_arguments_passed_in(self, generate_test_mappings_mock, get_evg_api_mock):
+    def test_create_with_arguments_passed_in(self, generate_test_mappings_mock, get_evg_api_mock):
         mock_evg_api = MagicMock()
         get_evg_api_mock.return_value = mock_evg_api
         generate_test_mappings_mock.return_value = TestMappingsResult(
@@ -57,7 +57,7 @@ class TestCli:
 
     @patch(ns("get_evg_api"))
     @patch(ns("generate_test_mappings"))
-    def test_invalid_dates(self, generate_test_mappings_mock, get_evg_api_mock):
+    def test_create_with_invalid_dates(self, generate_test_mappings_mock, get_evg_api_mock):
         mock_evg_api = MagicMock()
         get_evg_api_mock.return_value = mock_evg_api
         generate_test_mappings_mock.return_value = TestMappingsResult(
@@ -93,7 +93,9 @@ class TestCli:
 
     @patch(ns("get_evg_api"))
     @patch(ns("generate_test_mappings"))
-    def test_module_regexes_not_passed_in(self, generate_test_mappings_mock, get_evg_api_mock):
+    def test_create_with_module_regexes_not_passed_in(
+        self, generate_test_mappings_mock, get_evg_api_mock
+    ):
         mock_evg_api = MagicMock()
         get_evg_api_mock.return_value = mock_evg_api
         generate_test_mappings_mock.return_value = TestMappingsResult(
@@ -127,3 +129,17 @@ class TestCli:
                 "A module source file regex is required when a module is being analyzed"
                 in result.stdout
             )
+
+    @patch(ns("get_evg_api"))
+    @patch(ns("MongoWrapper.connect"))
+    @patch(ns("update_test_mappings_since_last_commit"))
+    def test_update(
+        self, update_test_mappings_since_last_commit_mock, mongo_wrapper_mock, evg_api_mock
+    ):
+        evg_api_mock.get_api.return_value = MagicMock()
+        mongo_wrapper_mock.get_api.return_value = MagicMock()
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(cli, ["update", "--mongo-uri=localhost"])
+            assert result.exit_code == 0

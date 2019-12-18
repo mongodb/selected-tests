@@ -2,15 +2,17 @@
 import click
 import json
 import logging
+import os
 import pytz
-import re
 import structlog
 
 from datetime import datetime
 
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api
 from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
+from selectedtests.test_mappings.update_test_mappings import update_test_mappings_since_last_commit
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -29,7 +31,7 @@ def _setup_logging(verbose: bool):
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 @click.pass_context
-def cli(ctx, verbose: str):
+def cli(ctx, verbose: bool):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = get_evg_api()
@@ -96,10 +98,6 @@ def create(
         )
         return
 
-    source_re = re.compile(source_file_regex)
-    test_re = re.compile(test_file_regex)
-    module_source_re = None
-    module_test_re = None
     if module_name:
         if not module_source_file_regex:
             raise click.ClickException(
@@ -111,8 +109,6 @@ def create(
                 "A module test file regex is required when a module is being analyzed"
             )
             return
-        module_source_re = re.compile(module_source_file_regex)
-        module_test_re = re.compile(module_test_file_regex)
 
     LOGGER.info(f"Creating test mappings for {evergreen_project}")
 
@@ -120,12 +116,12 @@ def create(
         evg_api,
         evergreen_project,
         CommitLimit(stop_at_date=after_date),
-        source_re,
-        test_re,
+        source_file_regex,
+        test_file_regex,
         module_name=module_name,
         module_commit_limit=CommitLimit(stop_at_date=after_date),
-        module_source_re=module_source_re,
-        module_test_re=module_test_re,
+        module_source_file_pattern=module_source_file_regex,
+        module_test_file_pattern=module_test_file_regex,
     )
 
     json_dump = json.dumps(test_mappings_result.test_mappings_list, indent=4)
@@ -137,6 +133,19 @@ def create(
         print(json_dump)
 
     LOGGER.info("Finished processing test mappings")
+
+
+@cli.command()
+@click.option(
+    "--mongo-uri",
+    type=str,
+    default=lambda: os.environ.get("SELECTED_TESTS_MONGO_URI"),
+    help="Mongo URI to connect to.",
+)
+@click.pass_context
+def update(ctx, mongo_uri):
+    """Process test mappings since they were last processed."""
+    update_test_mappings_since_last_commit(ctx.obj["evg_api"], MongoWrapper.connect(mongo_uri))
 
 
 def main():

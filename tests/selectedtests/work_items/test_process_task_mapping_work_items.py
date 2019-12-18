@@ -1,5 +1,6 @@
-import selectedtests.work_items.process_task_mapping_work_items as under_test
 from unittest.mock import MagicMock, patch
+
+import selectedtests.work_items.process_task_mapping_work_items as under_test
 
 
 NS = "selectedtests.work_items.process_task_mapping_work_items"
@@ -56,12 +57,12 @@ class TestGenerateTaskMappingWorkItems:
 
 
 class TestProcessOneTaskMappingWorkItem:
-    @patch(ns("_run_create_task_mappings"))
+    @patch(ns("_seed_task_mappings_for_project"))
     def test_work_items_completed_successfully_are_marked_complete(
-        self, run_create_task_mappings_mock
+        self, run_generate_task_mappings_mock
     ):
         work_item_mock = MagicMock()
-        run_create_task_mappings_mock.return_value = True
+        run_generate_task_mappings_mock.return_value = True
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
@@ -71,12 +72,12 @@ class TestProcessOneTaskMappingWorkItem:
 
         work_item_mock.complete.assert_called_once()
 
-    @patch(ns("_run_create_task_mappings"))
+    @patch(ns("_seed_task_mappings_for_project"))
     def test_work_items_completed_unsuccessfully_are_marked_not_complete(
-        self, run_create_task_mappings_mock
+        self, run_generate_task_mappings_mock
     ):
         work_item_mock = MagicMock()
-        run_create_task_mappings_mock.return_value = False
+        run_generate_task_mappings_mock.return_value = False
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
 
@@ -87,13 +88,12 @@ class TestProcessOneTaskMappingWorkItem:
         work_item_mock.next.return_value.complete.assert_not_called()
 
 
-class TestRunCreateTaskMappings:
-    @patch(ns("TaskMappings.create_task_mappings"))
-    def test_task_mappings_are_created(self, create_task_mappings_mock):
-        task_mappings_mock = MagicMock()
-        task_mappings_mock.transform.return_value = ["mock-response"]
-        create_task_mappings_mock.return_value = (
-            task_mappings_mock,
+class TestSeedTaskMappingsForProject:
+    @patch(ns("generate_task_mappings"))
+    @patch(ns("ProjectConfig.get"))
+    def test_task_mappings_are_created(self, project_config_mock, generate_task_mappings_mock):
+        generate_task_mappings_mock.return_value = (
+            ["mock-response"],
             "most-recent-version-analyzed",
         )
         evg_api_mock = MagicMock()
@@ -101,20 +101,24 @@ class TestRunCreateTaskMappings:
         logger_mock = MagicMock()
         work_item_mock = MagicMock(source_file_regex="src", module=None)
 
-        under_test._run_create_task_mappings(
+        under_test._seed_task_mappings_for_project(
             evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
+        project_config_mock.return_value.task_config.update.assert_called_once_with(
+            "most-recent-version-analyzed",
+            work_item_mock.source_file_regex,
+            work_item_mock.build_variant_regex,
+            work_item_mock.module,
+            work_item_mock.module_source_file_regex,
+        )
+        project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
         mongo_mock.task_mappings.return_value.insert_many.assert_called_once_with(["mock-response"])
 
-    @patch(ns("TaskMappings.create_task_mappings"))
-    def test_no_mappings_are_created(self, create_task_mappings_mock):
-        task_mappings_mock = MagicMock()
-        task_mappings_mock.transform.return_value = []
-        create_task_mappings_mock.return_value = (
-            task_mappings_mock,
-            "most-recent-version-analyzed",
-        )
+    @patch(ns("generate_task_mappings"))
+    @patch(ns("ProjectConfig.get"))
+    def test_no_task_mappings_are_created(self, project_config_mock, generate_task_mappings_mock):
+        generate_task_mappings_mock.return_value = ([], "most-recent-version-analyzed")
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
         logger_mock = MagicMock()
@@ -123,9 +127,16 @@ class TestRunCreateTaskMappings:
         )
         work_item_mock = MagicMock(source_file_regex="src", module=None)
 
-        under_test._run_create_task_mappings(
+        under_test._seed_task_mappings_for_project(
             evg_api_mock, mongo_mock, work_item_mock, after_date=None, log=logger_mock
         )
 
+        project_config_mock.return_value.task_config.update.assert_called_once_with(
+            "most-recent-version-analyzed",
+            work_item_mock.source_file_regex,
+            work_item_mock.build_variant_regex,
+            work_item_mock.module,
+            work_item_mock.module_source_file_regex,
+        )
+        project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
         mongo_mock.task_mappings.return_value.insert_many.assert_not_called()
-        work_item_mock = MagicMock(source_file_regex="src", test_file_regex="test", module=None)

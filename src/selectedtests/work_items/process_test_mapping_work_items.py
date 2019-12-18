@@ -1,13 +1,13 @@
 """Functions for processing project test mapping work items."""
 from datetime import datetime
 from typing import Any, Iterable
-import re
 import structlog
 
 from evergreen.api import EvergreenApi
 from pymongo.collection import Collection
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.project_config import ProjectConfig
 from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
@@ -75,11 +75,11 @@ def _process_one_test_mapping_work_item(
     """
     log = LOGGER.bind(project=work_item.project, module=work_item.module)
     log.info("Starting test mapping work item processing for work_item")
-    if _run_create_test_mappings(evg_api, mongo, work_item, after_date, log):
+    if _seed_test_mappings_for_project(evg_api, mongo, work_item, after_date, log):
         work_item.complete(mongo.test_mappings_queue())
 
 
-def _run_create_test_mappings(
+def _seed_test_mappings_for_project(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
     work_item: ProjectTestMappingWorkItem,
@@ -94,25 +94,30 @@ def _run_create_test_mappings(
     :param work_item: An instance of ProjectTestMappingWorkItem.
     :param after_date: The date at which to start analyzing commits of the project.
     """
-    source_re = re.compile(work_item.source_file_regex)
-    test_re = re.compile(work_item.test_file_regex)
-    module_source_re = None
-    module_test_re = None
-    if work_item.module:
-        module_source_re = re.compile(work_item.module_source_file_regex)
-        module_test_re = re.compile(work_item.module_test_file_regex)
-
     test_mappings_result = generate_test_mappings(
         evg_api,
         work_item.project,
         CommitLimit(stop_at_date=after_date),
-        source_re,
-        test_re,
+        work_item.source_file_regex,
+        work_item.test_file_regex,
         module_name=work_item.module,
         module_commit_limit=CommitLimit(stop_at_date=after_date),
-        module_source_re=module_source_re,
-        module_test_re=module_test_re,
+        module_source_file_pattern=work_item.module_source_file_regex,
+        module_test_file_pattern=work_item.module_test_file_regex,
     )
+
+    project_config = ProjectConfig.get(mongo.project_config(), work_item.project)
+    project_config.test_config.update(
+        test_mappings_result.most_recent_project_commit_analyzed,
+        work_item.source_file_regex,
+        work_item.test_file_regex,
+        work_item.module,
+        test_mappings_result.most_recent_module_commit_analyzed,
+        work_item.module_source_file_regex,
+        work_item.module_test_file_regex,
+    )
+    project_config.save(mongo.project_config())
+
     if test_mappings_result.test_mappings_list:
         mongo.test_mappings().insert_many(test_mappings_result.test_mappings_list)
     else:

@@ -1,6 +1,6 @@
 """Classes for accessing mongo collections."""
-
 from pymongo import MongoClient
+from pymongo.collection import Collection
 
 
 class MongoWrapper(object):
@@ -25,7 +25,7 @@ class MongoWrapper(object):
         client = MongoClient(mongo_uri)
         return cls(client)
 
-    def test_mappings_queue(self):
+    def test_mappings_queue(self) -> Collection:
         """
         Get 'test_mappings_queue' collection on selected_tests database.
 
@@ -33,7 +33,7 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.test_mappings_queue
 
-    def task_mappings_queue(self):
+    def task_mappings_queue(self) -> Collection:
         """
         Get 'task_mappings_queue' collection on selected_tests database.
 
@@ -41,7 +41,7 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.task_mappings_queue
 
-    def test_mappings(self):
+    def test_mappings(self) -> Collection:
         """
         Get 'test_mappings' collection on selected_tests database.
 
@@ -49,10 +49,18 @@ class MongoWrapper(object):
         """
         return self.client.selected_tests.test_mappings
 
-    def task_mappings(self):
+    def task_mappings(self) -> Collection:
         """
         Get 'task_mappings' collection on selected_tests database.
 
         :return: task_mappings collection.
         """
         return self.client.selected_tests.task_mappings
+
+    def project_config(self) -> Collection:
+        """
+        Get 'project_config' collection on selected_tests database.
+
+        :return: project_config collection.
+        """
+        return self.client.selected_tests.project_config

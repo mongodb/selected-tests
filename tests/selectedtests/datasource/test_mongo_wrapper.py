@@ -45,3 +45,10 @@ class TestMongoWrapper:
         wrapper = under_test.MongoWrapper(client_mock)
 
         assert client_mock.selected_tests.test_mappings == wrapper.test_mappings()
+
+    def test_getting_project_config_collection(self):
+        client_mock = MagicMock()
+
+        wrapper = under_test.MongoWrapper(client_mock)
+
+        assert client_mock.selected_tests.project_config == wrapper.project_config()
