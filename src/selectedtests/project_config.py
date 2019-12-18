@@ -67,6 +67,16 @@ class TaskConfig:
         """
         self.most_recent_version_analyzed = most_recent_version_analyzed
 
+    def as_dict(self):
+        """Return fields to be stored in database."""
+        return {
+            "most_recent_version_analyzed": self.most_recent_version_analyzed,
+            "source_file_regex": self.source_file_regex,
+            "build_variant_regex": self.build_variant_regex,
+            "module": self.module,
+            "module_source_file_regex": self.module_source_file_regex,
+        }
+
 
 class TestConfig:
     """Represents the test mappings config for a project config."""
@@ -149,6 +159,18 @@ class TestConfig:
         self.most_recent_project_commit_analyzed = most_recent_project_commit_analyzed
         self.most_recent_module_commit_analyzed = most_recent_module_commit_analyzed
 
+    def as_dict(self):
+        """Return fields to be stored in database."""
+        return {
+            "most_recent_project_commit_analyzed": self.most_recent_project_commit_analyzed,
+            "source_file_regex": self.source_file_regex,
+            "test_file_regex": self.test_file_regex,
+            "module": self.module,
+            "most_recent_module_commit_analyzed": self.most_recent_module_commit_analyzed,
+            "module_source_file_regex": self.module_source_file_regex,
+            "module_test_file_regex": self.module_test_file_regex,
+        }
+
 
 class ProjectConfig:
     """Represents a project config for an Evergreen project."""
@@ -183,26 +205,13 @@ class ProjectConfig:
 
         :param collection: The collection containing project config documents.
         """
-        task_config = {
-            "most_recent_version_analyzed": self.task_config.most_recent_version_analyzed,
-            "source_file_regex": self.task_config.source_file_regex,
-            "build_variant_regex": self.task_config.build_variant_regex,
-            "module": self.task_config.module,
-            "module_source_file_regex": self.task_config.module_source_file_regex,
-        }
-        most_recent_project_commit_analyzed = self.test_config.most_recent_project_commit_analyzed
-        most_recent_module_commit_analyzed = self.test_config.most_recent_module_commit_analyzed
-        test_config = {
-            "most_recent_project_commit_analyzed": most_recent_project_commit_analyzed,
-            "source_file_regex": self.test_config.source_file_regex,
-            "test_file_regex": self.test_config.test_file_regex,
-            "module": self.test_config.module,
-            "most_recent_module_commit_analyzed": most_recent_module_commit_analyzed,
-            "module_source_file_regex": self.test_config.module_source_file_regex,
-            "module_test_file_regex": self.test_config.module_test_file_regex,
-        }
         collection.update(
             {"project": self.project},
-            {"$set": {"task_config": task_config, "test_config": test_config}},
+            {
+                "$set": {
+                    "task_config": self.task_config.as_dict(),
+                    "test_config": self.test_config.as_dict(),
+                }
+            },
             upsert=True,
         )
