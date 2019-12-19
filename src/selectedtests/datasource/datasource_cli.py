@@ -1,10 +1,12 @@
 """Cli entry point to setup db indexes."""
 import click
 import structlog
-import logging
 
 from pymongo.collection import Collection
 from pymongo import IndexModel, ASCENDING
+from miscutils.logging_config import Verbosity
+
+from selectedtests.config.logging_config import config_logging
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 LOGGER = structlog.get_logger()
@@ -21,13 +23,6 @@ def setup_indexes(collection: Collection):
     LOGGER.info("Adding indexes for collection", collection=collection.name)
 
 
-def _setup_logging(verbose: bool):
-    """Set up logging configuration."""
-    structlog.configure(logger_factory=structlog.stdlib.LoggerFactory())
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(level=level)
-
-
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 @click.option("--mongo-uri", required=True, type=str, help="Mongo URI to connect to.")
@@ -37,7 +32,8 @@ def cli(ctx, verbose: bool, mongo_uri: str):
     ctx.ensure_object(dict)
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
 
-    _setup_logging(verbose)
+    verbosity = Verbosity.DEBUG if verbose else Verbosity.INFO
+    config_logging(verbosity, human_readable=False)
 
 
 @cli.command()
