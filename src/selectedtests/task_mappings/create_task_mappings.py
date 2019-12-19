@@ -99,7 +99,7 @@ class TaskMappings:
         :param build_regex: Regex pattern to match build variant names against.
         :return: An instance of TaskMappings and version_id of the most recent version analyzed.
         """
-        LOGGER.info("Starting to generate task mappings", version_limit=version_limit.__dict__)
+        LOGGER.info("Starting to generate task mappings", version_limit=version_limit)
         project_versions = evg_api.versions_by_project(evergreen_project)
 
         task_mappings = {}
