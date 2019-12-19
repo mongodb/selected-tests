@@ -23,14 +23,20 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
+@click.option(
+    "--log-format",
+    default="text",
+    type=click.Choice(["text", "json"]),
+    help="Format to write logs with.",
+)
 @click.pass_context
-def cli(ctx, verbose: bool):
+def cli(ctx, verbose: bool, log_format: str):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = get_evg_api()
 
     verbosity = Verbosity.DEBUG if verbose else Verbosity.INFO
-    config_logging(verbosity, human_readable=False)
+    config_logging(verbosity, human_readable=log_format == "text")
 
 
 @cli.command()
