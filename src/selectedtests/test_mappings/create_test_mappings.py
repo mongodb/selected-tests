@@ -1,15 +1,16 @@
 """Test Mappings class to create test mappings."""
 import os.path
 import re
-import structlog
 
+from collections import defaultdict, namedtuple
 from tempfile import TemporaryDirectory
 from typing import Pattern, Tuple
-from collections import defaultdict, namedtuple
+
+import structlog
+
 from evergreen.api import EvergreenApi
 from git import Repo
-
-from selectedtests.evergreen_helper import get_evg_project, get_evg_module_for_project
+from selectedtests.evergreen_helper import get_evg_module_for_project, get_evg_project
 from selectedtests.git_helper import init_repo, modified_files_for_commit
 from selectedtests.test_mappings.commit_limit import CommitLimit
 

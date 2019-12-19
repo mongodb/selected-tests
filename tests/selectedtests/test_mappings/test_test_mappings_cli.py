@@ -1,8 +1,8 @@
 import json
 
-from click.testing import CliRunner
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+from click.testing import CliRunner
 from selectedtests.test_mappings.create_test_mappings import TestMappingsResult
 from selectedtests.test_mappings.test_mappings_cli import cli
 

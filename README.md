@@ -160,3 +160,14 @@ In order to run it locally, run
 ```
 pydocstyle src
 ```
+
+### isort
+
+This project is also checked with
+[isort](https://github.com/timothycrosley/isort). This sorts imports
+automatically.
+
+In order to run it locally, run
+```
+isort -rc src tests
+```

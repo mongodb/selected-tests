@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 
 import selectedtests.task_mappings.update_task_mappings as under_test
 
-
 NS = "selectedtests.task_mappings.update_task_mappings"
 
 

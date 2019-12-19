@@ -60,3 +60,14 @@ tasks:
           . venv/bin/activate
 
           pydocstyle src
+
+- name: check_isort
+  commands:
+    - command: shell.exec
+      params:
+        working_dir: src
+        script: |
+          set -o errexit
+          . venv/bin/activate
+
+          isort -rc --check-only src tests

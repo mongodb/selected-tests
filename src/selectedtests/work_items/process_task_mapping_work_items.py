@@ -1,17 +1,17 @@
 """Functions for processing project task mapping work items."""
+from datetime import datetime
+from typing import Any, Iterable
+
 import structlog
 
-from datetime import datetime
 from evergreen.api import EvergreenApi
-from typing import Iterable, Any
-from structlog.threadlocal import tmp_bind
-
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.project_config import ProjectConfig
 from selectedtests.task_mappings.create_task_mappings import generate_task_mappings
 from selectedtests.task_mappings.version_limit import VersionLimit
 from selectedtests.work_items.process_test_mapping_work_items import clear_in_progress_work
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
+from structlog.threadlocal import tmp_bind
 
 LOGGER = structlog.get_logger()
 
