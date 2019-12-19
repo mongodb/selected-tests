@@ -20,6 +20,10 @@ class VersionLimit(object):
         self.stop_at_date = stop_at_date
         self.stop_at_version_id = stop_at_version_id
 
+    def __repr__(self):
+        """Return the object representation of VersionLimit."""
+        return f"VersionLimit({self.stop_at_date}, {self.stop_at_version_id})"
+
     def check_version_before_limit(self, version: Version) -> bool:
         """
         Check whether a version comes before the limit set by stop_at_date or stop_at_version_id.

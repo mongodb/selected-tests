@@ -51,72 +51,11 @@ task-mappings create EVERGREEN_PROJECT_NAME
 ```
 Currently, it can only analyze public git repos. Private repo support is coming in a future version.
 
-Its options are described below.
-```
-  --verbose                       Show logs.
-
-  --after TEXT                    The date to begin analyzing the project at - has to be an iso date.
-                                  Example: 2019-10-11T19:10:38
-                                  [required]
-
-  --source-file-regex TEXT        Regex to determine what files mappings will be created for.
-                                  Example: '^src/mongo'
-                                  [required]
-
-  --module-name TEXT              The name of the associated module that should be analyzed.
-                                  Example: enterprise
-
-  --module-source-file-regex TEXT Regex to determine what module files mappings will be created for.
-                                  Example: '^src'
-                                  [required if module-name is non-empty]
-
-  --output-file TEXT              Path to a file where the task mappings should be written to.
-                                  Example: 'output.txt'
-
-  --build-variant-regex           Regex to determine what build variants to analyze. Compares to their display name.
-                                  Example: 'src.*'
-
-  --help                          Show this message and exit.
-```
-
 ## Create test mappings
 The test mapping cli command has only one required argument - the name of an evergreen project.
 In order to run it, run the below.
 ```
 test-mappings create EVERGREEN_PROJECT_NAME
-```
-
-Its options are described below.
-```
-  --verbose                       Show logs.
-
-  --after TEXT                    The date to begin analyzing the project at - has to be an iso date.
-                                  Example: 2019-10-11T19:10:38
-                                  [required]
-
-  --source-file-regex TEXT        Regex to determine which source files the mappings will be created for.
-                                  Example: '^src/mongo'
-                                  [required]
-
-  --test-file-regex TEXT          Regex to determine which test files the mappings will be created for.
-                                  Example: '^jstests.*'
-                                  [required]
-
-  --module-name TEXT              The name of the associated module that should be analyzed.
-                                  Example: enterprise
-
-  --module-source-file-regex TEXT Regex to determine which module souce files the mappings will be created for.
-                                  Example: '^src'
-                                  [required if module-name is non-empty]
-
-  --module-test-file-regex TEXT   Regex to determine what module test files the mappings will be created for.
-                                  Example: '^jstests'
-                                  [required if module-name is non-empty]
-
-  --output-file TEXT              Path to a file where the task mappings should be written to.
-                                  Example: 'output.txt'
-
-  --help                          Show this message and exit.
 ```
 
 ### Commands

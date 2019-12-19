@@ -49,13 +49,11 @@ def generate_test_mappings(
     :param module_test_file_pattern: Pattern to match changed module test files against.
     :return: An instance of TestMappingsResult.
     """
-    log = LOGGER.bind(
-        project=evergreen_project,
-        module=module_name,
-        project_commit_limit_stop_at_date=project_commit_limit.stop_at_date,
-        project_commit_limit_stop_at_commit_sha=project_commit_limit.stop_at_commit_sha,
+    LOGGER.info(
+        "Starting to generate test mappings",
+        project_commit_limit=project_commit_limit,
+        module_commit_limit=module_commit_limit,
     )
-    log.info("Starting to generate test mappings")
 
     source_re = re.compile(source_file_pattern)
     test_re = re.compile(test_file_pattern)
@@ -82,7 +80,7 @@ def generate_test_mappings(
                 module_commit_limit,
             )
             test_mappings_list.extend(module_test_mappings_list)
-    log.info("Generated test mappings list", test_mappings_length=len(test_mappings_list))
+    LOGGER.info("Generated test mappings list", test_mappings_length=len(test_mappings_list))
     return TestMappingsResult(
         test_mappings_list=test_mappings_list,
         most_recent_project_commit_analyzed=most_recent_project_commit,
