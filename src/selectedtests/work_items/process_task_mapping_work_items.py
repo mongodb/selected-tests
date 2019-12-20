@@ -1,9 +1,10 @@
 """Functions for processing project task mapping work items."""
+from datetime import datetime
+from typing import Any, Iterable
+
 import structlog
 
-from datetime import datetime
 from evergreen.api import EvergreenApi
-from typing import Iterable, Any
 from structlog.threadlocal import tmp_bind
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper

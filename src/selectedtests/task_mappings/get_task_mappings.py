@@ -1,9 +1,9 @@
 """Script to get task mappings."""
-from typing import List
-from bson import json_util
-
-from pymongo.collection import Collection
 from decimal import Decimal
+from typing import List
+
+from bson import json_util
+from pymongo.collection import Collection
 
 
 def _exclude_tasks_below_threshold(task_mapping: dict, threshold: Decimal) -> dict:

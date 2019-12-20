@@ -1,10 +1,10 @@
 """Git helper for mappings commands."""
 import os.path
 
-from typing import Any, Set
 from tempfile import TemporaryDirectory
-from git import Commit, Diff, DiffIndex, Repo
+from typing import Any, Set
 
+from git import Commit, Diff, DiffIndex, Repo
 
 GITHUB_BASE_URL = "git@github.com"
 

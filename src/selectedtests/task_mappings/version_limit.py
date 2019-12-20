@@ -1,6 +1,6 @@
 """VersionLimit class used to determine whether an Evergreen version is out of the desired range."""
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from evergreen.api import Version
 

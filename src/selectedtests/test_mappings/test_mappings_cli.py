@@ -1,11 +1,13 @@
 """Cli entry point for the test-mappings command."""
-import click
 import json
 import os
+
+from datetime import datetime
+
+import click
 import pytz
 import structlog
 
-from datetime import datetime
 from miscutils.logging_config import Verbosity
 
 from selectedtests.config.logging_config import config_logging

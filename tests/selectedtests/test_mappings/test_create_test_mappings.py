@@ -2,10 +2,11 @@ import os
 import re
 
 from tempfile import TemporaryDirectory
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import selectedtests.test_mappings.create_test_mappings as under_test
 
 from selectedtests.test_mappings.commit_limit import CommitLimit
-import selectedtests.test_mappings.create_test_mappings as under_test
 
 NS = "selectedtests.test_mappings.create_test_mappings"
 SOURCE_RE = re.compile(".*source")

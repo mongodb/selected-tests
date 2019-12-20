@@ -1,12 +1,11 @@
 import re
-from datetime import datetime, date, time
 
 from copy import deepcopy
+from datetime import date, datetime, time
 from unittest.mock import MagicMock, patch
 
-from selectedtests.task_mappings.version_limit import VersionLimit
 from selectedtests.task_mappings import create_task_mappings as under_test
-
+from selectedtests.task_mappings.version_limit import VersionLimit
 
 NS = "selectedtests.task_mappings.create_task_mappings"
 
