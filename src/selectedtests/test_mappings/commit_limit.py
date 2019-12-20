@@ -1,7 +1,8 @@
 """CommitLimit class used to determine whether a commit is out of the desired range."""
-from git import Commit
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from git import Commit
 
 
 class CommitLimit(object):
@@ -18,6 +19,10 @@ class CommitLimit(object):
         """
         self.stop_at_date = stop_at_date
         self.stop_at_commit_sha = stop_at_commit_sha
+
+    def __repr__(self):
+        """Return the object representation of CommitLimit."""
+        return f"CommitLimit({self.stop_at_date}, {self.stop_at_commit_sha})"
 
     def check_commit_before_limit(self, commit: Commit) -> bool:
         """

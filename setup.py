@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 from glob import glob
-from os.path import basename
-from os.path import splitext
+from os.path import basename, splitext
 
-from setuptools import find_packages
-from setuptools import setup
-
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -44,6 +41,7 @@ setup(
         'evergreen.py==0.6.14',
         'flask-restplus==0.13.0',
         'flask==1.1.1',
+        'misc-utils-py == 0.1.1',
         'pymongo[tls]==3.8.0',
         'structlog==19.1.0',
     ],

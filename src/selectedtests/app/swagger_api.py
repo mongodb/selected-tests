@@ -1,6 +1,6 @@
 """A wrapper around the Flask Restplus APi to help with swagger routing issues in Kanopy."""
-from flask_restplus import Api
 from flask import url_for
+from flask_restplus import Api
 
 
 class Swagger_Api(Api):

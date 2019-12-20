@@ -1,8 +1,9 @@
-from flask import testing
 import json
 import re
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+from flask import testing
 
 NS = "selectedtests.app.controllers.project_test_mappings_controller"
 

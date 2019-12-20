@@ -1,10 +1,12 @@
 """Controller for the health endpoints."""
 import json
 
-from flask import jsonify, request
-from flask_restplus import abort, Api, fields, Resource, reqparse
-from evergreen.api import EvergreenApi
 from decimal import Decimal
+
+from evergreen.api import EvergreenApi
+from flask import jsonify, request
+from flask_restplus import Api, Resource, abort, fields, reqparse
+
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.evergreen_helper import get_evg_project
 from selectedtests.task_mappings.get_task_mappings import get_correlated_task_mappings

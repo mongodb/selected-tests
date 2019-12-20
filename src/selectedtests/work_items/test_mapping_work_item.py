@@ -1,9 +1,10 @@
 """Model of Evergreen TestMapping that needs to be analyzed."""
+from datetime import datetime, timedelta
+
 import structlog
 
-from datetime import datetime, timedelta
-from pymongo.errors import DuplicateKeyError
 from pymongo.collection import Collection, ReturnDocument
+from pymongo.errors import DuplicateKeyError
 
 LOGGER = structlog.get_logger()
 WORK_ITEM_TTL = timedelta(weeks=2).total_seconds()

@@ -1,8 +1,8 @@
-import git
-import pytz
-
 from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
+
+import git
+import pytz
 
 from selectedtests.test_mappings import commit_limit as under_test
 

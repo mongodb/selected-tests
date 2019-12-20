@@ -1,17 +1,21 @@
 """Cli entry point to process work items."""
+from datetime import datetime, timedelta
+
 import click
 import pytz
 
-from datetime import datetime, timedelta
-from selectedtests.work_items.process_test_mapping_work_items import (
-    process_queued_test_mapping_work_items,
-)
+from miscutils.logging_config import Verbosity
+
+from selectedtests.config.logging_config import config_logging
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.evergreen_helper import get_evg_project
+from selectedtests.helpers import get_evg_api
 from selectedtests.work_items.process_task_mapping_work_items import (
     process_queued_task_mapping_work_items,
 )
-from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.helpers import get_evg_api, setup_logging
-from selectedtests.evergreen_helper import get_evg_project
+from selectedtests.work_items.process_test_mapping_work_items import (
+    process_queued_test_mapping_work_items,
+)
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
@@ -28,7 +32,8 @@ def cli(ctx, verbose: str, mongo_uri: str):
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
     ctx.obj["evg_api"] = get_evg_api()
 
-    setup_logging(verbose)
+    verbosity = Verbosity.DEBUG if verbose else Verbosity.INFO
+    config_logging(verbosity, human_readable=False)
 
 
 @cli.command()

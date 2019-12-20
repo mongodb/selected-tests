@@ -1,6 +1,6 @@
 """VersionLimit class used to determine whether an Evergreen version is out of the desired range."""
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from evergreen.api import Version
 
@@ -19,6 +19,10 @@ class VersionLimit(object):
         """
         self.stop_at_date = stop_at_date
         self.stop_at_version_id = stop_at_version_id
+
+    def __repr__(self):
+        """Return the object representation of VersionLimit."""
+        return f"VersionLimit({self.stop_at_date}, {self.stop_at_version_id})"
 
     def check_version_before_limit(self, version: Version) -> bool:
         """

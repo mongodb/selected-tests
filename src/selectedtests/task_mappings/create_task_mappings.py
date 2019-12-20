@@ -1,16 +1,16 @@
 """Method to create the task mappings for a given evergreen project."""
 import re
 
+from concurrent.futures import ThreadPoolExecutor as Executor
 from re import match
+from tempfile import TemporaryDirectory
 from typing import Dict, List, Pattern, Set, Tuple
 
 from boltons.iterutils import windowed_iter
-from concurrent.futures import ThreadPoolExecutor as Executor
-from evergreen.api import Version, Build, Task, EvergreenApi
+from evergreen.api import Build, EvergreenApi, Task, Version
 from evergreen.manifest import ManifestModule
-from git import Repo, DiffIndex
+from git import DiffIndex, Repo
 from structlog import get_logger
-from tempfile import TemporaryDirectory
 
 from selectedtests.evergreen_helper import get_evg_project
 from selectedtests.git_helper import get_changed_files, init_repo
@@ -99,13 +99,7 @@ class TaskMappings:
         :param build_regex: Regex pattern to match build variant names against.
         :return: An instance of TaskMappings and version_id of the most recent version analyzed.
         """
-        log = LOGGER.bind(
-            project=evergreen_project,
-            module=module_name,
-            version_limit_stop_at_date=version_limit.stop_at_date,
-            version_limit_stop_at_version_id=version_limit.stop_at_version_id,
-        )
-        log.info("Starting to generate task mappings")
+        LOGGER.info("Starting to generate task mappings", version_limit=version_limit)
         project_versions = evg_api.versions_by_project(evergreen_project)
 
         task_mappings = {}

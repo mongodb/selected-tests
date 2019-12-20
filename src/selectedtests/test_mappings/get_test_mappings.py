@@ -1,9 +1,9 @@
 """Script to get test mappings."""
-from typing import List
-from bson import json_util
-
-from pymongo.collection import Collection
 from decimal import Decimal
+from typing import List
+
+from bson import json_util
+from pymongo.collection import Collection
 
 
 def _exclude_test_files_below_threshold(test_mapping: dict, threshold: Decimal) -> dict:

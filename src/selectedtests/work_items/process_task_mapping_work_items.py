@@ -1,9 +1,11 @@
 """Functions for processing project task mapping work items."""
+from datetime import datetime
+from typing import Any, Iterable
+
 import structlog
 
-from datetime import datetime
 from evergreen.api import EvergreenApi
-from typing import Iterable, Any
+from structlog.threadlocal import tmp_bind
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.project_config import ProjectConfig
@@ -60,10 +62,10 @@ def _process_one_task_mapping_work_item(
     :param mongo: An instance of MongoWrapper.
     :param after_date: The date at which to start analyzing commits of the project.
     """
-    log = LOGGER.bind(project=work_item.project, module=work_item.module)
-    log.info("Starting task mapping work item processing for work_item")
-    if _seed_task_mappings_for_project(evg_api, mongo, work_item, after_date, log):
-        work_item.complete(mongo.task_mappings_queue())
+    with tmp_bind(LOGGER, project=work_item.project, evergreen_module=work_item.module) as log:
+        log.info("Starting task mapping work item processing for work_item")
+        if _seed_task_mappings_for_project(evg_api, mongo, work_item, after_date, log):
+            work_item.complete(mongo.task_mappings_queue())
 
 
 def _seed_task_mappings_for_project(

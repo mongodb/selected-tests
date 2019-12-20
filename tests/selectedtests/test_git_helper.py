@@ -1,8 +1,10 @@
-import git
 import os
 
-from unittest.mock import MagicMock
 from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock
+
+import git
+
 import selectedtests.git_helper as under_test
 
 

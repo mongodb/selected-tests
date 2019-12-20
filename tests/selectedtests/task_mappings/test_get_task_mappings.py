@@ -1,7 +1,8 @@
 from unittest.mock import MagicMock
 
-import selectedtests.task_mappings.get_task_mappings as under_test
 from bson import json_util
+
+import selectedtests.task_mappings.get_task_mappings as under_test
 
 
 class TestGetCorrelatedTaskMappings:

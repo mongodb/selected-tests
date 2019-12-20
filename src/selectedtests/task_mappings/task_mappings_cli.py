@@ -1,18 +1,20 @@
 """Cli entry point for the task-mappings command."""
-import os.path
 import json
-import logging
+import os.path
 
 from datetime import datetime
 
 import click
 import structlog
 
+from miscutils.logging_config import Verbosity
+
+from selectedtests.config.logging_config import config_logging
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api
 from selectedtests.task_mappings.create_task_mappings import generate_task_mappings
-from selectedtests.task_mappings.version_limit import VersionLimit
 from selectedtests.task_mappings.update_task_mappings import update_task_mappings_since_last_commit
+from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = structlog.get_logger(__name__)
 
@@ -20,24 +22,22 @@ EXTERNAL_LIBRARIES = ["evergreen.api", "urllib3"]
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
-def _setup_logging(verbose: bool):
-    """Set up the logging configuration."""
-    structlog.configure(logger_factory=structlog.stdlib.LoggerFactory())
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(level=level)
-    for external_lib in EXTERNAL_LIBRARIES:
-        logging.getLogger(external_lib).setLevel(logging.WARNING)
-
-
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
+@click.option(
+    "--log-format",
+    default="text",
+    type=click.Choice(["text", "json"]),
+    help="Format to write logs with.",
+)
 @click.pass_context
-def cli(ctx, verbose: bool):
+def cli(ctx, verbose: bool, log_format: str):
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = get_evg_api()
 
-    _setup_logging(verbose)
+    verbosity = Verbosity.DEBUG if verbose else Verbosity.INFO
+    config_logging(verbosity, human_readable=log_format == "text")
 
 
 @cli.command()

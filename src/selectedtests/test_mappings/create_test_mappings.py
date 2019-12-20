@@ -1,15 +1,17 @@
 """Test Mappings class to create test mappings."""
 import os.path
 import re
-import structlog
 
+from collections import defaultdict, namedtuple
 from tempfile import TemporaryDirectory
 from typing import Pattern, Tuple
-from collections import defaultdict, namedtuple
+
+import structlog
+
 from evergreen.api import EvergreenApi
 from git import Repo
 
-from selectedtests.evergreen_helper import get_evg_project, get_evg_module_for_project
+from selectedtests.evergreen_helper import get_evg_module_for_project, get_evg_project
 from selectedtests.git_helper import init_repo, modified_files_for_commit
 from selectedtests.test_mappings.commit_limit import CommitLimit
 
@@ -49,13 +51,11 @@ def generate_test_mappings(
     :param module_test_file_pattern: Pattern to match changed module test files against.
     :return: An instance of TestMappingsResult.
     """
-    log = LOGGER.bind(
-        project=evergreen_project,
-        module=module_name,
-        project_commit_limit_stop_at_date=project_commit_limit.stop_at_date,
-        project_commit_limit_stop_at_commit_sha=project_commit_limit.stop_at_commit_sha,
+    LOGGER.info(
+        "Starting to generate test mappings",
+        project_commit_limit=project_commit_limit,
+        module_commit_limit=module_commit_limit,
     )
-    log.info("Starting to generate test mappings")
 
     source_re = re.compile(source_file_pattern)
     test_re = re.compile(test_file_pattern)
@@ -82,7 +82,7 @@ def generate_test_mappings(
                 module_commit_limit,
             )
             test_mappings_list.extend(module_test_mappings_list)
-    log.info("Generated test mappings list", test_mappings_length=len(test_mappings_list))
+    LOGGER.info("Generated test mappings list", test_mappings_length=len(test_mappings_list))
     return TestMappingsResult(
         test_mappings_list=test_mappings_list,
         most_recent_project_commit_analyzed=most_recent_project_commit,
