@@ -190,8 +190,7 @@ class TaskMappings:
          builds and the tasks in those that changed when that file did.
         """
         task_mappings = []
-        for mapping in self.mappings:
-            cur_mappings = self.mappings.get(mapping)
+        for mapping, cur_mappings in self.mappings.items():
             builds = cur_mappings.get(TASK_BUILDS_KEY)
             if builds:
                 new_mapping = {
@@ -202,12 +201,9 @@ class TaskMappings:
                     "source_file_seen_count": cur_mappings.get(SEEN_COUNT_KEY),
                 }
                 new_tasks = []
-                for build in builds:
-                    tasks = builds.get(build)
-                    for task in tasks:
-                        new_tasks.append(
-                            {"name": task, "variant": build, "flip_count": tasks.get(task)}
-                        )
+                for build, tasks in builds.items():
+                    for task, flip_count in tasks.items():
+                        new_tasks.append({"name": task, "variant": build, "flip_count": flip_count})
                 new_mapping["tasks"] = new_tasks
                 task_mappings.append(new_mapping)
         LOGGER.info("Generated task mappings list", task_mappings_length=len(task_mappings))
@@ -311,9 +307,9 @@ def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mapp
         task_mappings_for_file[SEEN_COUNT_KEY] = task_mappings_for_file[SEEN_COUNT_KEY] + 1
         if len(flipped_tasks) > 0:
             build_mappings = task_mappings_for_file[TASK_BUILDS_KEY]
-            for build_name in flipped_tasks:
+            for build_name, cur_tasks in flipped_tasks.items():
                 builds_to_task_mappings: Dict[str, Dict] = build_mappings.setdefault(build_name, {})
-                for cur_task in flipped_tasks.get(build_name):
+                for cur_task in cur_tasks:
                     cur_flips_for_task = builds_to_task_mappings.setdefault(cur_task, 0)
                     builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
 
