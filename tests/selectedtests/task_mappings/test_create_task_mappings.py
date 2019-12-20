@@ -185,7 +185,7 @@ class TestCreateTaskMappings:
     @patch(ns("_get_diff"))
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
-    def test_no_flipped_tasks_creates_no_mappings(
+    def test_no_flipped_tasks_creates_mappings_with_no_builds(
         self, flipped_mock, filtered_mock, diff_mock, get_evg_project_and_init_repo_mock
     ):
         version_limit_mock = MagicMock()
@@ -210,7 +210,10 @@ class TestCreateTaskMappings:
             module_file_regex=None,
         )
 
-        assert 0 == len(mappings.mappings)
+        assert mappings.mappings == {
+            "file0": {"builds": {}, "seen_count": 1},
+            "file1": {"builds": {}, "seen_count": 1},
+        }
 
     @patch(ns("_get_evg_project_and_init_repo"))
     @patch(ns("_filter_non_matching_distros"))
@@ -249,46 +252,55 @@ class TestCreateTaskMappings:
 
 class TestTransformationOfTaskMappings:
     def test_basic_transformation(self):
-        num_tasks = 2
-        task_mappings = {}
-        changed_files = [f"test{i}" for i in range(2)]
-        flipped_tasks = {
-            "build1": [f"task{i}" for i in range(num_tasks)],
-            "build2": [f"task{i}" for i in range(num_tasks)],
-        }
-
-        under_test._map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
-
         evergreen_project, repo_name, branch_name = "evergreen", "repo", "branch"
-
+        task_mappings_dict = {
+            "src-file-0": {
+                "builds": {
+                    "build-1": {"task-0": 1, "task-1": 1},
+                    "build-2": {"task-3": 1, "task-4": 1},
+                },
+                "seen_count": 1,
+            },
+            "src-file-1": {
+                "builds": {
+                    "build-1": {"task-0": 1, "task-1": 1},
+                    "build-2": {"task-3": 1, "task-4": 1},
+                },
+                "seen_count": 1,
+            },
+        }
         task_mappings = under_test.TaskMappings(
-            task_mappings, evergreen_project, repo_name, branch_name
+            task_mappings_dict, evergreen_project, repo_name, branch_name
         )
-
         transformed_mappings = task_mappings.transform()
 
-        assert len(transformed_mappings) == len(changed_files)
-
-        expected_transformed_tasks = []
-
-        for build in flipped_tasks:
-            tasks = flipped_tasks[build]
-            for task in tasks:
-                expected_transformed_tasks.append(
-                    self._make_transformed_task_helper(task, build, 1)
-                )
+        assert len(transformed_mappings) == 2
 
         for mapping in transformed_mappings:
-            assert mapping.get("source_file") in changed_files
+            assert re.match("^.*src-file.*", mapping.get("source_file"))
             assert mapping.get("project") == evergreen_project
             assert mapping.get("repo") == repo_name
             assert mapping.get("branch") == branch_name
             assert mapping.get("source_file_seen_count") == 1
-            assert len(mapping.get("tasks")) == len(flipped_tasks) * num_tasks
-            assert mapping.get("tasks") == expected_transformed_tasks
+            transformed_tasks = mapping.get("tasks")
+            assert len(transformed_tasks) == 4
+            assert transformed_tasks[0]["flip_count"] == 1
+            assert transformed_tasks[1]["flip_count"] == 1
+            assert transformed_tasks[2]["flip_count"] == 1
+            assert transformed_tasks[3]["flip_count"] == 1
 
-    def _make_transformed_task_helper(self, name: str, variant: str, flip_count: int):
-        return {"name": name, "variant": variant, "flip_count": flip_count}
+    def test_transform_files_with_no_builds_that_have_flipped_tasks(self):
+        evergreen_project, repo_name, branch_name = "evergreen", "repo", "branch"
+        task_mappings_dict = {
+            "src-file-0": {"builds": {}, "seen_count": 1},
+            "src-file-1": {"builds": {}, "seen_count": 1},
+        }
+        task_mappings = under_test.TaskMappings(
+            task_mappings_dict, evergreen_project, repo_name, branch_name
+        )
+        transformed_mappings = task_mappings.transform()
+
+        assert len(transformed_mappings) == 0
 
 
 class TestFilteredFiles:
