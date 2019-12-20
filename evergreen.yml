@@ -37,7 +37,7 @@ tasks:
         set -o errexit
         . venv/bin/activate
 
-        pytest --flake8 --ignore=venv
+        pytest --flake8 --isort --junitxml=test_output_junit.xml --ignore=venv
 
 - name: check_formatting
   commands:
@@ -60,14 +60,3 @@ tasks:
           . venv/bin/activate
 
           pydocstyle src
-
-- name: check_isort
-  commands:
-    - command: shell.exec
-      params:
-        working_dir: src
-        script: |
-          set -o errexit
-          . venv/bin/activate
-
-          isort -rc --check-only src tests

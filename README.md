@@ -98,11 +98,12 @@ export SELECTED_TESTS_MONGO_URI="localhost:27017"
 python src/selectedtests/app/app.py
 ```
 
-## Run tests
-Testing is done via pytest. You can pass the --flake8 argument to perform some
-flake8 sanity checks on .py files.
+
+## Testing/Formatting/Linting
 ```
-pytest --flake8 -c pyproject.toml
+pytest --flake8 --isort
+black src tests
+pydocstyle src
 ```
 
 To get code coverage information, you can run pytest directly.
@@ -138,36 +139,3 @@ internal service). The project will automatically be deployed on merge to master
 application can be accessed at
 https://selected-tests.server-tig.prod.corp.mongodb.com/health (MongoDB internal
 app, see Authentication section for access).
-
-## Style
-
-This project is formatting with [black](https://github.com/psf/black). To autoformat your code, you
-can use the black command line tool:
-
-```
-$ black src tests
-```
-
-See the black [documentation](https://github.com/psf/black#editor-integration) for details on how
-to configure your editor to automatically format your code.
-
-### Pydoc
-
-This project is checked with [pydocstyle](https://github.com/PyCQA/pydocstyle). This ensures that best
-practices for pydoc's are followed and that every function and class has a pydoc associated with it.
-
-In order to run it locally, run
-```
-pydocstyle src
-```
-
-### isort
-
-This project is also checked with
-[isort](https://github.com/timothycrosley/isort). This sorts imports
-automatically.
-
-In order to run it locally, run
-```
-isort -rc src tests
-```
