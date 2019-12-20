@@ -3,6 +3,7 @@ import json
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
+
 from selectedtests.task_mappings.task_mappings_cli import cli
 
 NS = "selectedtests.task_mappings.task_mappings_cli"

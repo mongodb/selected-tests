@@ -1,6 +1,8 @@
 """Application to serve API of selected-tests service."""
 from evergreen.api import EvergreenApi
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 from selectedtests.app.controllers.health_controller import add_health_endpoints
 from selectedtests.app.controllers.project_task_mappings_controller import (
     add_project_task_mappings_endpoints,
@@ -11,7 +13,6 @@ from selectedtests.app.controllers.project_test_mappings_controller import (
 from selectedtests.app.swagger_api import Swagger_Api
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api, get_mongo_wrapper
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 DEFAULT_PORT = 8080
 

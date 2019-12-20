@@ -6,12 +6,13 @@ import structlog
 
 from evergreen.api import EvergreenApi
 from pymongo.collection import Collection
+from structlog.threadlocal import tmp_bind
+
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.project_config import ProjectConfig
 from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
-from structlog.threadlocal import tmp_bind
 
 LOGGER = structlog.get_logger()
 

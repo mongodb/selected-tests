@@ -2,6 +2,7 @@
 import structlog
 
 from evergreen.api import EvergreenApi
+
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.project_config import ProjectConfig
 from selectedtests.task_mappings.create_task_mappings import generate_task_mappings

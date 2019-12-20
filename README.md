@@ -101,9 +101,10 @@ python src/selectedtests/app/app.py
 
 ## Testing/Formatting/Linting
 ```
-pytest --flake8 --isort
+isort -y
 black src tests
 pydocstyle src
+pytest --flake8 --isort
 ```
 
 To get code coverage information, you can run pytest directly.

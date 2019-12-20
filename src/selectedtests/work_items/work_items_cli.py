@@ -5,6 +5,7 @@ import click
 import pytz
 
 from miscutils.logging_config import Verbosity
+
 from selectedtests.config.logging_config import config_logging
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.evergreen_helper import get_evg_project

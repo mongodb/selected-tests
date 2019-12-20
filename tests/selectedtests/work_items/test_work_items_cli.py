@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
+
 from selectedtests.work_items.work_items_cli import cli
 
 NS = "selectedtests.work_items.work_items_cli"

@@ -5,6 +5,7 @@ import structlog
 from miscutils.logging_config import Verbosity
 from pymongo import ASCENDING, IndexModel
 from pymongo.collection import Collection
+
 from selectedtests.config.logging_config import config_logging
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 

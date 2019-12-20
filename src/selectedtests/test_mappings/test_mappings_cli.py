@@ -9,6 +9,7 @@ import pytz
 import structlog
 
 from miscutils.logging_config import Verbosity
+
 from selectedtests.config.logging_config import config_logging
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api
