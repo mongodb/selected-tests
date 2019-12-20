@@ -1,7 +1,8 @@
 """CommitLimit class used to determine whether a commit is out of the desired range."""
-from git import Commit
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from git import Commit
 
 
 class CommitLimit(object):

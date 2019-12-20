@@ -1,7 +1,8 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from selectedtests.app import app
-from unittest.mock import MagicMock
 
 
 @pytest.fixture()

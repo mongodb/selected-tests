@@ -1,12 +1,13 @@
-import git
 import json
 import os
-import pytest
 import re
 
-from unittest.mock import MagicMock
-from typing import List, Dict
 from datetime import datetime, time, timedelta
+from typing import Dict, List
+from unittest.mock import MagicMock
+
+import git
+import pytest
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_OUTPUT_PATH = os.path.join(CURRENT_DIRECTORY, "sample_data")

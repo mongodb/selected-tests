@@ -1,7 +1,6 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import selectedtests.datasource.mongo_wrapper as under_test
-
 
 NS = "selectedtests.datasource.mongo_wrapper"
 

@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 
 import selectedtests.work_items.process_task_mapping_work_items as under_test
 
-
 NS = "selectedtests.work_items.process_task_mapping_work_items"
 
 

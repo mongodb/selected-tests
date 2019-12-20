@@ -1,7 +1,7 @@
 """Logging utilities."""
 from enum import IntEnum
 
-from miscutils.logging_config import default_logging, LogFormat
+from miscutils.logging_config import LogFormat, default_logging
 
 EXTERNAL_LOGGERS = [
     "evergreen",

@@ -3,10 +3,10 @@ import structlog
 
 from evergreen.api import EvergreenApi
 
-from selectedtests.project_config import ProjectConfig
-from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
-from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.project_config import ProjectConfig
+from selectedtests.test_mappings.commit_limit import CommitLimit
+from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
 
 LOGGER = structlog.get_logger()
 

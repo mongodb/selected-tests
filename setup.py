@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 from glob import glob
-from os.path import basename
-from os.path import splitext
+from os.path import basename, splitext
 
-from setuptools import find_packages
-from setuptools import setup
-
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()

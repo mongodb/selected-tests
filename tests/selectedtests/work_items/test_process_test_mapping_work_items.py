@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, patch
 
-from selectedtests.test_mappings.create_test_mappings import TestMappingsResult
 import selectedtests.work_items.process_test_mapping_work_items as under_test
 
+from selectedtests.test_mappings.create_test_mappings import TestMappingsResult
 
 NS = "selectedtests.work_items.process_test_mapping_work_items"
 

@@ -1,19 +1,20 @@
 """Cli entry point for the task-mappings command."""
-import os.path
 import json
+import os.path
 
 from datetime import datetime
-from miscutils.logging_config import Verbosity
 
 import click
 import structlog
+
+from miscutils.logging_config import Verbosity
 
 from selectedtests.config.logging_config import config_logging
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import get_evg_api
 from selectedtests.task_mappings.create_task_mappings import generate_task_mappings
-from selectedtests.task_mappings.version_limit import VersionLimit
 from selectedtests.task_mappings.update_task_mappings import update_task_mappings_since_last_commit
+from selectedtests.task_mappings.version_limit import VersionLimit
 
 LOGGER = structlog.get_logger(__name__)
 
