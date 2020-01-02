@@ -216,7 +216,7 @@ def _get_evg_project_and_init_repo(
     )
 
 
-def _get_filtered_files(diff: DiffIndex, regex: Pattern, repo_name: str) -> Set[str]:
+def _get_filtered_files(diff: DiffIndex, regex: Pattern, repo_name: str) -> Set[ChangedFile]:
     """
     Get the list of changed files.
 
@@ -289,7 +289,7 @@ def _get_diff(repo: Repo, cur_revision: str, prev_revision: str) -> DiffIndex:
     return cur_commit.diff(parent)
 
 
-def _map_tasks_to_files(changed_files: List[ChangedFile], flipped_tasks: Dict, task_mappings: Dict):
+def _map_tasks_to_files(changed_files: Set[ChangedFile], flipped_tasks: Dict, task_mappings: Dict):
     """
     Map the flipped tasks to the changed files found in this version. Mapping will be done in \
     place in the dictionary given in the task_mappings parameter.
