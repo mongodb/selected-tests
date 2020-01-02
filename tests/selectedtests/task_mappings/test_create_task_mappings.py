@@ -4,6 +4,8 @@ from copy import deepcopy
 from datetime import date, datetime, time
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from selectedtests.task_mappings import create_task_mappings as under_test
 from selectedtests.task_mappings.create_task_mappings import ChangedFile
 from selectedtests.task_mappings.version_limit import VersionLimit
@@ -16,11 +18,26 @@ def ns(relative_name):
     return NS + "." + relative_name
 
 
+@pytest.fixture()
+def changed_files():
+    return {ChangedFile("src/file1", "my_repo"), ChangedFile("src/file2", "my_repo")}
+
+
+@pytest.fixture()
+def module_changed_files():
+    return {ChangedFile("module_file", "my_module_repo")}
+
+
 class TestFullRunThrough:
     @patch(ns("init_repo"))
     @patch(ns("_get_filtered_files"))
     def test_integration(
-        self, filtered_files_mock, init_repo_mock, evg_versions, expected_task_mappings_output
+        self,
+        filtered_files_mock,
+        init_repo_mock,
+        evg_versions,
+        expected_task_mappings_output,
+        changed_files,
     ):
         version_limit_mock = MagicMock()
         version_limit_mock.check_version_before_limit.return_value = False
@@ -40,10 +57,7 @@ class TestFullRunThrough:
             MagicMock(identifier="fake_name"),
         ]
 
-        filtered_files_mock.return_value = {
-            ChangedFile("src/file1", "my_repo"),
-            ChangedFile("src/file2", "my_repo"),
-        }
+        filtered_files_mock.return_value = changed_files
 
         output, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
             mock_evg_api, project_name, version_limit_mock, re.compile("src.*")
@@ -69,6 +83,8 @@ class TestCreateTaskMappings:
         filtered_files_mock,
         diff_mock,
         get_evg_project_and_init_repo_mock,
+        module_changed_files,
+        changed_files,
     ):
         version_limit_mock = MagicMock()
         version_limit_mock.check_version_before_limit.return_value = False
@@ -90,11 +106,8 @@ class TestCreateTaskMappings:
         only_version_analyzed = evg_api_mock.versions_by_project.return_value[1]
 
         associated_module_mock.return_value = None
-        module_changed_mock.return_value = {ChangedFile("module_file", "my_module_repo")}
-        filtered_files_mock.return_value = {
-            ChangedFile("file0", "my_repo"),
-            ChangedFile("file1", "my_repo"),
-        }
+        module_changed_mock.return_value = module_changed_files
+        filtered_files_mock.return_value = changed_files
 
         expected_file_list = deepcopy(module_changed_mock.return_value).union(
             deepcopy(filtered_files_mock.return_value)
@@ -140,6 +153,8 @@ class TestCreateTaskMappings:
         filtered_mock,
         diff_mock,
         get_evg_project_and_init_repo_mock,
+        changed_files,
+        module_changed_files,
     ):
         version_limit_mock = MagicMock()
         version_limit_mock.check_version_before_limit.return_value = False
@@ -153,13 +168,9 @@ class TestCreateTaskMappings:
         # We still mock the two below so that we can check to make sure even if the version has a
         # module and that module has changed files in it, we don't actually add the changed files
         # to the task mappings if they're not asked for
-        module_changed_mock.return_value = {ChangedFile("module_file", "my_module_repo")}
+        module_changed_mock.return_value = module_changed_files
         associated_module_mock.return_value = None
-
-        filtered_mock.return_value = {
-            ChangedFile("file0", "my_repo"),
-            ChangedFile("file1", "my_repo"),
-        }
+        filtered_mock.return_value = changed_files
         expected_file_list = deepcopy(filtered_mock.return_value)
 
         flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
@@ -196,7 +207,12 @@ class TestCreateTaskMappings:
     @patch(ns("_get_filtered_files"))
     @patch(ns("_get_flipped_tasks"))
     def test_no_flipped_tasks_creates_mappings_with_no_builds(
-        self, flipped_mock, filtered_mock, diff_mock, get_evg_project_and_init_repo_mock
+        self,
+        flipped_mock,
+        filtered_mock,
+        diff_mock,
+        get_evg_project_and_init_repo_mock,
+        changed_files,
     ):
         version_limit_mock = MagicMock()
         version_limit_mock.check_version_before_limit.return_value = False
@@ -206,10 +222,7 @@ class TestCreateTaskMappings:
             MagicMock(create_time=datetime.combine(date(1, 1, 1), time(1, 2, i))) for i in range(3)
         ]
         evg_api_mock.versions_by_project.return_value.reverse()
-        filtered_mock.return_value = {
-            ChangedFile("file0", "my_repo"),
-            ChangedFile("file1", "my_repo"),
-        }
+        filtered_mock.return_value = changed_files
 
         flipped_mock.return_value = {}
         project_name = "project"
@@ -224,8 +237,8 @@ class TestCreateTaskMappings:
         )
 
         assert mappings.mappings == {
-            ChangedFile("file0", "my_repo"): {"builds": {}, "seen_count": 1},
-            ChangedFile("file1", "my_repo"): {"builds": {}, "seen_count": 1},
+            ChangedFile("src/file1", "my_repo"): {"builds": {}, "seen_count": 1},
+            ChangedFile("src/file2", "my_repo"): {"builds": {}, "seen_count": 1},
         }
 
     @patch(ns("_get_evg_project_and_init_repo"))
@@ -331,9 +344,8 @@ class TestFilteredFiles:
 
 
 class TestMapTasksToFiles:
-    def test_basic_mapping(self):
+    def test_basic_mapping(self, changed_files):
         task_mappings = {}
-        changed_files = [ChangedFile(f"file{i}", "my_repo") for i in range(5)]
         flipped_tasks = {
             "build1": [f"task{i}" for i in range(5)],
             "build2": [f"task{i}" for i in range(5)],
@@ -354,9 +366,10 @@ class TestMapTasksToFiles:
                 for task in flipped_tasks.get(build):
                     assert task in task_mapping_for_file
 
-    def test_adding_to_existing_mapping(self):
+    def test_adding_to_existing_mapping(self, changed_files):
         task_mappings = {}
-        changed_files1 = [ChangedFile("file0", "my_repo")]
+        changed_files = list(changed_files)
+        changed_files1 = {changed_files[0]}
 
         small_task_list = [f"task{i}" for i in range(2)]
         large_task_list = [f"task{i}" for i in range(4)]
@@ -366,7 +379,7 @@ class TestMapTasksToFiles:
         under_test._map_tasks_to_files(changed_files1, flipped_tasks1, task_mappings)
 
         expected_after_first = {
-            ChangedFile("file0", "my_repo"): {
+            changed_files[0]: {
                 "builds": {"build1": {"task0": 1, "task1": 1}, "build2": {"task0": 1, "task1": 1}},
                 "seen_count": 1,
             }
@@ -374,16 +387,15 @@ class TestMapTasksToFiles:
 
         assert expected_after_first == task_mappings
 
-        changed_files2 = [ChangedFile("file0", "my_repo"), ChangedFile("file1", "my_repo")]
         flipped_tasks2 = {"build1": large_task_list, "build3": small_task_list}
 
-        under_test._map_tasks_to_files(changed_files2, flipped_tasks2, task_mappings)
+        under_test._map_tasks_to_files(changed_files, flipped_tasks2, task_mappings)
 
         untouched_large_task_dict = {"task0": 1, "task1": 1, "task2": 1, "task3": 1}
         expected_small_task_dict = {"task0": 1, "task1": 1}
         modified_large_task_dict = {"task0": 2, "task1": 2, "task2": 1, "task3": 1}
         expected_task_mappings = {
-            ChangedFile("file0", "my_repo"): {
+            changed_files[0]: {
                 "seen_count": 2,
                 "builds": {
                     "build1": modified_large_task_dict,
@@ -391,7 +403,7 @@ class TestMapTasksToFiles:
                     "build3": expected_small_task_dict,
                 },
             },
-            ChangedFile("file1", "my_repo"): {
+            changed_files[1]: {
                 "seen_count": 1,
                 "builds": {"build1": untouched_large_task_dict, "build3": expected_small_task_dict},
             },
