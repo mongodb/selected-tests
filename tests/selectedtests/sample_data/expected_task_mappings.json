@@ -2,7 +2,7 @@
     {
         "source_file": "src/file1",
         "project": "mongodb-mongo-master",
-        "repo": "mongo",
+        "repo": "my_repo",
         "branch": "master",
         "source_file_seen_count": 1,
         "tasks": [
@@ -21,7 +21,7 @@
         {
         "source_file": "src/file2",
         "project": "mongodb-mongo-master",
-        "repo": "mongo",
+        "repo": "my_repo",
         "branch": "master",
         "source_file_seen_count": 1,
         "tasks": [
