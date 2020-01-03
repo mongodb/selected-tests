@@ -1,7 +1,5 @@
 from unittest.mock import MagicMock
 
-from bson import json_util
-
 import selectedtests.task_mappings.get_task_mappings as under_test
 
 
@@ -24,7 +22,7 @@ class TestGetCorrelatedTaskMappings:
             collection_mock, changed_files, project, 0
         )
 
-        assert task_mappings == json_util.dumps([task_mapping])
+        assert task_mappings == [task_mapping]
 
     def task_mappings_filtered(self):
         collection_mock = MagicMock()
@@ -59,9 +57,7 @@ class TestGetCorrelatedTaskMappings:
                 {"name": "test_file_above_threshold.js", "variant": "my-variant", "flip_count": 2}
             ],
         }
-        assert task_mappings == json_util.dumps(
-            [task_mapping_1_with_test_file_excluded, task_mapping_2]
-        )
+        assert task_mappings == [task_mapping_1_with_test_file_excluded, task_mapping_2]
 
     def test_no_mappings_found(self):
         collection_mock = MagicMock()
@@ -72,4 +68,4 @@ class TestGetCorrelatedTaskMappings:
             collection_mock, changed_files, project, 0
         )
 
-        assert task_mappings == json_util.dumps([])
+        assert task_mappings == []

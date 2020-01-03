@@ -1,7 +1,5 @@
 from unittest.mock import MagicMock
 
-from bson import json_util
-
 import selectedtests.test_mappings.get_test_mappings as under_test
 
 
@@ -24,7 +22,7 @@ class TestGetCorrelatedTestMappings:
             collection_mock, changed_files, project, 0
         )
 
-        assert test_mappings == json_util.dumps([test_mapping])
+        assert test_mappings == [test_mapping]
 
     def test_mappings_filtered(self):
         collection_mock = MagicMock()
@@ -57,9 +55,7 @@ class TestGetCorrelatedTestMappings:
             "source_file_seen_count": 3,
             "test_files": [{"name": "test_file_above_threshold.js", "test_file_seen_count": 2}],
         }
-        assert test_mappings == json_util.dumps(
-            [test_mapping_1_with_test_file_excluded, test_mapping_2]
-        )
+        assert test_mappings == [test_mapping_1_with_test_file_excluded, test_mapping_2]
 
     def test_no_mappings_found(self):
         collection_mock = MagicMock()
@@ -70,4 +66,4 @@ class TestGetCorrelatedTestMappings:
             collection_mock, changed_files, project, 0
         )
 
-        assert test_mappings == json_util.dumps([])
+        assert test_mappings == []
