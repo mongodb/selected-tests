@@ -1,6 +1,7 @@
 """Method to create the task mappings for a given evergreen project."""
 import re
 
+from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor as Executor
 from re import match
 from tempfile import TemporaryDirectory
@@ -21,6 +22,7 @@ LOGGER = get_logger(__name__)
 MAX_WORKERS = 32
 SEEN_COUNT_KEY = "seen_count"
 TASK_BUILDS_KEY = "builds"
+ChangedFile = namedtuple("ChangedFile", ["file_name", "repo_name"])
 
 
 def generate_task_mappings(
@@ -69,11 +71,10 @@ def generate_task_mappings(
 class TaskMappings:
     """Represents and creates the task mappings for an evergreen project."""
 
-    def __init__(self, mappings: Dict, evergreen_project: str, repo_name: str, branch: str):
+    def __init__(self, mappings: Dict, evergreen_project: str, branch: str):
         """Init a taskmapping instance. Use create_task_mappings rather than this directly."""
         self.mappings = mappings
         self.evergreen_project = evergreen_project
-        self.repo_name = repo_name
         self.branch = branch
 
     @classmethod
@@ -141,7 +142,7 @@ class TaskMappings:
                         LOGGER.warning("Unexpected exception", exc_info=True)
                         continue
 
-                    changed_files = _get_filtered_files(diff, file_regex)
+                    changed_files = _get_filtered_files(diff, file_regex, repo_name)
 
                     if module_name:
                         cur_module = _get_associated_module(version, module_name)
@@ -172,7 +173,7 @@ class TaskMappings:
                 _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
 
         return (
-            TaskMappings(task_mappings, evergreen_project, repo_name, branch),
+            TaskMappings(task_mappings, evergreen_project, branch),
             most_recent_version_analyzed,
         )
 
@@ -184,13 +185,13 @@ class TaskMappings:
          builds and the tasks in those that changed when that file did.
         """
         task_mappings = []
-        for mapping, cur_mappings in self.mappings.items():
+        for changed_file, cur_mappings in self.mappings.items():
             builds = cur_mappings.get(TASK_BUILDS_KEY)
             if builds:
                 new_mapping = {
-                    "source_file": mapping,
+                    "source_file": changed_file.file_name,
                     "project": self.evergreen_project,
-                    "repo": self.repo_name,
+                    "repo": changed_file.repo_name,
                     "branch": self.branch,
                     "source_file_seen_count": cur_mappings.get(SEEN_COUNT_KEY),
                 }
@@ -215,15 +216,20 @@ def _get_evg_project_and_init_repo(
     )
 
 
-def _get_filtered_files(diff: DiffIndex, regex: Pattern) -> Set[str]:
+def _get_filtered_files(diff: DiffIndex, regex: Pattern, repo_name: str) -> Set[ChangedFile]:
     """
     Get the list of changed files.
 
     :param diff: The diff between two commits.
     :param regex: The regex pattern to match the files found in the diff against.
-    :return: A list of the changed files that matched the given regex pattern.
+    :param repo_name: The repo the files belong to.
+    :return: A set of the changed files that matched the given regex pattern.
     """
-    return {file for file in get_changed_files(diff, LOGGER) if match(regex, file)}
+    return {
+        ChangedFile(file, repo_name)
+        for file in get_changed_files(diff, LOGGER)
+        if match(regex, file)
+    }
 
 
 def _get_module_changed_files(
@@ -251,7 +257,7 @@ def _get_module_changed_files(
         except ValueError:
             LOGGER.warning("Unexpected exception", exc_info=True)
             return set()
-        return _get_filtered_files(module_diff, module_file_regex)
+        return _get_filtered_files(module_diff, module_file_regex, cur_module.repo)
 
     return set()
 
@@ -283,7 +289,7 @@ def _get_diff(repo: Repo, cur_revision: str, prev_revision: str) -> DiffIndex:
     return cur_commit.diff(parent)
 
 
-def _map_tasks_to_files(changed_files: List[str], flipped_tasks: Dict, task_mappings: Dict):
+def _map_tasks_to_files(changed_files: Set[ChangedFile], flipped_tasks: Dict, task_mappings: Dict):
     """
     Map the flipped tasks to the changed files found in this version. Mapping will be done in \
     place in the dictionary given in the task_mappings parameter.
@@ -326,8 +332,8 @@ def _process_evg_version(
     version: Version,
     next_version: Version,
     build_regex: Pattern,
-    changed_files: Set[str],
-) -> (Set[str], Dict):
+    changed_files: Set[ChangedFile],
+) -> (Set[ChangedFile], Dict):
     """
     Find flipped tasks for this evergreen version.
 
