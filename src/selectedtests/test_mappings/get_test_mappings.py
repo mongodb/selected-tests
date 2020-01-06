@@ -2,7 +2,6 @@
 from decimal import Decimal
 from typing import List
 
-from bson import json_util
 from pymongo.collection import Collection
 
 
@@ -31,7 +30,7 @@ def get_correlated_test_mappings(
     :param changed_source_files: List of source files for which test mappings should be retrieved.
     :param evergreen_project: The name of the evergreen project to analyze.
     :param threshold: Min threshold desired for test_file_seen_count/source_file_seen_count ratio.
-    :return: A list of test mappings for the evergreen project and list of changed files.
+    :return: A list of test mappings for the changed files.
     """
     test_mappings = []
     for changed_file in changed_source_files:
@@ -44,4 +43,4 @@ def get_correlated_test_mappings(
                 for test_mapping in test_mappings_data
             ]
         )
-    return json_util.dumps(test_mappings)
+    return test_mappings

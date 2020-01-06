@@ -1,5 +1,4 @@
 import json
-import re
 
 from unittest.mock import MagicMock, patch
 
@@ -26,9 +25,7 @@ def test_GET_task_mappings_found_with_threshold_param(
         f"/projects/{project}/task-mappings?changed_files=src/file1.js,src/file2.js&threshold=.5"
     )
     assert response.status_code == 200
-    assert '{"task_mappings":["task_mapping_1","task_mapping_2"]}' in response.get_data(
-        as_text=True
-    )
+    assert response.get_json() == {"task_mappings": ["task_mapping_1", "task_mapping_2"]}
 
 
 @patch(ns("get_correlated_task_mappings"))
@@ -44,9 +41,7 @@ def test_GET_task_mappings_found_without_threshold_param(
         f"/projects/{project}/task-mappings?changed_files=src/file1.js,src/file2.js"
     )
     assert response.status_code == 200
-    assert '{"task_mappings":["task_mapping_1","task_mapping_2"]}' in response.get_data(
-        as_text=True
-    )
+    assert response.get_json() == {"task_mappings": ["task_mapping_1", "task_mapping_2"]}
 
 
 @patch(ns("get_correlated_task_mappings"))
@@ -58,7 +53,7 @@ def test_GET_missing_changed_files_query_param(
 
     response = app_client.get(f"/projects/{project}/task-mappings")
     assert response.status_code == 400
-    assert "Missing changed_files query param" in response.get_data(as_text=True)
+    assert response.get_json()["custom"] == "Missing changed_files query param"
 
 
 @patch(ns("get_correlated_task_mappings"))
@@ -72,7 +67,7 @@ def test_GET_project_not_found(
         f"/projects/invalid-evergreen-project/task-mappings?changed_files=src/file1.js,src/file2.js"
     )
     assert response.status_code == 404
-    assert "Evergreen project not found" in response.get_data(as_text=True)
+    assert response.get_json()["custom"] == "Evergreen project not found"
 
 
 @patch(ns("ProjectTaskMappingWorkItem"))
@@ -96,7 +91,7 @@ def test_POST_work_item_inserted(
         content_type="application/json",
     )
     assert response.status_code == 200
-    assert f"Work item added for project '{project}'" in response.get_data(as_text=True)
+    assert response.get_json()["custom"] == f"Work item added for project '{project}'"
 
 
 @patch(ns("ProjectTaskMappingWorkItem"))
@@ -120,9 +115,7 @@ def test_POST_work_item_inserted_with_incorrect_params(
         content_type="application/json",
     )
     assert response.status_code == 400
-    assert re.match(
-        "^.*source_file_regex.* is not of type.*string", response.get_data(as_text=True)
-    )
+    assert response.get_json()["errors"]["source_file_regex"] == "3 is not of type 'string'"
 
 
 @patch(ns("ProjectTaskMappingWorkItem"))
@@ -141,9 +134,9 @@ def test_POST_work_item_inserted_with_module_and_no_module_regex(
         content_type="application/json",
     )
     assert response.status_code == 400
-    assert re.match(
-        "^.*module_source_file_regex param is required if a module name is passed in",
-        response.get_data(as_text=True),
+    assert (
+        response.get_json()["custom"]
+        == "The module_source_file_regex param is required if a module name is passed in"
     )
 
 
@@ -163,7 +156,7 @@ def test_POST_no_module_passed_in(
         content_type="application/json",
     )
     assert response.status_code == 200
-    assert f"Work item added for project '{project}'" in response.get_data(as_text=True)
+    assert response.get_json()["custom"] == f"Work item added for project '{project}'"
 
 
 @patch(ns("get_evg_project"))
@@ -177,7 +170,7 @@ def test_POST_project_not_found(get_evg_project_mock, app_client: testing.FlaskC
         content_type="application/json",
     )
     assert response.status_code == 404
-    assert "Evergreen project not found" in response.get_data(as_text=True)
+    assert response.get_json()["custom"] == "Evergreen project not found"
 
 
 @patch(ns("ProjectTaskMappingWorkItem"))
@@ -196,4 +189,4 @@ def test_POST_project_cannot_be_inserted(
         content_type="application/json",
     )
     assert response.status_code == 422
-    assert f"Work item already exists for project '{project}'" in response.get_data(as_text=True)
+    assert response.get_json()["custom"] == f"Work item already exists for project '{project}'"

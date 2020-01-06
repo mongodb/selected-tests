@@ -2,7 +2,6 @@
 from decimal import Decimal
 from typing import List
 
-from bson import json_util
 from pymongo.collection import Collection
 
 
@@ -31,7 +30,7 @@ def get_correlated_task_mappings(
     :param changed_source_files: List of source files for which task mappings should be retrieved.
     :param evergreen_project: The name of the evergreen project to analyze.
     :param threshold: Min threshold desired for flip_count/source_file_seen_count ratio.
-    :return: A list of task mappings for the evergreen project and list of changed files.
+    :return: A list of task mappings for the changed files.
     """
     task_mappings = []
     for changed_file in changed_source_files:
@@ -44,4 +43,4 @@ def get_correlated_task_mappings(
                 for task_mapping in task_mappings_data
             ]
         )
-    return json_util.dumps(task_mappings)
+    return task_mappings
