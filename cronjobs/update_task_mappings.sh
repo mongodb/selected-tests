@@ -3,7 +3,7 @@
 SSH_DIR=$HOME/.ssh
 FILE_DIR=$(dirname "$0")
 
-source "$FILE_DIR/lib/setup_ssh_keys.sh"
+. "$FILE_DIR/lib/setup_ssh_keys.sh"
 setup_ssh_keys "$SSH_DIR"
 
 export LC_ALL=C.UTF-8
