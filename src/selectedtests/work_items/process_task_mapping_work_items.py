@@ -19,7 +19,7 @@ LOGGER = structlog.get_logger()
 
 def process_queued_task_mapping_work_items(
     evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime
-):
+) -> None:
     """
     Process task mapping work items that have not yet been processed.
 
@@ -53,7 +53,7 @@ def _process_one_task_mapping_work_item(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
     after_date: datetime,
-):
+) -> None:
     """
     Process a task mapping work item.
 

@@ -3,7 +3,7 @@ from flask import jsonify
 from flask_restplus import Api, Resource, fields
 
 
-def add_health_endpoints(api: Api):
+def add_health_endpoints(api: Api) -> None:
     """
     Add to the given app instance the health endpoints of the service.
 
@@ -18,6 +18,6 @@ def add_health_endpoints(api: Api):
         """Represents the collection of endpoints that give the health of the service."""
 
         @ns.response(200, "Success", health_model)
-        def get(self):
+        def get(self) -> str:
             """Get the current status of the service."""
             return jsonify({"online": True})

@@ -1,11 +1,12 @@
 """Method to create the task mappings for a given evergreen project."""
+from __future__ import annotations
 import re
 
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor as Executor
 from re import match
 from tempfile import TemporaryDirectory
-from typing import Dict, List, Pattern, Set, Tuple
+from typing import Dict, List, Pattern, Set, Tuple, Optional
 
 from boltons.iterutils import windowed_iter
 from evergreen.api import Build, EvergreenApi, Task, Version
@@ -47,8 +48,12 @@ def generate_task_mappings(
     :return: An instance of TestMappingsResult and the most recent version analyzed during analysis.
     """
     source_re = re.compile(source_file_pattern)
-    module_source_re = None
+    module_source_re = re.compile("")
     if module_name:
+        if module_source_file_pattern is None:
+            raise ValueError(
+                "You must specify module_source_file_pattern when specifying a module."
+            )
         module_source_re = re.compile(module_source_file_pattern)
 
     build_regex = None
@@ -85,9 +90,9 @@ class TaskMappings:
         version_limit: VersionLimit,
         file_regex: Pattern,
         module_name: str = None,
-        module_file_regex: Pattern = None,
+        module_file_regex: Pattern = re.compile(""),
         build_regex: Pattern = None,
-    ):
+    ) -> Tuple[TaskMappings, str]:
         """
         Create the task mappings for an evergreen project. Optionally looks at an associated module.
 
@@ -103,12 +108,12 @@ class TaskMappings:
         LOGGER.info("Starting to generate task mappings", version_limit=version_limit)
         project_versions = evg_api.versions_by_project(evergreen_project)
 
-        task_mappings = {}
+        task_mappings: Dict = {}
 
-        module_repo: Repo = None
-        branch = None
+        module_repo: Optional[Repo] = None
+        branch: Optional[str] = None
         repo_name = None
-        most_recent_version_analyzed = None
+        most_recent_version_analyzed: str = None  # type: ignore
 
         with TemporaryDirectory() as temp_dir:
             try:
@@ -172,6 +177,8 @@ class TaskMappings:
                 changed_files, flipped_tasks = job.result()
                 _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
 
+        if branch is None:
+            raise RuntimeError("Unable to identify branch")
         return (
             TaskMappings(task_mappings, evergreen_project, branch),
             most_recent_version_analyzed,
@@ -206,8 +213,8 @@ class TaskMappings:
 
 
 def _get_evg_project_and_init_repo(
-    evg_api: EvergreenApi, evergreen_project: str, temp_dir: TemporaryDirectory
-):
+    evg_api: EvergreenApi, evergreen_project: str, temp_dir: str
+) -> Repo:
     project_info = get_evg_project(evg_api, evergreen_project)
     if project_info is None:
         raise ValueError(f"The evergreen project {evergreen_project} does not exist")
@@ -237,7 +244,7 @@ def _get_module_changed_files(
     cur_module: ManifestModule,
     prev_module: ManifestModule,
     module_file_regex: Pattern,
-) -> Set[str]:
+) -> Set[ChangedFile]:
     """
     Get the files that changed in the associated module.
 
@@ -289,7 +296,9 @@ def _get_diff(repo: Repo, cur_revision: str, prev_revision: str) -> DiffIndex:
     return cur_commit.diff(parent)
 
 
-def _map_tasks_to_files(changed_files: Set[ChangedFile], flipped_tasks: Dict, task_mappings: Dict):
+def _map_tasks_to_files(
+    changed_files: Set[ChangedFile], flipped_tasks: Dict, task_mappings: Dict
+) -> None:
     """
     Map the flipped tasks to the changed files found in this version. Mapping will be done in \
     place in the dictionary given in the task_mappings parameter.
@@ -308,7 +317,7 @@ def _map_tasks_to_files(changed_files: Set[ChangedFile], flipped_tasks: Dict, ta
         if len(flipped_tasks) > 0:
             build_mappings = task_mappings_for_file[TASK_BUILDS_KEY]
             for build_name, cur_tasks in flipped_tasks.items():
-                builds_to_task_mappings: Dict[str, Dict] = build_mappings.setdefault(build_name, {})
+                builds_to_task_mappings: Dict[str, int] = build_mappings.setdefault(build_name, {})
                 for cur_task in cur_tasks:
                     cur_flips_for_task = builds_to_task_mappings.setdefault(cur_task, 0)
                     builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
@@ -333,7 +342,7 @@ def _process_evg_version(
     next_version: Version,
     build_regex: Pattern,
     changed_files: Set[ChangedFile],
-) -> (Set[ChangedFile], Dict):
+) -> Tuple[Set[ChangedFile], Dict]:
     """
     Find flipped tasks for this evergreen version.
 
@@ -408,7 +417,7 @@ def _get_flipped_tasks_per_build(
     return [task.display_name for task in tasks if _is_task_a_flip(task, prev_tasks, next_tasks)]
 
 
-def _create_task_map(tasks: [Task]) -> Dict:
+def _create_task_map(tasks: List[Task]) -> Dict:
     """
     Create a dictionary of tasks by display_name.
 

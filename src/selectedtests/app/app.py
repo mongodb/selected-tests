@@ -26,7 +26,7 @@ def create_app(mongo: MongoWrapper, evg_api: EvergreenApi) -> Flask:
     :return: Instance of flask application.
     """
     app = Flask(__name__)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # type: ignore
     api = Swagger_Api(
         app,
         version="1.0",
@@ -42,7 +42,7 @@ def create_app(mongo: MongoWrapper, evg_api: EvergreenApi) -> Flask:
     return app
 
 
-def main():
+def main() -> Flask:
     """Run the server."""
     mongo = get_mongo_wrapper()
     evg_api = get_evg_api()

@@ -9,3 +9,4 @@ __pycache__
 config.yml
 pip-wheel-metadata
 venv
+.mypy_cache

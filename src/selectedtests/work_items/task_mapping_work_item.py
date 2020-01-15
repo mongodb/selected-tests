@@ -1,5 +1,8 @@
 """Model of Evergreen TaskMapping that needs to be analyzed."""
+from __future__ import annotations
+
 from datetime import datetime, timedelta
+from typing import Optional
 
 import structlog
 
@@ -15,8 +18,8 @@ class ProjectTaskMappingWorkItem(object):
 
     def __init__(
         self,
-        start_time,
-        end_time,
+        start_time: Optional[datetime],
+        end_time: Optional[datetime],
         created_on: datetime,
         project: str,
         source_file_regex: str,
@@ -53,7 +56,7 @@ class ProjectTaskMappingWorkItem(object):
         module: str = "",
         module_source_file_regex: str = "",
         build_variant_regex: str = "",
-    ):
+    ) -> ProjectTaskMappingWorkItem:
         """
         Create a new work item.
 
@@ -76,7 +79,7 @@ class ProjectTaskMappingWorkItem(object):
         )
 
     @classmethod
-    def next(cls, collection: Collection):
+    def next(cls, collection: Collection) -> Optional[ProjectTaskMappingWorkItem]:
         """
         Find a Work Item on the queue ready for work, or None if nothing is ready.
 
@@ -102,7 +105,7 @@ class ProjectTaskMappingWorkItem(object):
             )
         return None
 
-    def insert(self, collection) -> bool:
+    def insert(self, collection: Collection) -> bool:
         """
         Add this work item to the Mongo collection.
 
@@ -124,7 +127,7 @@ class ProjectTaskMappingWorkItem(object):
         except DuplicateKeyError:
             return False
 
-    def complete(self, collection: Collection):
+    def complete(self, collection: Collection) -> None:
         """
         Mark this work item as complete.
 

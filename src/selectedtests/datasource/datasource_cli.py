@@ -1,6 +1,7 @@
 """Cli entry point to setup db indexes."""
 import click
 import structlog
+from click import Context
 
 from miscutils.logging_config import Verbosity
 from pymongo import ASCENDING, IndexModel
@@ -12,7 +13,7 @@ from selectedtests.datasource.mongo_wrapper import MongoWrapper
 LOGGER = structlog.get_logger()
 
 
-def setup_indexes(collection: Collection):
+def setup_indexes(collection: Collection) -> None:
     """
     Create appropriate indexes for ProjectTestMappingWorkItems.
 
@@ -27,7 +28,7 @@ def setup_indexes(collection: Collection):
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 @click.option("--mongo-uri", required=True, type=str, help="Mongo URI to connect to.")
 @click.pass_context
-def cli(ctx, verbose: bool, mongo_uri: str):
+def cli(ctx: Context, verbose: bool, mongo_uri: str) -> None:
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
@@ -38,13 +39,13 @@ def cli(ctx, verbose: bool, mongo_uri: str):
 
 @cli.command()
 @click.pass_context
-def create_indexes(ctx):
+def create_indexes(ctx: Context) -> None:
     """Initialize the mongo database with proper indexes."""
     # Creating index no-ops if index already exists
     setup_indexes(ctx.obj["mongo"].test_mappings_queue())
     setup_indexes(ctx.obj["mongo"].task_mappings_queue())
 
 
-def main():
+def main() -> None:
     """Entry point for setting up selected-tests db indexes."""
     return cli(obj={}, auto_envvar_prefix="SELECTED_TESTS")

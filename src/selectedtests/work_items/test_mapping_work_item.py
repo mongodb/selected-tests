@@ -1,5 +1,7 @@
 """Model of Evergreen TestMapping that needs to be analyzed."""
+from __future__ import annotations
 from datetime import datetime, timedelta
+from typing import Optional
 
 import structlog
 
@@ -15,8 +17,8 @@ class ProjectTestMappingWorkItem(object):
 
     def __init__(
         self,
-        start_time,
-        end_time,
+        start_time: Optional[datetime],
+        end_time: Optional[datetime],
         created_on: datetime,
         project: str,
         source_file_regex: str,
@@ -57,7 +59,7 @@ class ProjectTestMappingWorkItem(object):
         module: str = "",
         module_source_file_regex: str = "",
         module_test_file_regex: str = "",
-    ):
+    ) -> ProjectTestMappingWorkItem:
         """
         Create a new work item.
 
@@ -82,7 +84,7 @@ class ProjectTestMappingWorkItem(object):
         )
 
     @classmethod
-    def next(cls, collection: Collection):
+    def next(cls, collection: Collection) -> Optional[ProjectTestMappingWorkItem]:
         """
         Find a Work Item on the queue ready for work, or None if nothing is ready.
 
@@ -109,7 +111,7 @@ class ProjectTestMappingWorkItem(object):
             )
         return None
 
-    def insert(self, collection: Collection):
+    def insert(self, collection: Collection) -> bool:
         """
         Add this work item to the Mongo collection.
 
@@ -135,7 +137,7 @@ class ProjectTestMappingWorkItem(object):
         except DuplicateKeyError:
             return False
 
-    def complete(self, collection: Collection):
+    def complete(self, collection: Collection) -> None:
         """
         Mark this work item as complete.
 

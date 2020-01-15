@@ -1,4 +1,7 @@
 """Domain object representing project config."""
+from __future__ import annotations
+from typing import Dict, Optional
+
 from pymongo.collection import Collection
 
 
@@ -7,11 +10,11 @@ class TaskConfig:
 
     def __init__(
         self,
-        most_recent_version_analyzed=None,
-        source_file_regex=None,
-        build_variant_regex=None,
-        module=None,
-        module_source_file_regex=None,
+        most_recent_version_analyzed: str = None,
+        source_file_regex: str = None,
+        build_variant_regex: str = None,
+        module: str = None,
+        module_source_file_regex: str = None,
     ):
         """Init a TaskConfig instance. Use ProjectConfig.get rather than this directly."""
         self.most_recent_version_analyzed = most_recent_version_analyzed
@@ -21,7 +24,7 @@ class TaskConfig:
         self.module_source_file_regex = module_source_file_regex
 
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Optional[str]]) -> TaskConfig:
         """
         Instantiate an instance of TaskConfig from json. Use ProjectConfig.get instead.
 
@@ -38,12 +41,12 @@ class TaskConfig:
 
     def update(
         self,
-        most_recent_version_analyzed,
-        source_file_regex,
-        build_variant_regex,
-        module,
-        module_source_file_regex,
-    ):
+        most_recent_version_analyzed: str,
+        source_file_regex: str,
+        build_variant_regex: str,
+        module: str,
+        module_source_file_regex: str,
+    ) -> None:
         """
         Update fields on an instance of TaskConfig.
 
@@ -59,7 +62,7 @@ class TaskConfig:
         self.module = module
         self.module_source_file_regex = module_source_file_regex
 
-    def update_most_recent_version_analyzed(self, most_recent_version_analyzed):
+    def update_most_recent_version_analyzed(self, most_recent_version_analyzed: str) -> None:
         """
         Update most_recent_version_analyzed field on an instance of TaskConfig.
 
@@ -67,7 +70,7 @@ class TaskConfig:
         """
         self.most_recent_version_analyzed = most_recent_version_analyzed
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Optional[str]]:
         """Return fields to be stored in database."""
         return {
             "most_recent_version_analyzed": self.most_recent_version_analyzed,
@@ -83,13 +86,13 @@ class TestConfig:
 
     def __init__(
         self,
-        most_recent_project_commit_analyzed=None,
-        source_file_regex=None,
-        test_file_regex=None,
-        module=None,
-        most_recent_module_commit_analyzed=None,
-        module_source_file_regex=None,
-        module_test_file_regex=None,
+        most_recent_project_commit_analyzed: str = None,
+        source_file_regex: str = None,
+        test_file_regex: str = None,
+        module: str = None,
+        most_recent_module_commit_analyzed: str = None,
+        module_source_file_regex: str = None,
+        module_test_file_regex: str = None,
     ):
         """Init a TestConfig instance. Use ProjectConfig.get rather than this directly."""
         self.most_recent_project_commit_analyzed = most_recent_project_commit_analyzed
@@ -101,7 +104,7 @@ class TestConfig:
         self.module_test_file_regex = module_test_file_regex
 
     @classmethod
-    def from_json(cls, json):
+    def from_json(cls, json: Dict[str, Optional[str]]) -> TestConfig:
         """
         Instantiate an instance of TestConfig from json. Use ProjectConfig.get instead.
 
@@ -120,14 +123,14 @@ class TestConfig:
 
     def update(
         self,
-        most_recent_project_commit_analyzed,
-        source_file_regex,
-        test_file_regex,
-        module,
-        most_recent_module_commit_analyzed,
-        module_source_file_regex,
-        module_test_file_regex,
-    ):
+        most_recent_project_commit_analyzed: str,
+        source_file_regex: str,
+        test_file_regex: str,
+        module: str,
+        most_recent_module_commit_analyzed: str,
+        module_source_file_regex: str,
+        module_test_file_regex: str,
+    ) -> None:
         """
         Update fields on an instance of TestConfig.
 
@@ -148,18 +151,18 @@ class TestConfig:
         self.module_test_file_regex = module_test_file_regex
 
     def update_most_recent_commits_analyzed(
-        self, most_recent_project_commit_analyzed, most_recent_module_commit_analyzed
-    ):
+        self, most_recent_project_commit_analyzed: str, most_recent_module_commit_analyzed: str
+    ) -> None:
         """
         Update most recent commit fields on an instance of TaskConfig.
 
-        :param most_recent_version_analyzed: The most recent version analyzed of the project.
+        :param most_recent_project_commit_analyzed: The most recent project commit analyzed of the project.
         :param most_recent_module_commit_analyzed: Most_recent_module_commit_analyzed of the config.
         """
         self.most_recent_project_commit_analyzed = most_recent_project_commit_analyzed
         self.most_recent_module_commit_analyzed = most_recent_module_commit_analyzed
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Optional[str]]:
         """Return fields to be stored in database."""
         return {
             "most_recent_project_commit_analyzed": self.most_recent_project_commit_analyzed,
@@ -175,14 +178,14 @@ class TestConfig:
 class ProjectConfig:
     """Represents a project config for an Evergreen project."""
 
-    def __init__(self, project, task_config: TaskConfig, test_config: TestConfig):
+    def __init__(self, project: str, task_config: TaskConfig, test_config: TestConfig):
         """Init a ProjectConfig instance. Use ProjectConfig.get rather than this directly."""
         self.project = project
         self.task_config = task_config
         self.test_config = test_config
 
     @classmethod
-    def get(cls, collection: Collection, project):
+    def get(cls, collection: Collection, project: str) -> ProjectConfig:
         """
         Fetch a project config from the db. If it doesn't exist, create an empty ProjectConfig.
 
@@ -199,7 +202,7 @@ class ProjectConfig:
             )
         return cls(project, TaskConfig(), TestConfig())
 
-    def save(self, collection):
+    def save(self, collection: Collection) -> None:
         """
         Save a ProjectConfig instance to the db collection.
 

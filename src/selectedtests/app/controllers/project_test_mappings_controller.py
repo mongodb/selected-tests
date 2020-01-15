@@ -13,7 +13,9 @@ from selectedtests.test_mappings.get_test_mappings import get_correlated_test_ma
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
 
-def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: EvergreenApi):
+def add_project_test_mappings_endpoints(
+    api: Api, mongo: MongoWrapper, evg_api: EvergreenApi
+) -> None:
     """
     Add to the given app instance the test mapping jobs endpoints of the service.
 
@@ -71,7 +73,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(400, "Bad request")
         @ns.response(404, "Evergreen project not found")
         @ns.expect(parser)
-        def get(self, project: str):
+        def get(self, project: str) -> str:
             """
             Get a list of correlated test mappings for an input list of changed source files.
 
@@ -79,17 +81,17 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
             """
             evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
-                abort(404, custom="Evergreen project not found")
+                return abort(404, custom="Evergreen project not found")
             else:
                 changed_files_string = request.args.get("changed_files")
                 if not changed_files_string:
-                    abort(400, custom="Missing changed_files query param")
+                    return abort(400, custom="Missing changed_files query param")
                 else:
                     threshold = request.args.get("threshold", 0)
                     try:
                         threshold = Decimal(threshold)
                     except TypeError:
-                        abort(400, custom="Threshold query param must be a decimal")
+                        return abort(400, custom="Threshold query param must be a decimal")
                     changed_files = changed_files_string.split(",")
                     test_mappings = get_correlated_test_mappings(
                         mongo.test_mappings(), changed_files, project, threshold
@@ -101,7 +103,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(404, "Evergreen project not found")
         @ns.response(422, "Work item already exists for project")
         @ns.expect(test_mappings_work_item, validate=True)
-        def post(self, project: str):
+        def post(self, project: str) -> str:
             """
             Enqueue a project test mapping work item.
 
@@ -109,21 +111,21 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
             """
             evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
-                abort(404, custom="Evergreen project not found")
+                return abort(404, custom="Evergreen project not found")
             else:
                 work_item_params = json.loads(request.get_data().decode("utf8"))
 
                 module = work_item_params.get("module")
                 module_source_file_regex = work_item_params.get("module_source_file_regex")
                 if module and not module_source_file_regex:
-                    abort(
+                    return abort(
                         400,
                         custom="The module_source_file_regex param is required if "
                         "a module name is passed in",
                     )
                 module_test_file_regex = work_item_params.get("module_test_file_regex")
                 if module and not module_test_file_regex:
-                    abort(
+                    return abort(
                         400,
                         custom="The module_test_file_regex param is required if "
                         "a module name is passed in",
@@ -140,4 +142,4 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                 if work_item.insert(mongo.test_mappings_queue()):
                     return jsonify({"custom": f"Work item added for project '{project}'"})
                 else:
-                    abort(422, custom=f"Work item already exists for project '{project}'")
+                    return abort(422, custom=f"Work item already exists for project '{project}'")
