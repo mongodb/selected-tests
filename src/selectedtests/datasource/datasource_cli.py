@@ -1,8 +1,8 @@
 """Cli entry point to setup db indexes."""
 import click
 import structlog
-from click import Context
 
+from click import Context
 from miscutils.logging_config import Verbosity
 from pymongo import ASCENDING, IndexModel
 from pymongo.collection import Collection

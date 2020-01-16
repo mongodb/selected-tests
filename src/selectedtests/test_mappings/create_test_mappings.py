@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import os.path
 import re
+
 from collections import defaultdict, namedtuple
 from tempfile import TemporaryDirectory
-from typing import Pattern, Tuple, Dict, List
+from typing import Dict, List, Pattern, Tuple
 
 import structlog
+
 from evergreen.api import EvergreenApi
 from git import Repo
 

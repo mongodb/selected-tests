@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 import click
 import pytz
-from click import Context
 
+from click import Context
 from miscutils.logging_config import Verbosity
 
 from selectedtests.config.logging_config import config_logging

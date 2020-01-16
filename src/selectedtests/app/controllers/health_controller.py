@@ -1,5 +1,5 @@
 """Controller for the health endpoints."""
-from flask import jsonify, Response
+from flask import Response, jsonify
 from flask_restplus import Api, Resource, fields
 
 

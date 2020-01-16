@@ -1,7 +1,7 @@
 """Helper functions for Cli entry points."""
 import os
 
-from evergreen.api import RetryingEvergreenApi, EvergreenApi
+from evergreen.api import EvergreenApi, RetryingEvergreenApi
 from evergreen.config import EvgAuth
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper

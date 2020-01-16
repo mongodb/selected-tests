@@ -4,7 +4,7 @@ import json
 from decimal import Decimal
 
 from evergreen.api import EvergreenApi
-from flask import jsonify, request, Response
+from flask import Response, jsonify, request
 from flask_restplus import Api, Resource, abort, fields, reqparse
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper

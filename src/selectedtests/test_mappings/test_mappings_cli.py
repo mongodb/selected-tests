@@ -7,8 +7,8 @@ from datetime import datetime
 import click
 import pytz
 import structlog
-from click import Context
 
+from click import Context
 from miscutils.logging_config import Verbosity
 
 from selectedtests.config.logging_config import config_logging

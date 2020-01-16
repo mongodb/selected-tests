@@ -1,12 +1,13 @@
 """Method to create the task mappings for a given evergreen project."""
 from __future__ import annotations
+
 import re
 
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor as Executor
 from re import match
 from tempfile import TemporaryDirectory
-from typing import Dict, List, Pattern, Set, Tuple, Optional
+from typing import Dict, List, Optional, Pattern, Set, Tuple
 
 from boltons.iterutils import windowed_iter
 from evergreen.api import Build, EvergreenApi, Task, Version

@@ -1,5 +1,6 @@
 """Classes for accessing mongo collections."""
 from __future__ import annotations
+
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
