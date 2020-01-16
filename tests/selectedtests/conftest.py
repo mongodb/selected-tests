@@ -5,10 +5,11 @@ import re
 from datetime import datetime, time, timedelta
 from typing import Dict, List
 from unittest.mock import MagicMock
-from selectedtests.app import app
 
 import git
 import pytest
+
+from selectedtests.app import app
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_OUTPUT_PATH = os.path.join(CURRENT_DIRECTORY, "sample_data")
