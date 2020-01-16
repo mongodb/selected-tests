@@ -4,7 +4,7 @@ import json
 from decimal import Decimal
 
 from evergreen.api import EvergreenApi
-from flask import jsonify, request
+from flask import jsonify, request, Response
 from flask_restplus import Api, Resource, abort, fields, reqparse
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
@@ -73,7 +73,7 @@ def add_project_test_mappings_endpoints(
         @ns.response(400, "Bad request")
         @ns.response(404, "Evergreen project not found")
         @ns.expect(parser)
-        def get(self, project: str) -> str:
+        def get(self, project: str) -> Response:  # type: ignore
             """
             Get a list of correlated test mappings for an input list of changed source files.
 
@@ -81,20 +81,20 @@ def add_project_test_mappings_endpoints(
             """
             evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
-                return abort(404, custom="Evergreen project not found")
+                abort(404, custom="Evergreen project not found")
             else:
                 changed_files_string = request.args.get("changed_files")
                 if not changed_files_string:
-                    return abort(400, custom="Missing changed_files query param")
+                    abort(400, custom="Missing changed_files query param")
                 else:
                     threshold = request.args.get("threshold", 0)
                     try:
                         threshold = Decimal(threshold)
                     except TypeError:
-                        return abort(400, custom="Threshold query param must be a decimal")
+                        abort(400, custom="Threshold query param must be a decimal")
                     changed_files = changed_files_string.split(",")
                     test_mappings = get_correlated_test_mappings(
-                        mongo.test_mappings(), changed_files, project, threshold
+                        mongo.test_mappings(), changed_files, project, threshold   # type: ignore
                     )
                     return jsonify({"test_mappings": test_mappings})
 
@@ -103,7 +103,7 @@ def add_project_test_mappings_endpoints(
         @ns.response(404, "Evergreen project not found")
         @ns.response(422, "Work item already exists for project")
         @ns.expect(test_mappings_work_item, validate=True)
-        def post(self, project: str) -> str:
+        def post(self, project: str) -> Response:  # type: ignore
             """
             Enqueue a project test mapping work item.
 
@@ -111,21 +111,21 @@ def add_project_test_mappings_endpoints(
             """
             evergreen_project = get_evg_project(evg_api, project)
             if not evergreen_project:
-                return abort(404, custom="Evergreen project not found")
+                abort(404, custom="Evergreen project not found")
             else:
                 work_item_params = json.loads(request.get_data().decode("utf8"))
 
                 module = work_item_params.get("module")
                 module_source_file_regex = work_item_params.get("module_source_file_regex")
                 if module and not module_source_file_regex:
-                    return abort(
+                    abort(
                         400,
                         custom="The module_source_file_regex param is required if "
                         "a module name is passed in",
                     )
                 module_test_file_regex = work_item_params.get("module_test_file_regex")
                 if module and not module_test_file_regex:
-                    return abort(
+                    abort(
                         400,
                         custom="The module_test_file_regex param is required if "
                         "a module name is passed in",
@@ -142,4 +142,4 @@ def add_project_test_mappings_endpoints(
                 if work_item.insert(mongo.test_mappings_queue()):
                     return jsonify({"custom": f"Work item added for project '{project}'"})
                 else:
-                    return abort(422, custom=f"Work item already exists for project '{project}'")
+                    abort(422, custom=f"Work item already exists for project '{project}'")

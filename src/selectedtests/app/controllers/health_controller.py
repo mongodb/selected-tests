@@ -1,5 +1,5 @@
 """Controller for the health endpoints."""
-from flask import jsonify
+from flask import jsonify, Response
 from flask_restplus import Api, Resource, fields
 
 
@@ -18,6 +18,6 @@ def add_health_endpoints(api: Api) -> None:
         """Represents the collection of endpoints that give the health of the service."""
 
         @ns.response(200, "Success", health_model)
-        def get(self) -> str:
+        def get(self) -> Response:
             """Get the current status of the service."""
             return jsonify({"online": True})

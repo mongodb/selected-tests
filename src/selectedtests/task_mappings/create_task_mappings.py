@@ -34,7 +34,7 @@ def generate_task_mappings(
     module_name: Optional[str] = None,
     module_source_file_pattern: Optional[str] = None,
     build_variant_pattern: Optional[str] = None,
-) -> Tuple[List[Dict], str]:
+) -> Tuple[List[Dict], Optional[str]]:
     """
     Generate task mappings for an evergreen project and its associated module if module is provided.
 
@@ -48,7 +48,7 @@ def generate_task_mappings(
     :return: An instance of TestMappingsResult and the most recent version analyzed during analysis.
     """
     source_re = re.compile(source_file_pattern)
-    module_source_re = re.compile("")
+    module_source_re = None
     if module_name and module_source_file_pattern:
         module_source_re = re.compile(module_source_file_pattern)
 
@@ -72,7 +72,7 @@ def generate_task_mappings(
 class TaskMappings:
     """Represents and creates the task mappings for an evergreen project."""
 
-    def __init__(self, mappings: Dict, evergreen_project: str, branch: str):
+    def __init__(self, mappings: Dict, evergreen_project: str, branch: Optional[str]):
         """Init a taskmapping instance. Use create_task_mappings rather than this directly."""
         self.mappings = mappings
         self.evergreen_project = evergreen_project
@@ -88,7 +88,7 @@ class TaskMappings:
         module_name: Optional[str] = None,
         module_file_regex: Optional[Pattern] = None,
         build_regex: Optional[Pattern] = None,
-    ) -> Tuple[TaskMappings, str]:
+    ) -> Tuple[TaskMappings, Optional[str]]:
         """
         Create the task mappings for an evergreen project. Optionally looks at an associated module.
 

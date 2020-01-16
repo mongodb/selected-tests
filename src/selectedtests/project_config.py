@@ -10,11 +10,11 @@ class TaskConfig:
 
     def __init__(
         self,
-        most_recent_version_analyzed: str = None,
-        source_file_regex: str = None,
-        build_variant_regex: str = None,
-        module: str = None,
-        module_source_file_regex: str = None,
+        most_recent_version_analyzed: Optional[str] = None,
+        source_file_regex: Optional[str] = None,
+        build_variant_regex: Optional[str] = None,
+        module: Optional[str] = None,
+        module_source_file_regex: Optional[str] = None,
     ):
         """Init a TaskConfig instance. Use ProjectConfig.get rather than this directly."""
         self.most_recent_version_analyzed = most_recent_version_analyzed
@@ -41,7 +41,7 @@ class TaskConfig:
 
     def update(
         self,
-        most_recent_version_analyzed: str,
+        most_recent_version_analyzed: Optional[str],
         source_file_regex: str,
         build_variant_regex: str,
         module: str,
