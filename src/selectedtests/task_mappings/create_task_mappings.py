@@ -31,9 +31,9 @@ def generate_task_mappings(
     evergreen_project: str,
     version_limit: VersionLimit,
     source_file_pattern: str,
-    module_name: str = None,
-    module_source_file_pattern: str = None,
-    build_variant_pattern: str = None,
+    module_name: Optional[str] = None,
+    module_source_file_pattern: Optional[str] = None,
+    build_variant_pattern: Optional[str] = None,
 ) -> Tuple[List[Dict], str]:
     """
     Generate task mappings for an evergreen project and its associated module if module is provided.
@@ -49,11 +49,7 @@ def generate_task_mappings(
     """
     source_re = re.compile(source_file_pattern)
     module_source_re = re.compile("")
-    if module_name:
-        if module_source_file_pattern is None:
-            raise ValueError(
-                "You must specify module_source_file_pattern when specifying a module."
-            )
+    if module_name and module_source_file_pattern:
         module_source_re = re.compile(module_source_file_pattern)
 
     build_regex = None
@@ -89,9 +85,9 @@ class TaskMappings:
         evergreen_project: str,
         version_limit: VersionLimit,
         file_regex: Pattern,
-        module_name: str = None,
-        module_file_regex: Pattern = re.compile(""),
-        build_regex: Pattern = None,
+        module_name: Optional[str] = None,
+        module_file_regex: Optional[Pattern] = None,
+        build_regex: Optional[Pattern] = None,
     ) -> Tuple[TaskMappings, str]:
         """
         Create the task mappings for an evergreen project. Optionally looks at an associated module.
@@ -110,10 +106,10 @@ class TaskMappings:
 
         task_mappings: Dict = {}
 
-        module_repo: Optional[Repo] = None
-        branch: Optional[str] = None
+        module_repo = None
+        branch = None
         repo_name = None
-        most_recent_version_analyzed: str = None  # type: ignore
+        most_recent_version_analyzed = None
 
         with TemporaryDirectory() as temp_dir:
             try:
@@ -135,7 +131,7 @@ class TaskMappings:
                     if version_limit.check_version_before_limit(version):
                         break
 
-                    if not branch or not repo_name:
+                    if branch is None or repo_name is None:
                         branch = version.branch
                         repo_name = version.repo
 
@@ -149,7 +145,7 @@ class TaskMappings:
 
                     changed_files = _get_filtered_files(diff, file_regex, repo_name)
 
-                    if module_name:
+                    if module_name and module_file_regex:
                         cur_module = _get_associated_module(version, module_name)
                         prev_module = _get_associated_module(prev_version, module_name)
                         if cur_module is not None and module_repo is None:
@@ -177,8 +173,6 @@ class TaskMappings:
                 changed_files, flipped_tasks = job.result()
                 _map_tasks_to_files(changed_files, flipped_tasks, task_mappings)
 
-        if branch is None:
-            raise RuntimeError("Unable to identify branch")
         return (
             TaskMappings(task_mappings, evergreen_project, branch),
             most_recent_version_analyzed,
