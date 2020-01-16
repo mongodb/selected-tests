@@ -145,7 +145,7 @@ class TaskMappings:
 
                     changed_files = _get_filtered_files(diff, file_regex, repo_name)
 
-                    if module_name and module_file_regex:
+                    if module_name:
                         cur_module = _get_associated_module(version, module_name)
                         prev_module = _get_associated_module(prev_version, module_name)
                         if cur_module is not None and module_repo is None:
@@ -154,7 +154,7 @@ class TaskMappings:
                             )
 
                         module_changed_files = _get_module_changed_files(
-                            module_repo, cur_module, prev_module, module_file_regex
+                            module_repo, cur_module, prev_module, module_file_regex  # type: ignore
                         )
                         changed_files = changed_files.union(module_changed_files)
 
