@@ -1,7 +1,6 @@
 """Git helper for mappings commands."""
 import os.path
 
-from tempfile import TemporaryDirectory
 from typing import Any, Set
 
 from git import Commit, Diff, DiffIndex, Repo

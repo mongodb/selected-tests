@@ -3,13 +3,11 @@ from __future__ import annotations
 
 import os.path
 import re
-
 from collections import defaultdict, namedtuple
 from tempfile import TemporaryDirectory
-from typing import Pattern, Tuple, Optional, Dict, List
+from typing import Pattern, Tuple, Dict, List
 
 import structlog
-
 from evergreen.api import EvergreenApi
 from git import Repo
 
@@ -70,7 +68,8 @@ def generate_test_mappings(
         if module_name is not None:
             if module_source_file_pattern is None or module_test_file_pattern is None:
                 raise ValueError(
-                    "You must specify module_source_file_pattern and module_test_file_pattern when passing a module"
+                    "You must specify module_source_file_pattern and"
+                    " module_test_file_pattern when passing a module"
                 )
             module_source_re = re.compile(module_source_file_pattern)
             module_test_re = re.compile(module_test_file_pattern)

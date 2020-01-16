@@ -156,7 +156,7 @@ class TestConfig:
         """
         Update most recent commit fields on an instance of TaskConfig.
 
-        :param most_recent_project_commit_analyzed: The most recent project commit analyzed of the project.
+        :param most_recent_project_commit_analyzed: The most recent project commit analyzed.
         :param most_recent_module_commit_analyzed: Most_recent_module_commit_analyzed of the config.
         """
         self.most_recent_project_commit_analyzed = most_recent_project_commit_analyzed

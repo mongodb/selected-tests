@@ -67,7 +67,7 @@ def add_project_task_mappings_endpoints(
         @ns.response(400, "Bad request")
         @ns.response(404, "Evergreen project not found")
         @ns.expect(parser)
-        def get(self, project: str) -> Response:   # type: ignore
+        def get(self, project: str) -> Response:  # type: ignore
             """
             Get a list of correlated task mappings for an input list of changed source files.
 
@@ -88,7 +88,7 @@ def add_project_task_mappings_endpoints(
                         abort(400, custom="Threshold query param must be a decimal")
                     changed_files = changed_files_string.split(",")
                     task_mappings = get_correlated_task_mappings(
-                        mongo.task_mappings(), changed_files, project, threshold   # type: ignore
+                        mongo.task_mappings(), changed_files, project, threshold  # type: ignore
                     )
                     return jsonify({"task_mappings": task_mappings})
 
@@ -97,7 +97,7 @@ def add_project_task_mappings_endpoints(
         @ns.response(404, "Evergreen project not found")
         @ns.response(422, "Work item already exists for project")
         @ns.expect(task_mappings_work_item, validate=True)
-        def post(self, project: str) -> Response:   # type: ignore
+        def post(self, project: str) -> Response:  # type: ignore
             """
             Enqueue a project task mapping work item.
 

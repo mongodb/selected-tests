@@ -94,7 +94,7 @@ def add_project_test_mappings_endpoints(
                         abort(400, custom="Threshold query param must be a decimal")
                     changed_files = changed_files_string.split(",")
                     test_mappings = get_correlated_test_mappings(
-                        mongo.test_mappings(), changed_files, project, threshold   # type: ignore
+                        mongo.test_mappings(), changed_files, project, threshold  # type: ignore
                     )
                     return jsonify({"test_mappings": test_mappings})
 
