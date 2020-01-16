@@ -65,12 +65,7 @@ def generate_test_mappings(
             evg_api, evergreen_project, temp_dir, source_re, test_re, project_commit_limit
         )
 
-        if module_name is not None:
-            if module_source_file_pattern is None or module_test_file_pattern is None:
-                raise ValueError(
-                    "You must specify module_source_file_pattern and"
-                    " module_test_file_pattern when passing a module"
-                )
+        if module_name and module_source_file_pattern and module_test_file_pattern:
             module_source_re = re.compile(module_source_file_pattern)
             module_test_re = re.compile(module_test_file_pattern)
             module_test_mappings_list, most_recent_module_commit = generate_module_test_mappings(
