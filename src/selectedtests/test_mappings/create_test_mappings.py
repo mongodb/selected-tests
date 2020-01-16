@@ -33,7 +33,7 @@ def generate_test_mappings(
     source_file_pattern: str,
     test_file_pattern: str,
     module_name: str = None,
-    module_commit_limit: CommitLimit = CommitLimit(),
+    module_commit_limit: CommitLimit = None,
     module_source_file_pattern: str = None,
     module_test_file_pattern: str = None,
 ) -> TestMappingsResult:
@@ -80,7 +80,7 @@ def generate_test_mappings(
                 temp_dir,
                 module_source_re,
                 module_test_re,
-                module_commit_limit,
+                module_commit_limit,  # type: ignore
             )
             test_mappings_list.extend(module_test_mappings_list)
     LOGGER.info("Generated test mappings list", test_mappings_length=len(test_mappings_list))
