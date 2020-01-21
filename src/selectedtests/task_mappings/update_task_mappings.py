@@ -11,7 +11,7 @@ from selectedtests.task_mappings.version_limit import VersionLimit
 LOGGER = structlog.get_logger()
 
 
-def update_task_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper):
+def update_task_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper) -> None:
     """
     Update task mappings that are being tracked in the task mappings project config collection.
 

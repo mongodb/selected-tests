@@ -1,13 +1,8 @@
-FROM ubuntu:18.04
+FROM python:3.7-slim-buster
+
 RUN set -xe \
-    && apt-get update \
-    && apt-get install -y curl gcc g++ \
-    && apt-get install -y python3-dev \
-    && apt-get install -y libffi-dev \
-    && apt-get install -y libssl-dev \
-    && apt-get install -y python3-pip \
-    && apt-get install -y git
-RUN pip3 install --upgrade pip
+    apt-get install -y curl \
+    apt-get install -y git
 
 ADD . /selected-tests
 WORKDIR /selected-tests

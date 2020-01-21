@@ -9,10 +9,23 @@ from unittest.mock import MagicMock
 import git
 import pytest
 
+from selectedtests.app import app
+
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_OUTPUT_PATH = os.path.join(CURRENT_DIRECTORY, "sample_data")
 SAMPLE_VERSIONS_PATH = os.path.join(CURRENT_DIRECTORY, "sample_data", "sample_versions")
 VERSIONS = ["next_version", "current_version", "prev_version"]
+
+
+@pytest.fixture()
+def app_client():
+    """
+    Client for the flask web with mocked endpoints.
+    """
+    mongo = MagicMock()
+    evg_api = MagicMock()
+    client = app.create_app(mongo, evg_api).test_client()
+    return client
 
 
 @pytest.fixture()

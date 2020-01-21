@@ -20,7 +20,7 @@ class CommitLimit(object):
         self.stop_at_date = stop_at_date
         self.stop_at_commit_sha = stop_at_commit_sha
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the object representation of CommitLimit."""
         return f"CommitLimit({self.stop_at_date}, {self.stop_at_commit_sha})"
 

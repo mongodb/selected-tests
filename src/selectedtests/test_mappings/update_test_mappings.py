@@ -11,7 +11,7 @@ from selectedtests.test_mappings.create_test_mappings import generate_test_mappi
 LOGGER = structlog.get_logger()
 
 
-def update_test_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper):
+def update_test_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper) -> None:
     """
     Update test mappings that are being tracked in the test mappings project config collection.
 

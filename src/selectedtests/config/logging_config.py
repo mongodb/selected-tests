@@ -20,7 +20,7 @@ class Verbosity(IntEnum):
     DEBUG = 2
 
 
-def config_logging(verbosity: int, human_readable: bool = True):
+def config_logging(verbosity: int, human_readable: bool = True) -> None:
     """
     Configure logging based on the given verbosity.
 

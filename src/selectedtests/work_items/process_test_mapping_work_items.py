@@ -17,7 +17,7 @@ from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWo
 LOGGER = structlog.get_logger()
 
 
-def clear_in_progress_work(collection: Collection):
+def clear_in_progress_work(collection: Collection) -> None:
     """
     Clear the start time of all in progress work items.
 
@@ -31,7 +31,7 @@ def clear_in_progress_work(collection: Collection):
 
 def process_queued_test_mapping_work_items(
     evg_api: EvergreenApi, mongo: MongoWrapper, after_date: datetime
-):
+) -> None:
     """
     Process test mapping work items that have not yet been processed.
 
@@ -65,7 +65,7 @@ def _process_one_test_mapping_work_item(
     evg_api: EvergreenApi,
     mongo: MongoWrapper,
     after_date: datetime,
-):
+) -> None:
     """
     Process a test mapping work item.
 

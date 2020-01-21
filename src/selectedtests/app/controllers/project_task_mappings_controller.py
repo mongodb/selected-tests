@@ -4,7 +4,7 @@ import json
 from decimal import Decimal
 
 from evergreen.api import EvergreenApi
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_restplus import Api, Resource, abort, fields, reqparse
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
@@ -13,7 +13,9 @@ from selectedtests.task_mappings.get_task_mappings import get_correlated_task_ma
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
 
 
-def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: EvergreenApi):
+def add_project_task_mappings_endpoints(
+    api: Api, mongo: MongoWrapper, evg_api: EvergreenApi
+) -> None:
     """
     Add to the given app instance the task mapping jobs endpoints of the service.
 
@@ -65,7 +67,7 @@ def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(400, "Bad request")
         @ns.response(404, "Evergreen project not found")
         @ns.expect(parser)
-        def get(self, project: str):
+        def get(self, project: str) -> Response:  # type: ignore
             """
             Get a list of correlated task mappings for an input list of changed source files.
 
@@ -86,7 +88,7 @@ def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                         abort(400, custom="Threshold query param must be a decimal")
                     changed_files = changed_files_string.split(",")
                     task_mappings = get_correlated_task_mappings(
-                        mongo.task_mappings(), changed_files, project, threshold
+                        mongo.task_mappings(), changed_files, project, threshold  # type: ignore
                     )
                     return jsonify({"task_mappings": task_mappings})
 
@@ -95,7 +97,7 @@ def add_project_task_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(404, "Evergreen project not found")
         @ns.response(422, "Work item already exists for project")
         @ns.expect(task_mappings_work_item, validate=True)
-        def post(self, project: str):
+        def post(self, project: str) -> Response:  # type: ignore
             """
             Enqueue a project task mapping work item.
 

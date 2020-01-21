@@ -20,7 +20,7 @@ class VersionLimit(object):
         self.stop_at_date = stop_at_date
         self.stop_at_version_id = stop_at_version_id
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the object representation of VersionLimit."""
         return f"VersionLimit({self.stop_at_date}, {self.stop_at_version_id})"
 

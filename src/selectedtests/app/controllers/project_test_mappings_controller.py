@@ -4,7 +4,7 @@ import json
 from decimal import Decimal
 
 from evergreen.api import EvergreenApi
-from flask import jsonify, request
+from flask import Response, jsonify, request
 from flask_restplus import Api, Resource, abort, fields, reqparse
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
@@ -13,7 +13,9 @@ from selectedtests.test_mappings.get_test_mappings import get_correlated_test_ma
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
 
-def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: EvergreenApi):
+def add_project_test_mappings_endpoints(
+    api: Api, mongo: MongoWrapper, evg_api: EvergreenApi
+) -> None:
     """
     Add to the given app instance the test mapping jobs endpoints of the service.
 
@@ -71,7 +73,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(400, "Bad request")
         @ns.response(404, "Evergreen project not found")
         @ns.expect(parser)
-        def get(self, project: str):
+        def get(self, project: str) -> Response:  # type: ignore
             """
             Get a list of correlated test mappings for an input list of changed source files.
 
@@ -92,7 +94,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
                         abort(400, custom="Threshold query param must be a decimal")
                     changed_files = changed_files_string.split(",")
                     test_mappings = get_correlated_test_mappings(
-                        mongo.test_mappings(), changed_files, project, threshold
+                        mongo.test_mappings(), changed_files, project, threshold  # type: ignore
                     )
                     return jsonify({"test_mappings": test_mappings})
 
@@ -101,7 +103,7 @@ def add_project_test_mappings_endpoints(api: Api, mongo: MongoWrapper, evg_api: 
         @ns.response(404, "Evergreen project not found")
         @ns.response(422, "Work item already exists for project")
         @ns.expect(test_mappings_work_item, validate=True)
-        def post(self, project: str):
+        def post(self, project: str) -> Response:  # type: ignore
             """
             Enqueue a project test mapping work item.
 

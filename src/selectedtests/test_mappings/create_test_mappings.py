@@ -1,10 +1,12 @@
 """Test Mappings class to create test mappings."""
+from __future__ import annotations
+
 import os.path
 import re
 
 from collections import defaultdict, namedtuple
 from tempfile import TemporaryDirectory
-from typing import Pattern, Tuple
+from typing import Dict, List, Pattern, Tuple
 
 import structlog
 
@@ -59,19 +61,15 @@ def generate_test_mappings(
 
     source_re = re.compile(source_file_pattern)
     test_re = re.compile(test_file_pattern)
-    module_source_re = None
-    module_test_re = None
-    if module_name:
-        module_source_re = re.compile(module_source_file_pattern)
-        module_test_re = re.compile(module_test_file_pattern)
-
     most_recent_module_commit = None
     with TemporaryDirectory() as temp_dir:
         test_mappings_list, most_recent_project_commit = generate_project_test_mappings(
             evg_api, evergreen_project, temp_dir, source_re, test_re, project_commit_limit
         )
 
-        if module_name:
+        if module_name and module_source_file_pattern and module_test_file_pattern:
+            module_source_re = re.compile(module_source_file_pattern)
+            module_test_re = re.compile(module_test_file_pattern)
             module_test_mappings_list, most_recent_module_commit = generate_module_test_mappings(
                 evg_api,
                 evergreen_project,
@@ -79,7 +77,7 @@ def generate_test_mappings(
                 temp_dir,
                 module_source_re,
                 module_test_re,
-                module_commit_limit,
+                module_commit_limit,  # type: ignore
             )
             test_mappings_list.extend(module_test_mappings_list)
     LOGGER.info("Generated test mappings list", test_mappings_length=len(test_mappings_list))
@@ -93,7 +91,7 @@ def generate_test_mappings(
 def generate_project_test_mappings(
     evg_api: EvergreenApi,
     evergreen_project: str,
-    temp_dir: TemporaryDirectory,
+    temp_dir: str,
     source_re: Pattern,
     test_re: Pattern,
     commit_limit: CommitLimit,
@@ -110,6 +108,8 @@ def generate_project_test_mappings(
     :return: A list of test mappings for the project and the most recent commit sha analyzed.
     """
     evg_project = get_evg_project(evg_api, evergreen_project)
+    if evg_project is None:
+        raise ValueError(f"There is no evergreen project named {evergreen_project}")
     project_repo = init_repo(
         temp_dir, evg_project.repo_name, evg_project.branch_name, evg_project.owner_name
     )
@@ -128,7 +128,7 @@ def generate_module_test_mappings(
     evg_api: EvergreenApi,
     evergreen_project: str,
     module_name: str,
-    temp_dir: TemporaryDirectory,
+    temp_dir: str,
     module_source_re: Pattern,
     module_test_re: Pattern,
     commit_limit: CommitLimit,
@@ -188,7 +188,7 @@ class TestMappings(object):
         self._project = project
         self._repo_name = repo_name
         self._branch = branch
-        self._test_mappings = None
+        self._test_mappings: List[Dict] = []
 
     @classmethod
     def create_mappings(
@@ -199,7 +199,7 @@ class TestMappings(object):
         commit_limit: CommitLimit,
         project: str,
         branch: str,
-    ):
+    ) -> TestMappings:
         """
         Create the test mappings for a git repo.
 
@@ -211,8 +211,8 @@ class TestMappings(object):
         :param branch: The branch of the git repo used for the evergreen project.
         :return: An instance of the test mappings class
         """
-        file_intersection = defaultdict(lambda: defaultdict(int))
-        file_count = defaultdict(int)
+        file_intersection: defaultdict = defaultdict(lambda: defaultdict(int))
+        file_count: defaultdict = defaultdict(int)
 
         for commit in repo.iter_commits(repo.head.commit):
             if commit_limit.check_commit_before_limit(commit):
@@ -243,7 +243,7 @@ class TestMappings(object):
         repo_name = os.path.basename(repo.working_dir)
         return TestMappings(file_intersection, file_count, project, repo_name, branch)
 
-    def get_mappings(self):
+    def get_mappings(self) -> List[Dict]:
         """
         Get a transformed version of test mappings to the test mapping object.
 
@@ -253,7 +253,7 @@ class TestMappings(object):
             self._test_mappings = self._transform_mappings()
         return self._test_mappings
 
-    def _transform_mappings(self):
+    def _transform_mappings(self) -> List[Dict]:
         test_mappings = []
         for source_file, test_file_count_dict in self._file_intersection.items():
             test_files = [

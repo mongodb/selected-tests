@@ -1,11 +1,13 @@
 """Method to create the task mappings for a given evergreen project."""
+from __future__ import annotations
+
 import re
 
 from collections import namedtuple
 from concurrent.futures import ThreadPoolExecutor as Executor
 from re import match
 from tempfile import TemporaryDirectory
-from typing import Dict, List, Pattern, Set, Tuple
+from typing import Dict, List, Optional, Pattern, Set, Tuple
 
 from boltons.iterutils import windowed_iter
 from evergreen.api import Build, EvergreenApi, Task, Version
@@ -30,10 +32,10 @@ def generate_task_mappings(
     evergreen_project: str,
     version_limit: VersionLimit,
     source_file_pattern: str,
-    module_name: str = None,
-    module_source_file_pattern: str = None,
-    build_variant_pattern: str = None,
-) -> Tuple[List[Dict], str]:
+    module_name: Optional[str] = None,
+    module_source_file_pattern: Optional[str] = None,
+    build_variant_pattern: Optional[str] = None,
+) -> Tuple[List[Dict], Optional[str]]:
     """
     Generate task mappings for an evergreen project and its associated module if module is provided.
 
@@ -48,7 +50,7 @@ def generate_task_mappings(
     """
     source_re = re.compile(source_file_pattern)
     module_source_re = None
-    if module_name:
+    if module_name and module_source_file_pattern:
         module_source_re = re.compile(module_source_file_pattern)
 
     build_regex = None
@@ -71,7 +73,7 @@ def generate_task_mappings(
 class TaskMappings:
     """Represents and creates the task mappings for an evergreen project."""
 
-    def __init__(self, mappings: Dict, evergreen_project: str, branch: str):
+    def __init__(self, mappings: Dict, evergreen_project: str, branch: Optional[str]):
         """Init a taskmapping instance. Use create_task_mappings rather than this directly."""
         self.mappings = mappings
         self.evergreen_project = evergreen_project
@@ -84,10 +86,10 @@ class TaskMappings:
         evergreen_project: str,
         version_limit: VersionLimit,
         file_regex: Pattern,
-        module_name: str = None,
-        module_file_regex: Pattern = None,
-        build_regex: Pattern = None,
-    ):
+        module_name: Optional[str] = None,
+        module_file_regex: Optional[Pattern] = None,
+        build_regex: Optional[Pattern] = None,
+    ) -> Tuple[TaskMappings, Optional[str]]:
         """
         Create the task mappings for an evergreen project. Optionally looks at an associated module.
 
@@ -103,9 +105,9 @@ class TaskMappings:
         LOGGER.info("Starting to generate task mappings", version_limit=version_limit)
         project_versions = evg_api.versions_by_project(evergreen_project)
 
-        task_mappings = {}
+        task_mappings: Dict = {}
 
-        module_repo: Repo = None
+        module_repo = None
         branch = None
         repo_name = None
         most_recent_version_analyzed = None
@@ -130,7 +132,7 @@ class TaskMappings:
                     if version_limit.check_version_before_limit(version):
                         break
 
-                    if not branch or not repo_name:
+                    if branch is None or repo_name is None:
                         branch = version.branch
                         repo_name = version.repo
 
@@ -153,7 +155,7 @@ class TaskMappings:
                             )
 
                         module_changed_files = _get_module_changed_files(
-                            module_repo, cur_module, prev_module, module_file_regex
+                            module_repo, cur_module, prev_module, module_file_regex  # type: ignore
                         )
                         changed_files = changed_files.union(module_changed_files)
 
@@ -206,8 +208,8 @@ class TaskMappings:
 
 
 def _get_evg_project_and_init_repo(
-    evg_api: EvergreenApi, evergreen_project: str, temp_dir: TemporaryDirectory
-):
+    evg_api: EvergreenApi, evergreen_project: str, temp_dir: str
+) -> Repo:
     project_info = get_evg_project(evg_api, evergreen_project)
     if project_info is None:
         raise ValueError(f"The evergreen project {evergreen_project} does not exist")
@@ -237,7 +239,7 @@ def _get_module_changed_files(
     cur_module: ManifestModule,
     prev_module: ManifestModule,
     module_file_regex: Pattern,
-) -> Set[str]:
+) -> Set[ChangedFile]:
     """
     Get the files that changed in the associated module.
 
@@ -289,7 +291,9 @@ def _get_diff(repo: Repo, cur_revision: str, prev_revision: str) -> DiffIndex:
     return cur_commit.diff(parent)
 
 
-def _map_tasks_to_files(changed_files: Set[ChangedFile], flipped_tasks: Dict, task_mappings: Dict):
+def _map_tasks_to_files(
+    changed_files: Set[ChangedFile], flipped_tasks: Dict, task_mappings: Dict
+) -> None:
     """
     Map the flipped tasks to the changed files found in this version. Mapping will be done in \
     place in the dictionary given in the task_mappings parameter.
@@ -308,7 +312,7 @@ def _map_tasks_to_files(changed_files: Set[ChangedFile], flipped_tasks: Dict, ta
         if len(flipped_tasks) > 0:
             build_mappings = task_mappings_for_file[TASK_BUILDS_KEY]
             for build_name, cur_tasks in flipped_tasks.items():
-                builds_to_task_mappings: Dict[str, Dict] = build_mappings.setdefault(build_name, {})
+                builds_to_task_mappings: Dict[str, int] = build_mappings.setdefault(build_name, {})
                 for cur_task in cur_tasks:
                     cur_flips_for_task = builds_to_task_mappings.setdefault(cur_task, 0)
                     builds_to_task_mappings[cur_task] = cur_flips_for_task + 1
@@ -333,7 +337,7 @@ def _process_evg_version(
     next_version: Version,
     build_regex: Pattern,
     changed_files: Set[ChangedFile],
-) -> (Set[ChangedFile], Dict):
+) -> Tuple[Set[ChangedFile], Dict]:
     """
     Find flipped tasks for this evergreen version.
 
@@ -408,7 +412,7 @@ def _get_flipped_tasks_per_build(
     return [task.display_name for task in tasks if _is_task_a_flip(task, prev_tasks, next_tasks)]
 
 
-def _create_task_map(tasks: [Task]) -> Dict:
+def _create_task_map(tasks: List[Task]) -> Dict:
     """
     Create a dictionary of tasks by display_name.
 

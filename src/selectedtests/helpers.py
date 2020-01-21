@@ -1,13 +1,13 @@
 """Helper functions for Cli entry points."""
 import os
 
-from evergreen.api import RetryingEvergreenApi
+from evergreen.api import EvergreenApi, RetryingEvergreenApi
 from evergreen.config import EvgAuth
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 
-def get_evg_api():
+def get_evg_api() -> EvergreenApi:
     """
     Create an instance of the evergreen API based on environment variables.
 
@@ -25,4 +25,6 @@ def get_mongo_wrapper() -> MongoWrapper:
     :return: MongoWrapper instance.
     """
     mongo_uri = os.environ.get("SELECTED_TESTS_MONGO_URI")
+    if mongo_uri is None:
+        raise RuntimeError("Cannot connect to mongodb, SELECTED_TESTS_MONGO_URI is not set")
     return MongoWrapper.connect(mongo_uri)

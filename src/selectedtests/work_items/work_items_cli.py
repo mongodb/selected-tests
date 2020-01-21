@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import click
 import pytz
 
+from click import Context
 from miscutils.logging_config import Verbosity
 
 from selectedtests.config.logging_config import config_logging
@@ -26,7 +27,7 @@ DEFAULT_WEEKS_BACK = 24
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 @click.option("--mongo-uri", required=True, type=str, help="Mongo URI to connect to.")
 @click.pass_context
-def cli(ctx, verbose: str, mongo_uri: str):
+def cli(ctx: Context, verbose: str, mongo_uri: str) -> None:
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
@@ -45,7 +46,7 @@ def cli(ctx, verbose: str, mongo_uri: str):
     "--test-file-regex", type=str, required=True, help="Regular expression for project test files."
 )
 @click.pass_context
-def create_test_mapping(ctx, project: str, src_regex: str, test_file_regex: str):
+def create_test_mapping(ctx: Context, project: str, src_regex: str, test_file_regex: str) -> None:
     """
     Add a project to the queue to be tracked for test mappings.
 
@@ -70,7 +71,7 @@ def create_test_mapping(ctx, project: str, src_regex: str, test_file_regex: str)
     "--weeks-back", type=int, default=DEFAULT_WEEKS_BACK, help="Number of weeks back to process."
 )
 @click.pass_context
-def process_test_mappings(ctx, weeks_back):
+def process_test_mappings(ctx: Context, weeks_back: int) -> None:
     """Process test mapping work items that have not yet been processed."""
     # For test mappings, after_date is compared against git commit committed_datetime, which is
     # stored in a UTC date format that is UTC offset-aware. So after_date needs to be offset-aware,
@@ -87,7 +88,7 @@ def process_test_mappings(ctx, weeks_back):
 )
 @click.option("--build-regex", type=str, help="Regular expression for build variants.")
 @click.pass_context
-def create_task_mapping(ctx, project: str, src_regex: str, build_regex: str):
+def create_task_mapping(ctx: Context, project: str, src_regex: str, build_regex: str) -> None:
     """
     Add a project to the queue to be tracked for task mappings.
 
@@ -114,7 +115,7 @@ def create_task_mapping(ctx, project: str, src_regex: str, build_regex: str):
     "--weeks-back", type=int, default=DEFAULT_WEEKS_BACK, help="Number of weeks back to process."
 )
 @click.pass_context
-def process_task_mappings(ctx, weeks_back):
+def process_task_mappings(ctx: Context, weeks_back: int) -> None:
     """Process task mapping work items that have not yet been processed."""
     # For task mappings, after_date is compared against evergreen version create_time, which is
     # stored in a UTC date format that is not UTC offset-aware. So after_date does not need to be
@@ -123,6 +124,6 @@ def process_task_mappings(ctx, weeks_back):
     process_queued_task_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
 
 
-def main():
+def main() -> None:
     """Entry point for setting up selected-tests db indexes."""
     return cli(obj={}, auto_envvar_prefix="SELECTED_TESTS")

@@ -1,7 +1,6 @@
 """Git helper for mappings commands."""
 import os.path
 
-from tempfile import TemporaryDirectory
 from typing import Any, Set
 
 from git import Commit, Diff, DiffIndex, Repo
@@ -9,7 +8,7 @@ from git import Commit, Diff, DiffIndex, Repo
 GITHUB_BASE_URL = "git@github.com"
 
 
-def init_repo(temp_dir: TemporaryDirectory, repo_name: str, branch: str, org_name: str) -> Repo:
+def init_repo(temp_dir: str, repo_name: str, branch: str, org_name: str) -> Repo:
     """
     Create the given repo in the given directory and checkout the given branch.
 
@@ -25,7 +24,7 @@ def init_repo(temp_dir: TemporaryDirectory, repo_name: str, branch: str, org_nam
     return repo
 
 
-def _paths_for_iter(diff: Diff, iter_type: str):
+def _paths_for_iter(diff: Diff, iter_type: str) -> Set[str]:
     """
     Get the set for all the files in the given diff for the specified type.
 
@@ -47,7 +46,7 @@ def modified_files_for_commit(commit: Commit, log: Any) -> Set:
     :return: The set of changed files.
     """
     if not commit.parents:
-        return {}
+        return set()
 
     parent = commit.parents[0]
     diff = commit.diff(parent)

@@ -7,6 +7,7 @@ from datetime import datetime
 import click
 import structlog
 
+from click import Context
 from miscutils.logging_config import Verbosity
 
 from selectedtests.config.logging_config import config_logging
@@ -31,7 +32,7 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
     help="Format to write logs with.",
 )
 @click.pass_context
-def cli(ctx, verbose: bool, log_format: str):
+def cli(ctx: Context, verbose: bool, log_format: str) -> None:
     """Entry point for the cli interface. It sets up the evg api instance and logging."""
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = get_evg_api()
@@ -79,7 +80,7 @@ def cli(ctx, verbose: bool, log_format: str):
     help="Path to a file where the task mappings should be written to. Example: 'output.txt'",
 )
 def create(
-    ctx,
+    ctx: Context,
     evergreen_project: str,
     after: str,
     source_file_regex: str,
@@ -87,7 +88,7 @@ def create(
     module_source_file_regex: str,
     build_variant_regex: str,
     output_file: str,
-):
+) -> None:
     """Create the task mappings for a given evergreen project."""
     evg_api = ctx.obj["evg_api"]
 
@@ -133,11 +134,11 @@ def create(
     help="Mongo URI to connect to.",
 )
 @click.pass_context
-def update(ctx, mongo_uri):
+def update(ctx: Context, mongo_uri: str) -> None:
     """Process task mappings since they were last processed."""
     update_task_mappings_since_last_commit(ctx.obj["evg_api"], MongoWrapper.connect(mongo_uri))
 
 
-def main():
+def main() -> None:
     """Entry point into commandline."""
     return cli(obj={})

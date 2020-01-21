@@ -7,7 +7,7 @@ class Swagger_Api(Api):
     """Wrapper created by solution from https://github.com/noirbizarre/flask-restplus/issues/223."""
 
     @property
-    def specs_url(self):
+    def specs_url(self) -> str:
         """
         Swagger specifications absolute url (ie. `swagger.json`).
 

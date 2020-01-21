@@ -1,4 +1,6 @@
 """Classes for accessing mongo collections."""
+from __future__ import annotations
+
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
@@ -15,7 +17,7 @@ class MongoWrapper(object):
         self.client = mongo_client
 
     @classmethod
-    def connect(cls, mongo_uri: str):
+    def connect(cls, mongo_uri: str) -> MongoWrapper:
         """
         Create wrapper for mongo client to given mongo URI.
 
