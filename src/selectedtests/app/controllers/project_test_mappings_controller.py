@@ -36,11 +36,11 @@ class TestMappingsWorkItem(BaseModel):
 
 
 class TestMappingsResponse(BaseModel):
-    test_mappings: dict = {}
+    test_mappings: List = []
 
 
 @router.get(path="/", response_model=TestMappingsResponse)
-def get(threshold: Decimal, project: Project = Depends(retrieve_evergreen_project),
+def get(threshold: Decimal = 0, project: Project = Depends(retrieve_evergreen_project),
         changed_files: List[str] = Depends(changed_files_parser)) -> TestMappingsResponse:
     """
     Get a list of correlated test mappings for an input list of changed source files.
