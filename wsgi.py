@@ -1,3 +1,3 @@
-from selectedtests.app.app import main
+from selectedtests.app.main import app
 
-application = main()
+application = app.wsgi_app
