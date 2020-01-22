@@ -45,7 +45,7 @@ def get(threshold: Decimal = 0, project: Project = Depends(retrieve_evergreen_pr
     :param changed_files: List of source files to calculate correlated tasks for.
     :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
     """
-    task_mappings = get_correlated_task_mappings(changed_files, project.display_name, threshold)
+    task_mappings = get_correlated_task_mappings(changed_files, project.identifier, threshold)
     return TaskMappingsResponse(task_mappings=task_mappings)
 
 
@@ -66,14 +66,14 @@ def post(work_item_params: TaskMappingsWorkItem,
                                    "a module name is passed in")
 
     work_item = ProjectTaskMappingWorkItem.new_task_mappings(
-        project.display_name,
+        project.identifier,
         work_item_params.source_file_regex,
         module,
         module_source_file_regex,
         work_item_params.build_variant_regex)
 
     if work_item.insert(default_mongo.task_mappings_queue()):
-        return CustomResponse(custom=f"Work item added for project '{project.display_name}'")
+        return CustomResponse(custom=f"Work item added for project '{project.identifier}'")
     else:
         raise HTTPException(status_code=422,
-                            detail=f"Work item already exists for project '{project.display_name}'")
+                            detail=f"Work item already exists for project '{project.identifier}'")

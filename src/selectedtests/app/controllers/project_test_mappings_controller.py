@@ -50,7 +50,7 @@ def get(threshold: Decimal = 0, project: Project = Depends(retrieve_evergreen_pr
     :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
     """
     test_mappings = get_correlated_test_mappings(
-        default_mongo.test_mappings(), changed_files, project.display_name, threshold
+        default_mongo.test_mappings(), changed_files, project.identifier, threshold
     )
     return TestMappingsResponse(test_mappings=test_mappings)
 
