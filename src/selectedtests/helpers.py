@@ -28,3 +28,7 @@ def get_mongo_wrapper() -> MongoWrapper:
     if mongo_uri is None:
         raise RuntimeError("Cannot connect to mongodb, SELECTED_TESTS_MONGO_URI is not set")
     return MongoWrapper.connect(mongo_uri)
+
+
+default_evg = get_evg_api()
+default_mongo = get_mongo_wrapper()

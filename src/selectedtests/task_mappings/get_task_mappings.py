@@ -4,6 +4,8 @@ from typing import List
 
 from pymongo.collection import Collection
 
+from selectedtests.helpers import default_mongo
+
 
 def _exclude_tasks_below_threshold(task_mapping: dict, threshold: Decimal) -> dict:
     """
@@ -21,14 +23,15 @@ def _exclude_tasks_below_threshold(task_mapping: dict, threshold: Decimal) -> di
 
 
 def get_correlated_task_mappings(
-    collection: Collection, changed_source_files: List[str], project: str, threshold: Decimal
+        changed_source_files: List[str], project: str, threshold: Decimal,
+        collection: Collection = default_mongo.task_mappings()
 ) -> List[dict]:
     """
     Retrieve task mappings associated with a given evergreen project and list of source files.
 
+    :param project: The name of the evergreen project to analyze.
     :param collection: Collection to act on.
     :param changed_source_files: List of source files for which task mappings should be retrieved.
-    :param evergreen_project: The name of the evergreen project to analyze.
     :param threshold: Min threshold desired for flip_count/source_file_seen_count ratio.
     :return: A list of task mappings for the changed files.
     """

@@ -39,11 +39,11 @@ setup(
         'boltons==19.1.0',
         'dnspython==1.16.0',
         'evergreen.py==0.6.14',
-        'flask-restplus==0.13.0',
-        'flask==1.1.1',
+        "fastapi==0.45",
         'misc-utils-py == 0.1.1',
         'pymongo[tls]==3.8.0',
         'structlog==19.1.0',
+        "uvicorn==0.10.8",
     ],
     entry_points={
         'console_scripts': [
@@ -53,5 +53,6 @@ setup(
             'init-mongo = selectedtests.datasource.datasource_cli:main',
             'work-items = selectedtests.work_items.work_items_cli:main',
         ],
-    }
+    },
+    python_requires = ">=3",
 )

@@ -1,118 +1,79 @@
-"""Controller for the health endpoints."""
-import json
+"""Controller for task mappings."""
 from decimal import Decimal
+from typing import List
 
-from flask import Response, jsonify, request
-from flask_restplus import Resource, abort, fields, reqparse
+from evergreen import Project
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
-from selectedtests.app.app import api, mongo, evg_api
-from selectedtests.evergreen_helper import get_evg_project
+from selectedtests.app.models import CustomResponse
+from selectedtests.app.parsers import changed_files_parser, retrieve_evergreen_project
+from selectedtests.helpers import default_mongo
 from selectedtests.task_mappings.get_task_mappings import get_correlated_task_mappings
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
 
-ns = api.namespace("projects", description="Project mappings")
+router = APIRouter()
 
-task_mappings_work_item = ns.model(
-    "TaskMappingsWorkItem",
-    {
-        "source_file_regex": fields.String(
-            description="Regex describing folder containing source files in given project",
-            required=True,
-        ),
-        "module": fields.String(description="Module to include in the analysis"),
-        "module_source_file_regex": fields.String(
-            description="""
+
+class TaskMappingsWorkItem(BaseModel):
+    source_file_regex: str = Field(default=...,
+                                   description="""
+                                   Regex describing folder containing source files in given project
+                                   """)
+    module: str = Field(default=None, description="Module to include in the analysis")
+    module_source_file_regex: str = Field(default=None, description="""
                         Regex describing folder containing source files in given module.
                         Required if module param is provided.
-                        """
-        ),
-        "build_variant_regex": fields.String(
-            description="Regex that will be used to decide what build variants are analyzed. "
-            "Compares to the build variant's display name"
-        ),
-    },
-)
-
-parser = reqparse.RequestParser()
-parser.add_argument(
-    "changed_files",
-    location="args",
-    help="List of source files to calculate correlated tasks for",
-    required=True,
-)
-parser.add_argument(
-    "threshold",
-    type=Decimal,
-    location="args",
-    help="Minimum threshold desired for flip_count / source_file_seen_count ratio",
-)
+                        """)
+    build_variant_regex: str = Field(default=None, description="""
+                        Regex that will be used to decide what build variants are analyzed. 
+                        Compares to the build variant's display name
+                        """)
 
 
-@ns.route("/<project>/task-mappings")
-@api.param("project", "The evergreen project identifier")
-class TaskMappings(Resource):
-    @ns.response(200, "Success")
-    @ns.response(400, "Bad request")
-    @ns.response(404, "Evergreen project not found")
-    @ns.expect(parser)
-    def get(self, project: str) -> Response:  # type: ignore
-        """
-        Get a list of correlated task mappings for an input list of changed source files.
+class TaskMappingsResponse(BaseModel):
+    task_mappings: dict = {}
 
-        :param project: The evergreen project identifier.
-        """
-        evergreen_project = get_evg_project(evg_api, project)
-        if not evergreen_project:
-            abort(404, custom="Evergreen project not found")
-        else:
-            changed_files_string = request.args.get("changed_files")
-            if not changed_files_string:
-                abort(400, custom="Missing changed_files query param")
-            else:
-                threshold = request.args.get("threshold", 0)
-                try:
-                    threshold = Decimal(threshold)
-                except TypeError:
-                    abort(400, custom="Threshold query param must be a decimal")
-                changed_files = changed_files_string.split(",")
-                task_mappings = get_correlated_task_mappings(
-                    mongo.task_mappings(), changed_files, project, threshold  # type: ignore
-                )
-                return jsonify({"task_mappings": task_mappings})
 
-    @ns.response(200, "Success")
-    @ns.response(400, "Bad request")
-    @ns.response(404, "Evergreen project not found")
-    @ns.response(422, "Work item already exists for project")
-    @ns.expect(task_mappings_work_item, validate=True)
-    def post(self, project: str) -> Response:  # type: ignore
-        """
-        Enqueue a project task mapping work item.
+@router.get(path="/", response_model=TaskMappingsResponse)
+def get(threshold: Decimal, project: Project = Depends(retrieve_evergreen_project),
+        changed_files: List[str] = Depends(changed_files_parser)) -> TaskMappingsResponse:
+    """
+    Get a list of correlated task mappings for an input list of changed source files.
 
-        :param project: The evergreen project identifier.
-        """
-        evergreen_project = get_evg_project(evg_api, project)
-        if not evergreen_project:
-            abort(404, custom="Evergreen project not found")
-        else:
-            work_item_params = json.loads(request.get_data().decode("utf8"))
-            module = work_item_params.get("module")
-            module_source_file_regex = work_item_params.get("module_source_file_regex")
-            if module and not module_source_file_regex:
-                abort(
-                    400,
-                    custom="The module_source_file_regex param is required if "
-                    "a module name is passed in",
-                )
+    :param project: The evergreen project.
+    :param changed_files: List of source files to calculate correlated tasks for.
+    :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
+    """
+    task_mappings = get_correlated_task_mappings(changed_files, project.display_name, threshold)
+    return TaskMappingsResponse(task_mappings=task_mappings)
 
-            work_item = ProjectTaskMappingWorkItem.new_task_mappings(
-                project,
-                work_item_params.get("source_file_regex"),
-                module,
-                module_source_file_regex,
-                work_item_params.get("build_variant_regex"),
-            )
-            if work_item.insert(mongo.task_mappings_queue()):
-                return jsonify({"custom": f"Work item added for project '{project}'"})
-            else:
-                abort(422, custom=f"Work item already exists for project '{project}'")
+
+@router.post(path="/", response_model=CustomResponse)
+def post(work_item_params: TaskMappingsWorkItem,
+         project: Project = Depends(retrieve_evergreen_project)) -> CustomResponse:
+    """
+    Enqueue a project task mapping work item.
+
+    :param work_item_params: The work items to enqueue.
+    :param project: The evergreen project identifier.
+    """
+    module = work_item_params.module
+    module_source_file_regex = work_item_params.module_source_file_regex
+    if module and not module_source_file_regex:
+        raise HTTPException(status_code=400,
+                            detail="The module_source_file_regex param is required if "
+                                   "a module name is passed in")
+
+    work_item = ProjectTaskMappingWorkItem.new_task_mappings(
+        project.display_name,
+        work_item_params.source_file_regex,
+        module,
+        module_source_file_regex,
+        work_item_params.build_variant_regex)
+
+    if work_item.insert(default_mongo.task_mappings_queue()):
+        return CustomResponse(custom=f"Work item added for project '{project.display_name}'")
+    else:
+        raise HTTPException(status_code=422,
+                            detail=f"Work item already exists for project '{project.display_name}'")
