@@ -95,7 +95,7 @@ instance in an environment variable called ```SELECTED_TESTS_MONGO_URI```:
 export EVG_API_USER="<your evg api user>"
 export EVG_API_KEY="<your evg api key>"
 export SELECTED_TESTS_MONGO_URI="localhost:27017"
-python src/selectedtests/app/app.py
+python src/selectedtests/app/main.py
 ```
 
 

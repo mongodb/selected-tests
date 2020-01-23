@@ -9,4 +9,6 @@ DEFAULT_PORT = 8080
 
 
 if __name__ == "__main__":
-    uvicorn.run(create_app(get_mongo_wrapper(), get_evg_api()), host=DEFAULT_HOST, port=DEFAULT_PORT)
+    uvicorn.run(
+        create_app(get_mongo_wrapper(), get_evg_api()), host=DEFAULT_HOST, port=DEFAULT_PORT
+    )

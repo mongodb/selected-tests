@@ -47,7 +47,15 @@ class TaskMappingsResponse(BaseModel):
     task_mappings: List = []
 
 
-@router.get(path="", response_model=TaskMappingsResponse)
+@router.get(
+    path="",
+    response_model=TaskMappingsResponse,
+    responses={
+        200: {"description": "Success", "model": TaskMappingsResponse},
+        400: {"description": "Bad Request"},
+        404: {"description": "Evergreen project not found"},
+    },
+)
 def get(
     threshold: Decimal = Decimal(0),
     project: Project = Depends(retrieve_evergreen_project),
@@ -68,7 +76,16 @@ def get(
     return TaskMappingsResponse(task_mappings=task_mappings)
 
 
-@router.post(path="", response_model=CustomResponse)
+@router.post(
+    path="",
+    response_model=CustomResponse,
+    responses={
+        200: {"description": "Success", "model": CustomResponse},
+        400: {"description": "Bad Request"},
+        404: {"description": "Evergreen project not found"},
+        422: {"description": "Work item already exists for project"},
+    },
+)
 def post(
     work_item_params: TaskMappingsWorkItem,
     project: Project = Depends(retrieve_evergreen_project),

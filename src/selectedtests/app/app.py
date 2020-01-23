@@ -18,11 +18,11 @@ def create_app(mongo_wrapper: MongoWrapper, evg_api: EvergreenApi) -> FastAPI:
     :param evg_api: Evergreen Api.
     :return: The application.
     """
-    description = "This service is used to predict which tests need to run based on code changes."
     app = FastAPI(
         version="1.0",
         title="Selected Tests Service",
-        description=description,
+        description="This service is used to predict which tests and tasks need to run based on"
+        " code changes.",
         docs_url="/swagger",
         openapi_url="/swagger.json",
     )
