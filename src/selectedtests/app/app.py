@@ -8,10 +8,9 @@ from selectedtests.app.controllers import (
     project_test_mappings_controller,
 )
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.helpers import get_evg_api, get_mongo_wrapper
 
 
-def create_app(mongo_wrapper: MongoWrapper = None, evg_api: EvergreenApi = None) -> FastAPI:
+def create_app(mongo_wrapper: MongoWrapper, evg_api: EvergreenApi) -> FastAPI:
     """
     Create a selected-tests REST API.
 
@@ -38,6 +37,6 @@ def create_app(mongo_wrapper: MongoWrapper = None, evg_api: EvergreenApi = None)
         prefix="/projects/{project}/test-mappings",
         tags=["projects"],
     )
-    app.state.db = mongo_wrapper or get_mongo_wrapper()
-    app.state.evg_api = evg_api or get_evg_api()
+    app.state.db = mongo_wrapper
+    app.state.evg_api = evg_api
     return app
