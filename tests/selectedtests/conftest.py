@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 
 import git
 import pytest
+
 from starlette.testclient import TestClient
 
 from selectedtests.app import app

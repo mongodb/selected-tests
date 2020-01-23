@@ -6,10 +6,12 @@ router = APIRouter()
 
 
 class HealthCheckResponse(BaseModel):
+    """Model for health check responses."""
+
     online: bool
 
 
-@router.get("/", response_model=HealthCheckResponse, description="Health check endpoint")
+@router.get("", response_model=HealthCheckResponse, description="Health check endpoint")
 def health() -> HealthCheckResponse:
     """Get the current status of the service."""
     return HealthCheckResponse(online=True)

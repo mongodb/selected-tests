@@ -3,7 +3,7 @@ import uvicorn as uvicorn
 
 from selectedtests.app.app import create_app
 
-DEFAULT_HOST="0.0.0.0"
+DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 8080
 
 

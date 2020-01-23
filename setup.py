@@ -40,7 +40,7 @@ setup(
         'dnspython==1.16.0',
         'evergreen.py==0.6.14',
         "fastapi==0.45",
-        'misc-utils-py == 0.1.1',
+        'misc-utils-py == 0.1.2',
         'pymongo[tls]==3.8.0',
         'pytz==2019.3',
         'structlog==19.1.0',
@@ -55,5 +55,5 @@ setup(
             'work-items = selectedtests.work_items.work_items_cli:main',
         ],
     },
-    python_requires = ">=3",
+    python_requires=">=3",
 )

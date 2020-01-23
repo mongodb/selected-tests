@@ -21,7 +21,7 @@ def _exclude_tasks_below_threshold(task_mapping: dict, threshold: Decimal) -> di
 
 
 def get_correlated_task_mappings(
-        collection: Collection, changed_source_files: List[str], project: str, threshold: Decimal,
+    collection: Collection, changed_source_files: List[str], project: str, threshold: Decimal
 ) -> List[dict]:
     """
     Retrieve task mappings associated with a given evergreen project and list of source files.

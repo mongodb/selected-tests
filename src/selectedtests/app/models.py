@@ -3,4 +3,6 @@ from pydantic import BaseModel
 
 
 class CustomResponse(BaseModel):
+    """A custom API response."""
+
     custom: str
