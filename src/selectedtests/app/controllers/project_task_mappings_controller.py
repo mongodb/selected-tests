@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from selectedtests.app.models import CustomResponse
-from selectedtests.app.parsers import changed_files_parser, retrieve_evergreen_project
-from selectedtests.helpers import default_mongo
+from selectedtests.app.dependencies import changed_files_parser, retrieve_evergreen_project, get_db
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.task_mappings.get_task_mappings import get_correlated_task_mappings
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
 
@@ -37,24 +37,29 @@ class TaskMappingsResponse(BaseModel):
 
 @router.get(path="/", response_model=TaskMappingsResponse)
 def get(threshold: Decimal = 0, project: Project = Depends(retrieve_evergreen_project),
-        changed_files: List[str] = Depends(changed_files_parser)) -> TaskMappingsResponse:
+        changed_files: List[str] = Depends(changed_files_parser),
+        db: MongoWrapper = Depends(get_db)) -> TaskMappingsResponse:
     """
     Get a list of correlated task mappings for an input list of changed source files.
 
+    :param db:
     :param project: The evergreen project.
     :param changed_files: List of source files to calculate correlated tasks for.
     :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
     """
-    task_mappings = get_correlated_task_mappings(changed_files, project.identifier, threshold)
+    task_mappings = get_correlated_task_mappings(db.task_mappings(), changed_files,
+                                                 project.identifier, threshold)
     return TaskMappingsResponse(task_mappings=task_mappings)
 
 
 @router.post(path="/", response_model=CustomResponse)
 def post(work_item_params: TaskMappingsWorkItem,
-         project: Project = Depends(retrieve_evergreen_project)) -> CustomResponse:
+         project: Project = Depends(retrieve_evergreen_project),
+         db: MongoWrapper = Depends(get_db)) -> CustomResponse:
     """
     Enqueue a project task mapping work item.
 
+    :param db: The database.
     :param work_item_params: The work items to enqueue.
     :param project: The evergreen project identifier.
     """
@@ -72,7 +77,7 @@ def post(work_item_params: TaskMappingsWorkItem,
         module_source_file_regex,
         work_item_params.build_variant_regex)
 
-    if work_item.insert(default_mongo.task_mappings_queue()):
+    if work_item.insert(db.task_mappings_queue()):
         return CustomResponse(custom=f"Work item added for project '{project.identifier}'")
     else:
         raise HTTPException(status_code=422,

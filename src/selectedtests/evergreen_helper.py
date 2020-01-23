@@ -4,10 +4,8 @@ from typing import Optional
 from evergreen.api import EvergreenApi, Project, Version
 from evergreen.manifest import ManifestModule
 
-from selectedtests.helpers import default_evg
 
-
-def get_evg_project(project: str, evg_api: EvergreenApi = default_evg) -> Optional[Project]:
+def get_evg_project(project: str, evg_api: EvergreenApi) -> Optional[Project]:
     """
     Fetch an Evergreen project's info from the Evergreen API.
 

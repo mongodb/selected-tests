@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from selectedtests.app.models import CustomResponse
-from selectedtests.app.parsers import retrieve_evergreen_project, changed_files_parser
-from selectedtests.helpers import default_mongo
+from selectedtests.app.dependencies import retrieve_evergreen_project, changed_files_parser, get_db
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.test_mappings.get_test_mappings import get_correlated_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
@@ -41,25 +41,29 @@ class TestMappingsResponse(BaseModel):
 
 @router.get(path="/", response_model=TestMappingsResponse)
 def get(threshold: Decimal = 0, project: Project = Depends(retrieve_evergreen_project),
-        changed_files: List[str] = Depends(changed_files_parser)) -> TestMappingsResponse:
+        changed_files: List[str] = Depends(changed_files_parser),
+        db: MongoWrapper = Depends(get_db)) -> TestMappingsResponse:
     """
     Get a list of correlated test mappings for an input list of changed source files.
 
+    :param db: The database.
     :param project: The evergreen project.
     :param changed_files: List of source files to calculate correlated tasks for.
     :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
     """
     test_mappings = get_correlated_test_mappings(
-        default_mongo.test_mappings(), changed_files, project.identifier, threshold
+        db.test_mappings(), changed_files, project.identifier, threshold
     )
     return TestMappingsResponse(test_mappings=test_mappings)
 
 
 @router.post(path="", response_model=CustomResponse)
-def post(work_item_params: TestMappingsWorkItem, project: str) -> CustomResponse:
+def post(work_item_params: TestMappingsWorkItem, project: str,
+         db: MongoWrapper = Depends(get_db)) -> CustomResponse:
     """
     Enqueue a project test mapping work item.
 
+    :param db: The database
     :param work_item_params: The work items to enqueue.
     :param project: The evergreen project identifier.
     """
@@ -80,7 +84,7 @@ def post(work_item_params: TestMappingsWorkItem, project: str) -> CustomResponse
         module_source_file_regex,
         module_test_file_regex,
     )
-    if work_item.insert(default_mongo.test_mappings_queue()):
+    if work_item.insert(db.test_mappings_queue()):
         return CustomResponse(custom=f"Work item added for project '{project}'")
     else:
         raise HTTPException(status_code=422,

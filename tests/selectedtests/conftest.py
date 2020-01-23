@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import git
 import pytest
 
-from selectedtests.app import main
+from selectedtests.app import app
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_OUTPUT_PATH = os.path.join(CURRENT_DIRECTORY, "sample_data")
@@ -24,7 +24,7 @@ def app_client():
     """
     mongo = MagicMock()
     evg_api = MagicMock()
-    client = main.create_app(mongo, evg_api).test_client()
+    client = app.create_app(mongo, evg_api).test_client()
     return client
 
 
