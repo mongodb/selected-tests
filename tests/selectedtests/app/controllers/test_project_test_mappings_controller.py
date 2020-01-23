@@ -17,7 +17,7 @@ def ns(relative_name):
 @patch(ns("get_correlated_test_mappings"))
 @dependencies_patch("get_evg_project")
 def test_GET_test_mappings_found_with_threshold_param(
-        get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
+    get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -33,7 +33,7 @@ def test_GET_test_mappings_found_with_threshold_param(
 @patch(ns("get_correlated_test_mappings"))
 @dependencies_patch("get_evg_project")
 def test_GET_test_mappings_found_without_threshold_param(
-        get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
+    get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -49,7 +49,7 @@ def test_GET_test_mappings_found_without_threshold_param(
 @patch(ns("get_correlated_test_mappings"))
 @dependencies_patch("get_evg_project")
 def test_GET_missing_changed_files_query_param(
-        get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
+    get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
 
@@ -60,7 +60,7 @@ def test_GET_missing_changed_files_query_param(
 @patch(ns("get_correlated_test_mappings"))
 @dependencies_patch("get_evg_project")
 def test_GET_project_not_found(
-        get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
+    get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
     get_evg_project_mock.return_value = None
 
@@ -74,7 +74,7 @@ def test_GET_project_not_found(
 @patch(ns("ProjectTestMappingWorkItem"))
 @dependencies_patch("get_evg_project")
 def test_POST_work_item_inserted(
-        get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
+    get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -95,7 +95,7 @@ def test_POST_work_item_inserted(
 @patch(ns("ProjectTestMappingWorkItem"))
 @dependencies_patch("get_evg_project")
 def test_POST_work_item_inserted_with_incorrect_params(
-        get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
+    get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -114,7 +114,7 @@ def test_POST_work_item_inserted_with_incorrect_params(
 @patch(ns("ProjectTestMappingWorkItem"))
 @dependencies_patch("get_evg_project")
 def test_POST_work_item_inserted_with_module_and_no_module_source_regex(
-        get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
+    get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -129,15 +129,15 @@ def test_POST_work_item_inserted_with_module_and_no_module_source_regex(
     response = app_client.post(f"/projects/{project}/test-mappings", json=test_params)
     assert response.status_code == 400
     assert (
-            response.json()["detail"] == "The module_source_file_regex and module_test_file_regex"
-                                         " params are required if a module name is passed in"
+        response.json()["detail"] == "The module_source_file_regex and module_test_file_regex"
+        " params are required if a module name is passed in"
     )
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
 @dependencies_patch("get_evg_project")
 def test_POST_work_item_inserted_with_module_and_no_module_test_regex(
-        get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
+    get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -152,15 +152,15 @@ def test_POST_work_item_inserted_with_module_and_no_module_test_regex(
     response = app_client.post(f"/projects/{project}/test-mappings", json=test_params)
     assert response.status_code == 400
     assert (
-            response.json()["detail"] == "The module_source_file_regex and module_test_file_regex"
-                                         " params are required if a module name is passed in"
+        response.json()["detail"] == "The module_source_file_regex and module_test_file_regex"
+        " params are required if a module name is passed in"
     )
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
 @dependencies_patch("get_evg_project")
 def test_POST_no_module_passed_in(
-        get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
+    get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
     project = "valid-evergreen-project"
     get_evg_project_mock.return_value = MagicMock(identifier=project)
@@ -187,7 +187,7 @@ def test_POST_project_not_found(get_evg_project_mock, app_client: TestClient):
 @patch(ns("ProjectTestMappingWorkItem"))
 @dependencies_patch("get_evg_project")
 def test_POST_project_cannot_be_inserted(
-        get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
+    get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
     get_evg_project_mock.return_value = MagicMock()
     project_test_mapping_work_item_mock.new_test_mappings.return_value.insert.return_value = False
