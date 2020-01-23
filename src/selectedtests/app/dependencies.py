@@ -22,7 +22,7 @@ def get_evg(request: Request) -> MongoWrapper:
 
 
 def retrieve_evergreen_project(project: str, api: EvergreenApi = Depends(get_evg)) -> Project:
-    evergreen_project = get_evg_project(project, api)
+    evergreen_project = get_evg_project(api, project)
     if not evergreen_project:
         raise HTTPException(status_code=404, detail="Evergreen project not found")
     return evergreen_project

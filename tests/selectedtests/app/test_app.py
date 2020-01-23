@@ -1,7 +1,7 @@
-from flask import testing
+from starlette.testclient import TestClient
 
 
-def test_swagger_endpoint(app_client: testing.FlaskClient):
+def test_swagger_endpoint(app_client: TestClient):
     """
     Test /health endpoint
     """
@@ -9,7 +9,7 @@ def test_swagger_endpoint(app_client: testing.FlaskClient):
     assert response.status_code == 200
 
 
-def test_swagger_json_endpoint(app_client: testing.FlaskClient):
+def test_swagger_json_endpoint(app_client: TestClient):
     """
     Test /health endpoint
     """

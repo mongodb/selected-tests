@@ -5,7 +5,7 @@ from evergreen.api import EvergreenApi, Project, Version
 from evergreen.manifest import ManifestModule
 
 
-def get_evg_project(project: str, evg_api: EvergreenApi) -> Optional[Project]:
+def get_evg_project(evg_api: EvergreenApi, project: str) -> Optional[Project]:
     """
     Fetch an Evergreen project's info from the Evergreen API.
 

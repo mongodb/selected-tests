@@ -42,6 +42,7 @@ setup(
         "fastapi==0.45",
         'misc-utils-py == 0.1.1',
         'pymongo[tls]==3.8.0',
+        'pytz==2019.3',
         'structlog==19.1.0',
         "uvicorn==0.10.8",
     ],

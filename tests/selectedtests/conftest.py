@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 
 import git
 import pytest
+from starlette.testclient import TestClient
 
 from selectedtests.app import app
 
@@ -24,7 +25,7 @@ def app_client():
     """
     mongo = MagicMock()
     evg_api = MagicMock()
-    client = app.create_app(mongo, evg_api).test_client()
+    client = TestClient(app.create_app(mongo, evg_api))
     return client
 
 
