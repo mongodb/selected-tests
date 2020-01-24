@@ -2,11 +2,12 @@
 from decimal import Decimal
 from typing import List
 
-from evergreen import Project
+from evergreen import EvergreenApi
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from selectedtests.app.dependencies import changed_files_parser, get_db, retrieve_evergreen_project
+from selectedtests.app.dependencies import get_db, get_evg
+from selectedtests.app.helpers import parse_changed_files, try_retrieve_evergreen_project
 from selectedtests.app.models import CustomResponse
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.task_mappings.get_task_mappings import get_correlated_task_mappings
@@ -50,21 +51,24 @@ class TaskMappingsResponse(BaseModel):
     },
 )
 def get(
+    changed_files: str,
+    project: str,
     threshold: Decimal = Decimal(0),
-    project: Project = Depends(retrieve_evergreen_project),
-    changed_files: List[str] = Depends(changed_files_parser),
+    evg_api: EvergreenApi = Depends(get_evg),
     db: MongoWrapper = Depends(get_db),
 ) -> TaskMappingsResponse:
     """
     Get a list of correlated task mappings for an input list of changed source files.
 
-    :param db:
+    :param evg_api: Evergreen API client.
+    :param db: The database.
     :param project: The evergreen project.
     :param changed_files: List of source files to calculate correlated tasks for.
     :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
     """
+    evg_project = try_retrieve_evergreen_project(project, evg_api)
     task_mappings = get_correlated_task_mappings(
-        db.task_mappings(), changed_files, project.identifier, threshold
+        db.task_mappings(), parse_changed_files(changed_files), evg_project.identifier, threshold
     )
     return TaskMappingsResponse(task_mappings=task_mappings)
 
@@ -81,16 +85,19 @@ def get(
 )
 def post(
     work_item_params: TaskMappingsWorkItem,
-    project: Project = Depends(retrieve_evergreen_project),
+    project: str,
+    evg_api: EvergreenApi = Depends(get_evg),
     db: MongoWrapper = Depends(get_db),
 ) -> CustomResponse:
     """
     Enqueue a project task mapping work item.
 
+    :param evg_api: Evergreen API.
     :param db: The database.
     :param work_item_params: The work items to enqueue.
     :param project: The evergreen project identifier.
     """
+    evg_project = try_retrieve_evergreen_project(project, evg_api)
     module = work_item_params.module
     module_source_file_regex = work_item_params.module_source_file_regex
     if module and not module_source_file_regex:
@@ -101,7 +108,7 @@ def post(
         )
 
     work_item = ProjectTaskMappingWorkItem.new_task_mappings(
-        project.identifier,
+        evg_project.identifier,
         work_item_params.source_file_regex,
         module,
         module_source_file_regex,
@@ -109,8 +116,9 @@ def post(
     )
 
     if work_item.insert(db.task_mappings_queue()):
-        return CustomResponse(custom=f"Work item added for project '{project.identifier}'")
+        return CustomResponse(custom=f"Work item added for project '{evg_project.identifier}'")
     else:
         raise HTTPException(
-            status_code=422, detail=f"Work item already exists for project '{project.identifier}'"
+            status_code=422,
+            detail=f"Work item already exists for project '{evg_project.identifier}'",
         )

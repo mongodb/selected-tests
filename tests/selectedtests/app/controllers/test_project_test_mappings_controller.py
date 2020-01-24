@@ -3,10 +3,10 @@ from unittest.mock import MagicMock, patch
 from miscutils.testing import relative_patch_maker
 from starlette.testclient import TestClient
 
-from selectedtests.app.dependencies import __name__ as dependency_ns
+from selectedtests.app.helpers import __name__ as helpers_ns
 
 NS = "selectedtests.app.controllers.project_test_mappings_controller"
-dependencies_patch = relative_patch_maker(dependency_ns)
+helpers_patch = relative_patch_maker(helpers_ns)
 
 
 def ns(relative_name):
@@ -15,7 +15,7 @@ def ns(relative_name):
 
 
 @patch(ns("get_correlated_test_mappings"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_GET_test_mappings_found_with_threshold_param(
     get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
@@ -31,7 +31,7 @@ def test_GET_test_mappings_found_with_threshold_param(
 
 
 @patch(ns("get_correlated_test_mappings"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_GET_test_mappings_found_without_threshold_param(
     get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
@@ -47,7 +47,7 @@ def test_GET_test_mappings_found_without_threshold_param(
 
 
 @patch(ns("get_correlated_test_mappings"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_GET_missing_changed_files_query_param(
     get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
@@ -58,7 +58,7 @@ def test_GET_missing_changed_files_query_param(
 
 
 @patch(ns("get_correlated_test_mappings"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_GET_project_not_found(
     get_evg_project_mock, get_correlated_test_mappings_mock, app_client: TestClient
 ):
@@ -72,7 +72,7 @@ def test_GET_project_not_found(
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_POST_work_item_inserted(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
@@ -93,7 +93,7 @@ def test_POST_work_item_inserted(
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_POST_work_item_inserted_with_incorrect_params(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
@@ -112,7 +112,7 @@ def test_POST_work_item_inserted_with_incorrect_params(
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_POST_work_item_inserted_with_module_and_no_module_source_regex(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
@@ -135,7 +135,7 @@ def test_POST_work_item_inserted_with_module_and_no_module_source_regex(
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_POST_work_item_inserted_with_module_and_no_module_test_regex(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
@@ -158,7 +158,7 @@ def test_POST_work_item_inserted_with_module_and_no_module_test_regex(
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_POST_no_module_passed_in(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
@@ -172,7 +172,7 @@ def test_POST_no_module_passed_in(
     assert response.json()["custom"] == f"Work item added for project '{project}'"
 
 
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_POST_project_not_found(get_evg_project_mock, app_client: TestClient):
     get_evg_project_mock.return_value = None
     test_params = dict(source_file_regex="source-file-regex", test_file_regex="test-file-regex")
@@ -185,7 +185,7 @@ def test_POST_project_not_found(get_evg_project_mock, app_client: TestClient):
 
 
 @patch(ns("ProjectTestMappingWorkItem"))
-@dependencies_patch("get_evg_project")
+@helpers_patch("get_evg_project")
 def test_POST_project_cannot_be_inserted(
     get_evg_project_mock, project_test_mapping_work_item_mock, app_client: TestClient
 ):
