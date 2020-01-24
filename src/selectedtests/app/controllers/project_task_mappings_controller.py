@@ -19,25 +19,18 @@ class TaskMappingsWorkItem(BaseModel):
     """Task mappings work item model."""
 
     source_file_regex: str = Field(
-        default=...,
-        description="""
-                                   Regex describing folder containing source files in given project
-                                   """,
+        default=..., description="Regex describing folder containing source files in given project"
     )
     module: str = Field(default=None, description="Module to include in the analysis")
     module_source_file_regex: str = Field(
         default=None,
-        description="""
-                        Regex describing folder containing source files in given module.
-                        Required if module param is provided.
-                        """,
+        description="Regex describing folder containing source files in given module."
+        "Required if module param is provided.",
     )
     build_variant_regex: str = Field(
         default=None,
-        description="""
-                        Regex that will be used to decide what build variants are analyzed.
-                        Compares to the build variant's display name
-                        """,
+        description="Regex that will be used to decide what build variants are analyzed."
+        "Compares to the build variant's display name.",
     )
 
 
