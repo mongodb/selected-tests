@@ -2,9 +2,6 @@ from starlette.testclient import TestClient
 
 
 def test_health_endpoint(app_client: TestClient):
-    """
-    Test /health endpoint
-    """
     response = app_client.get("/health")
     assert response.status_code == 200
     response_data = response.json()
