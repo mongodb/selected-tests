@@ -1,53 +1,42 @@
 """Application to serve API of selected-tests service."""
-from evergreen.api import EvergreenApi
-from flask import Flask
-from werkzeug.middleware.proxy_fix import ProxyFix
+from evergreen import EvergreenApi
+from fastapi import FastAPI
 
-from selectedtests.app.controllers.health_controller import add_health_endpoints
-from selectedtests.app.controllers.project_task_mappings_controller import (
-    add_project_task_mappings_endpoints,
+from selectedtests.app.controllers import (
+    health_controller,
+    project_task_mappings_controller,
+    project_test_mappings_controller,
 )
-from selectedtests.app.controllers.project_test_mappings_controller import (
-    add_project_test_mappings_endpoints,
-)
-from selectedtests.app.swagger_api import Swagger_Api
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
-from selectedtests.helpers import get_evg_api, get_mongo_wrapper
-
-DEFAULT_PORT = 8080
 
 
-def create_app(mongo: MongoWrapper, evg_api: EvergreenApi) -> Flask:
+def create_app(mongo_wrapper: MongoWrapper, evg_api: EvergreenApi) -> FastAPI:
     """
-    Create an instance of the flask application.
+    Create a selected-tests REST API.
 
-    :param mongo: Mongo Wrapper instance
-    :param evg_api: An instance of the evg_api client
-    :return: Instance of flask application.
+    :param mongo_wrapper: MongoDB wrapper.
+    :param evg_api: Evergreen Api.
+    :return: The application.
     """
-    app = Flask(__name__)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # type: ignore
-    api = Swagger_Api(
-        app,
+    app = FastAPI(
         version="1.0",
         title="Selected Tests Service",
-        description="This service is used to predict which tests need to run based on code changes",
-        doc="/swagger",
+        description="This service is used to predict which tests and tasks need to run based on"
+        " code changes.",
+        docs_url="/swagger",
+        openapi_url="/swagger.json",
     )
-
-    add_health_endpoints(api)
-    add_project_test_mappings_endpoints(api, mongo, evg_api)
-    add_project_task_mappings_endpoints(api, mongo, evg_api)
-
+    app.include_router(health_controller.router, prefix="/health", tags=["health"])
+    app.include_router(
+        project_task_mappings_controller.router,
+        prefix="/projects/{project}/task-mappings",
+        tags=["projects"],
+    )
+    app.include_router(
+        project_test_mappings_controller.router,
+        prefix="/projects/{project}/test-mappings",
+        tags=["projects"],
+    )
+    app.state.db = mongo_wrapper
+    app.state.evg_api = evg_api
     return app
-
-
-def main() -> Flask:
-    """Run the server."""
-    mongo = get_mongo_wrapper()
-    evg_api = get_evg_api()
-    return create_app(mongo, evg_api)
-
-
-if __name__ == "__main__":
-    main().run(host="0.0.0.0", port=DEFAULT_PORT)

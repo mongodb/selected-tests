@@ -1,11 +1,8 @@
-from flask import testing
+from starlette.testclient import TestClient
 
 
-def test_health_endpoint(app_client: testing.FlaskClient):
-    """
-    Test /health endpoint
-    """
+def test_health_endpoint(app_client: TestClient):
     response = app_client.get("/health")
     assert response.status_code == 200
-    response_data = response.get_json()
+    response_data = response.json()
     assert "online" in response_data and response_data["online"]
