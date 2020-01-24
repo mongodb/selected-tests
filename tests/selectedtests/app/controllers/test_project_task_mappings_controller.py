@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from miscutils.testing import relative_patch_maker
 from starlette.testclient import TestClient
 
-from selectedtests.app.parsers import __name__ as helpers_ns
+from selectedtests.app.evergreen import __name__ as helpers_ns
 
 NS = "selectedtests.app.controllers.project_task_mappings_controller"
 

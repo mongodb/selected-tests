@@ -7,9 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from selectedtests.app.dependencies import get_db, get_evg
-from selectedtests.app.parsers import parse_changed_files
 from selectedtests.app.evergreen import try_retrieve_evergreen_project
 from selectedtests.app.models import CustomResponse
+from selectedtests.app.parsers import parse_changed_files
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.test_mappings.get_test_mappings import get_correlated_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem

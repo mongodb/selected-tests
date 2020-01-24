@@ -1,3 +1,5 @@
+"""Web utilities for interacting with Evergreen API."""
+
 from evergreen import EvergreenApi, Project
 from fastapi import HTTPException
 
