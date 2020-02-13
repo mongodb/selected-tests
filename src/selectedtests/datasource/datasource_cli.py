@@ -13,13 +13,46 @@ from selectedtests.datasource.mongo_wrapper import MongoWrapper
 LOGGER = structlog.get_logger()
 
 
-def setup_indexes(collection: Collection) -> None:
+def setup_queue_indexes(collection: Collection) -> None:
     """
     Create appropriate indexes for ProjectTestMappingWorkItems.
 
     :param collection: Collection to add indexes to.
     """
     index = IndexModel([("project", ASCENDING)], unique=True)
+    collection.create_indexes([index])
+    LOGGER.info("Adding indexes for collection", collection=collection.name)
+
+
+def setup_mappings_indexes(collection: Collection) -> None:
+    """
+    Create appropriate indexes for the test and task mappings collections.
+
+    :param collection: Collection to add indexes to.
+    """
+    index = IndexModel([("source_file", ASCENDING)], unique=True)
+    collection.create_indexes([index])
+    LOGGER.info("Adding indexes for collection", collection=collection.name)
+
+
+def setup_mappings_test_files_indexes(collection: Collection) -> None:
+    """
+    Create appropriate indexes for the mapping test files collection.
+
+    :param collection: Collection to add indexes to.
+    """
+    index = IndexModel([("source_file", ASCENDING), ("name", ASCENDING)], unique=True)
+    collection.create_indexes([index])
+    LOGGER.info("Adding indexes for collection", collection=collection.name)
+
+
+def setup_mappings_tasks_indexes(collection: Collection) -> None:
+    """
+    Create appropriate indexes for the mapping task collection.
+
+    :param collection: Collection to add indexes to.
+    """
+    index = IndexModel([("source_file", ASCENDING), ("name", ASCENDING)], unique=True)
     collection.create_indexes([index])
     LOGGER.info("Adding indexes for collection", collection=collection.name)
 
@@ -42,8 +75,14 @@ def cli(ctx: Context, verbose: bool, mongo_uri: str) -> None:
 def create_indexes(ctx: Context) -> None:
     """Initialize the mongo database with proper indexes."""
     # Creating index no-ops if index already exists
-    setup_indexes(ctx.obj["mongo"].test_mappings_queue())
-    setup_indexes(ctx.obj["mongo"].task_mappings_queue())
+    setup_queue_indexes(ctx.obj["mongo"].test_mappings_queue())
+    setup_queue_indexes(ctx.obj["mongo"].task_mappings_queue())
+
+    setup_mappings_indexes(ctx.obj["mongo"].test_mappings())
+    setup_mappings_indexes(ctx.obj["mongo"].task_mappings())
+
+    setup_mappings_test_files_indexes(ctx.obj["mongo"].test_mappings_test_files())
+    setup_mappings_tasks_indexes(ctx.obj["mongo"].task_mappings_tasks())
 
 
 def main() -> None:

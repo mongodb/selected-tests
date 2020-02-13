@@ -10,3 +10,4 @@ config.yml
 pip-wheel-metadata
 venv
 .mypy_cache
+test_output_junit.xml

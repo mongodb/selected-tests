@@ -69,14 +69,18 @@ class TestProcessOneTestMappingWorkItem:
 
 
 class TestSeedTestMappingsForProject:
+    @patch(ns("update_test_mappings"))
     @patch(ns("generate_test_mappings"))
     @patch(ns("ProjectConfig.get"))
-    def test_mappings_are_created(self, project_config_mock, generate_test_mappings_mock):
+    def test_mappings_are_created(
+        self, project_config_mock, generate_test_mappings_mock, update_test_mappings_mock
+    ):
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
         logger_mock = MagicMock()
+        test_mappings_list = ["mock-mapping"]
         generate_test_mappings_mock.return_value = TestMappingsResult(
-            test_mappings_list=["mock-mapping"],
+            test_mappings_list=test_mappings_list,
             most_recent_project_commit_analyzed="last-project-sha-analyzed",
             most_recent_module_commit_analyzed="last-module-sha-analyzed",
         )
@@ -96,7 +100,7 @@ class TestSeedTestMappingsForProject:
             work_item_mock.module_test_file_regex,
         )
         project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
-        mongo_mock.test_mappings.return_value.insert_many.assert_called_once_with(["mock-mapping"])
+        update_test_mappings_mock.assert_called_once_with(test_mappings_list, mongo_mock)
 
     @patch(ns("generate_test_mappings"))
     @patch(ns("ProjectConfig.get"))

@@ -12,6 +12,7 @@ from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.project_config import ProjectConfig
 from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
+from selectedtests.test_mappings.update_test_mappings import update_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
 LOGGER = structlog.get_logger()
@@ -96,6 +97,9 @@ def _seed_test_mappings_for_project(
     :param work_item: An instance of ProjectTestMappingWorkItem.
     :param after_date: The date at which to start analyzing commits of the project.
     """
+    # TODO: if generate_test_mappings yielded the mappings in ascending order and updates were
+    #  written in transactions, then this code would be quicker, restartable and error
+    #  resistant.
     test_mappings_result = generate_test_mappings(
         evg_api,
         work_item.project,
@@ -118,10 +122,11 @@ def _seed_test_mappings_for_project(
         work_item.module_source_file_regex,
         work_item.module_test_file_regex,
     )
+
     project_config.save(mongo.project_config())
 
     if test_mappings_result.test_mappings_list:
-        mongo.test_mappings().insert_many(test_mappings_result.test_mappings_list)
+        update_test_mappings(test_mappings_result.test_mappings_list, mongo)
     else:
         log.info("No test mappings generated")
     log.info("Finished test mapping work item processing")

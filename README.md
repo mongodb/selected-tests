@@ -43,6 +43,19 @@ To make an API request, follow the following steps:
  https://selected-tests.server-tig.prod.corp.mongodb.com/health
  ```
 
+## Database Schema
+The _selected_tests_ database consists of a number of interlocking collections.
+* _project_config_: A collection to contain project descriptions and meta data (last commit seen, 
+regexs for files etc.).
+* _task_mappings_queue_: A queue of work items for processing task_mappings.
+* _task_mappings_: The current task mappings. 
+* _task_mappings_tasks_: The current task mappings tasks. Documents from this collection 
+are join'ed to the _task_mappings_ documents _tasks_ field through the source_file field.
+* _test_mappings_queue_: A queue of work items for processing test_mappings.
+* _test_mappings_:  The current test mappings.
+* _test_mappings_test_files_: The current test mappings test_files. Documents from this collection 
+are join'ed to _test_mappings_ documents  _test_files_ field through the source_file field.
+
 ## Create task mappings
 The task mapping cli command has only one required argument - the name of an evergreen project.
 In order to run it, run the below.
@@ -95,9 +108,9 @@ instance in an environment variable called ```SELECTED_TESTS_MONGO_URI```:
 export EVG_API_USER="<your evg api user>"
 export EVG_API_KEY="<your evg api key>"
 export SELECTED_TESTS_MONGO_URI="localhost:27017"
-uvicorn --host 0.0.0.0 --port 8080 --workers 1 asgi:app
+uvicorn --host 0.0.0.0 --port 8080 --workers 1 selectedtests.app.asgi:app <--reload>
 ```
-
+__Note__: reload is only used in development mode.
 
 ## Testing/Formatting/Linting
 ```

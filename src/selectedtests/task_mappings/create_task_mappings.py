@@ -136,7 +136,7 @@ class TaskMappings:
                         branch = version.branch
                         repo_name = version.repo
 
-                    LOGGER.info(f"Processing mappings for version", version=version.version_id)
+                    LOGGER.info("Processing mappings for version", version=version.version_id)
 
                     try:
                         diff = _get_diff(base_repo, version.revision, prev_version.revision)
