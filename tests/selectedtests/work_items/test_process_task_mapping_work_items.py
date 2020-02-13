@@ -95,10 +95,7 @@ class TestSeedTaskMappingsForProject:
         self, project_config_mock, generate_task_mappings_mock, update_task_mappings_mock
     ):
         task_mappings = ["mock-response"]
-        generate_task_mappings_mock.return_value = (
-            task_mappings,
-            "most-recent-version-analyzed",
-        )
+        generate_task_mappings_mock.return_value = (task_mappings, "most-recent-version-analyzed")
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
         logger_mock = MagicMock()

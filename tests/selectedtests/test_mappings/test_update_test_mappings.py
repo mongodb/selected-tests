@@ -73,10 +73,7 @@ class TestUpdateTestMappingsSinceLastCommit:
 
 class TestUpdateTestMappings:
     @patch(ns("UpdateOne"), autospec=True)
-    def test_mappings_are_updated(
-        self,
-        update_one_mock,
-    ):
+    def test_mappings_are_updated(self, update_one_mock):
         mongo_mock = MagicMock()
 
         source_file = "src/mongo/db/storage/storage_engine_init.h"

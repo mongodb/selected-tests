@@ -25,9 +25,7 @@ class TestGetCorrelatedTestMappings:
         collection_mock.aggregate.side_effect = [[test_mapping_1], [test_mapping_2]]
         changed_files = ["src/file1.js", "src/file2.js"]
         project = "my-project"
-        under_test.get_correlated_test_mappings(
-            collection_mock, changed_files, project, threshold
-        )
+        under_test.get_correlated_test_mappings(collection_mock, changed_files, project, threshold)
 
         collection_mock.aggregate.assert_called_once()
 
