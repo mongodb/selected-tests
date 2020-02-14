@@ -84,9 +84,9 @@ def _seed_task_mappings_for_project(
     :param work_item: An instance of ProjectTestMappingWorkItem.
     :param after_date: The date at which to start analyzing commits of the project.
     """
-    # TODO: if generate_task_mappings yielded the mappings in ascending order and updates were
-    #  written in transactions, then this code would be quicker, restartable and error
-    #  resistant.
+    # TODO: TIG-2375 if generate_task_mappings yielded the mappings in ascending order and
+    #  updates were written in transactions, then this code would be quicker, restartable and
+    #  error resistant.
     mappings, most_recent_version_analyzed = generate_task_mappings(
         evg_api,
         work_item.project,

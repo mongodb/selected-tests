@@ -78,7 +78,12 @@ class TestUpdateTestMappings:
 
         source_file = "src/mongo/db/storage/storage_engine_init.h"
         source_file_seen_count = 1
-        mapping = {"project": "mongodb-mongo-master", "repo": "mongo", "branch": "master"}
+        mapping = {
+            "project": "mongodb-mongo-master",
+            "repo": "mongo",
+            "branch": "master",
+            "source_file": "src/mongo/db/storage/storage_engine_init.h",
+        }
         test_file = {
             "name": "jstests/core/txns/commands_not_allowed_in_txn.js",
             "test_file_seen_count": 1,
@@ -87,7 +92,7 @@ class TestUpdateTestMappings:
             dict(
                 **mapping,
                 **dict(
-                    source_file=source_file,
+                    # source_file=source_file,
                     source_file_seen_count=source_file_seen_count,
                     test_files=[test_file],
                 ),
@@ -107,5 +112,5 @@ class TestUpdateTestMappings:
             upsert=True,
         )
         mongo_mock.test_mappings_test_files.return_value.bulk_write.assert_called_once_with(
-            [update_one_mock.return_value], ordered=True
+            [update_one_mock.return_value]
         )

@@ -1,5 +1,5 @@
 """Methods to update task mappings for a project."""
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import structlog
 
@@ -14,16 +14,41 @@ from selectedtests.task_mappings.version_limit import VersionLimit
 LOGGER = structlog.get_logger()
 
 
+def update_task_mappings_tasks(
+    tasks: List[Dict[str, Any]], source_file: str, mongo: MongoWrapper
+) -> None:
+    """
+    Update task in the task mappings tasks collection.
+
+    :param tasks: A list of tasks.
+    :param source_file: The task mappings identifier.
+    :param mongo: An instance of MongoWrapper.
+    """
+    operations = []
+    for task in tasks:
+        update_test_file = UpdateOne(
+            {"source_file": source_file, "name": task["name"], "variant": task["variant"]},
+            {"$inc": {"flip_count": task["flip_count"]}},
+            upsert=True,
+        )
+        operations.append(update_test_file)
+
+    result = mongo.task_mappings_tasks().bulk_write(operations)
+    LOGGER.debug("bulk_write", result=result.bulk_api_result, source_file=source_file)
+
+
 def update_task_mappings(mappings: List[Dict], mongo: MongoWrapper) -> None:
     """
-    Update task mappings in the task mappings project config collection.
+    Update task mappings in the task mappings collection.
 
     :param mappings: A list of test mappings.
     :param mongo: An instance of MongoWrapper.
     """
     for mapping in mappings:
-        # get the test_files to update and remove from the mapping document.
+        # get the tasks to update.
         tasks = mapping.get("tasks", [])
+
+        # remove the tasks field as they are stored in another collection.
         del mapping["tasks"]
 
         # get the value to inc  and remove from the mapping document (otherwise we would double
@@ -31,9 +56,7 @@ def update_task_mappings(mappings: List[Dict], mongo: MongoWrapper) -> None:
         source_file_seen_count = mapping["source_file_seen_count"]
         del mapping["source_file_seen_count"]
 
-        # we don't need this in the $set as it is supplied by query.
         source_file = mapping["source_file"]
-        del mapping["source_file"]
 
         result = mongo.task_mappings().update_one(
             {"source_file": source_file},
@@ -48,17 +71,7 @@ def update_task_mappings(mappings: List[Dict], mongo: MongoWrapper) -> None:
         )
 
         if tasks:
-            files_operations = []
-            for task in tasks:
-                update_test_file = UpdateOne(
-                    {"source_file": source_file, "name": task["name"], "variant": task["variant"]},
-                    {"$inc": {"flip_count": task["flip_count"]}},
-                    upsert=True,
-                )
-                files_operations.append(update_test_file)
-
-            result = mongo.task_mappings_tasks().bulk_write(files_operations, ordered=True)
-            LOGGER.debug("bulk_write", result=result.bulk_api_result, source_file=source_file)
+            update_task_mappings_tasks(tasks, source_file, mongo)
 
 
 def update_task_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper) -> None:
@@ -74,7 +87,8 @@ def update_task_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWr
         LOGGER.info("Updating task mappings for project", project_config=project_config)
         task_config = project_config["task_config"]
 
-        # TODO: if generate_task_mappings yielded the mappings in ascending order and updates were
+        # TODO: TIG-2375 if generate_task_mappings yielded the mappings in ascending order and
+        #  updates were
         #  written in transactions, then this code would be quicker, restartable and error
         #  resistant.
         mappings, most_recent_version_analyzed = generate_task_mappings(

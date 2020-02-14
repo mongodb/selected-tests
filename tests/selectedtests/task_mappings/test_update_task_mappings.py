@@ -72,7 +72,12 @@ class TestUpdateTaskMappings:
 
         source_file = "src/mongo/db/storage/storage_engine_init.h"
         source_file_seen_count = 1
-        mapping = {"project": "mongodb-mongo-master", "repo": "mongo", "branch": "master"}
+        mapping = {
+            "project": "mongodb-mongo-master",
+            "repo": "mongo",
+            "branch": "master",
+            "source_file": source_file,
+        }
         task = {
             "name": "query_fuzzer_standalone_3_enterprise-rhel-62-64-bit",
             "variant": "enterprise-rhel-62-64-bit",
@@ -82,7 +87,7 @@ class TestUpdateTaskMappings:
             dict(
                 **mapping,
                 **dict(
-                    source_file=source_file,
+                    # source_file=source_file,
                     source_file_seen_count=source_file_seen_count,
                     tasks=[task],
                 ),
@@ -102,5 +107,5 @@ class TestUpdateTaskMappings:
             upsert=True,
         )
         mongo_mock.task_mappings_tasks.return_value.bulk_write.assert_called_once_with(
-            [update_one_mock.return_value], ordered=True
+            [update_one_mock.return_value]
         )

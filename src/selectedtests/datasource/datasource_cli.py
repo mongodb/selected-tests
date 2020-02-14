@@ -37,7 +37,8 @@ def setup_mappings_indexes(collection: Collection) -> None:
 
 def setup_mappings_test_files_indexes(collection: Collection) -> None:
     """
-    Create appropriate indexes for the mapping test files collection.
+    Create appropriate indexes for the mapping test files collection. The indexes
+    must support both the $lookup operation and uniqueness constraints.
 
     :param collection: Collection to add indexes to.
     """
@@ -48,11 +49,14 @@ def setup_mappings_test_files_indexes(collection: Collection) -> None:
 
 def setup_mappings_tasks_indexes(collection: Collection) -> None:
     """
-    Create appropriate indexes for the mapping task collection.
+    Create appropriate indexes for the mapping tasks collection. The indexes
+    must support both the $lookup operation and uniqueness constraints.
 
     :param collection: Collection to add indexes to.
     """
-    index = IndexModel([("source_file", ASCENDING), ("name", ASCENDING)], unique=True)
+    index = IndexModel(
+        [("source_file", ASCENDING), ("name", ASCENDING), ("variant", ASCENDING)], unique=True
+    )
     collection.create_indexes([index])
     LOGGER.info("Adding indexes for collection", collection=collection.name)
 

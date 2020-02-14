@@ -17,7 +17,7 @@ def get_correlated_test_mappings(
     :param threshold: Min threshold desired for test_file_seen_count/source_file_seen_count ratio.
     :return: A list of test mappings for the changed files.
     """
-    test_mappings = list(
+    return list(
         collection.aggregate(
             [
                 {"$match": {"project": project, "source_file": {"$in": changed_source_files}}},
@@ -64,4 +64,3 @@ def get_correlated_test_mappings(
             ]
         )
     )
-    return test_mappings

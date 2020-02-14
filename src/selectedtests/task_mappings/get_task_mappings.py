@@ -17,7 +17,7 @@ def get_correlated_task_mappings(
     :param threshold: Min threshold desired for flip_count/source_file_seen_count ratio.
     :return: A list of task mappings for the changed files.
     """
-    task_mappings = list(
+    return list(
         collection.aggregate(
             [
                 {"$match": {"project": project, "source_file": {"$in": changed_source_files}}},
@@ -58,4 +58,3 @@ def get_correlated_task_mappings(
             ]
         )
     )
-    return task_mappings
