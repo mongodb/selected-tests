@@ -72,7 +72,7 @@ class TestUpdateTaskMappings:
 
         source_file = "src/mongo/db/storage/storage_engine_init.h"
         source_file_seen_count = 1
-        mapping = {
+        query = {
             "project": "mongodb-mongo-master",
             "repo": "mongo",
             "branch": "master",
@@ -84,21 +84,12 @@ class TestUpdateTaskMappings:
             "flip_count": 1,
         }
         mappings = [
-            dict(
-                **mapping,
-                **dict(
-                    # source_file=source_file,
-                    source_file_seen_count=source_file_seen_count,
-                    tasks=[task],
-                ),
-            )
+            dict(**query, **dict(source_file_seen_count=source_file_seen_count, tasks=[task]))
         ]
 
         under_test.update_task_mappings(mappings, mongo_mock)
         mongo_mock.task_mappings.return_value.update_one.assert_called_once_with(
-            {"source_file": source_file},
-            {"$set": mapping, "$inc": {"source_file_seen_count": source_file_seen_count}},
-            upsert=True,
+            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
         )
 
         update_one_mock.assert_called_once_with(

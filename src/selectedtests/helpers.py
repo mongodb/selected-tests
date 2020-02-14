@@ -1,6 +1,8 @@
 """Helper functions for Cli entry points."""
 import os
 
+from typing import Any, Dict, List, Optional
+
 from evergreen.api import EvergreenApi, RetryingEvergreenApi
 from evergreen.config import EvgAuth
 
@@ -28,3 +30,19 @@ def get_mongo_wrapper() -> MongoWrapper:
     if mongo_uri is None:
         raise RuntimeError("Cannot connect to mongodb, SELECTED_TESTS_MONGO_URI is not set")
     return MongoWrapper.connect(mongo_uri)
+
+
+def create_query(
+    document, mutable: Optional[List[str]] = None, joined: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """
+    create a query document by shallow copying document and excluding the mutable and optional keys.
+
+    :param document: The input document.
+    :param mutable: A list of keys to exclude. These are the mutable fields in the collection.
+    :param joined: A list of keys to exclude. These fields are stored in other collections.
+
+    :return: The query document.
+    """
+    excluded = (mutable if mutable else []) + (joined if joined else [])
+    return {k: v for k, v in document.items() if k not in excluded}

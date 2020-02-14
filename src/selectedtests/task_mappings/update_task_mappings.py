@@ -7,6 +7,7 @@ from evergreen.api import EvergreenApi
 from pymongo import UpdateOne
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.helpers import create_query
 from selectedtests.project_config import ProjectConfig
 from selectedtests.task_mappings.create_task_mappings import generate_task_mappings
 from selectedtests.task_mappings.version_limit import VersionLimit
@@ -45,33 +46,23 @@ def update_task_mappings(mappings: List[Dict], mongo: MongoWrapper) -> None:
     :param mongo: An instance of MongoWrapper.
     """
     for mapping in mappings:
-        # get the tasks to update.
-        tasks = mapping.get("tasks", [])
-
-        # remove the tasks field as they are stored in another collection.
-        del mapping["tasks"]
-
-        # get the value to inc  and remove from the mapping document (otherwise we would double
-        # increment).
         source_file_seen_count = mapping["source_file_seen_count"]
-        del mapping["source_file_seen_count"]
 
-        source_file = mapping["source_file"]
+        query = create_query(mapping, joined=["tasks"], mutable=["source_file_seen_count"])
 
         result = mongo.task_mappings().update_one(
-            {"source_file": source_file},
-            {"$set": mapping, "$inc": {"source_file_seen_count": source_file_seen_count}},
-            upsert=True,
+            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
         )
         LOGGER.debug(
             "update_one task_mappings",
             result=result.raw_result,
-            source_file=source_file,
+            query=query,
             inc=source_file_seen_count,
         )
 
+        tasks = mapping.get("tasks", [])
         if tasks:
-            update_task_mappings_tasks(tasks, source_file, mongo)
+            update_task_mappings_tasks(tasks, mapping["source_file"], mongo)
 
 
 def update_task_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper) -> None:

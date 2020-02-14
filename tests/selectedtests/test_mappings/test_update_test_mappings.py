@@ -78,7 +78,7 @@ class TestUpdateTestMappings:
 
         source_file = "src/mongo/db/storage/storage_engine_init.h"
         source_file_seen_count = 1
-        mapping = {
+        query = {
             "project": "mongodb-mongo-master",
             "repo": "mongo",
             "branch": "master",
@@ -90,20 +90,14 @@ class TestUpdateTestMappings:
         }
         mappings = [
             dict(
-                **mapping,
-                **dict(
-                    # source_file=source_file,
-                    source_file_seen_count=source_file_seen_count,
-                    test_files=[test_file],
-                ),
+                **query,
+                **dict(source_file_seen_count=source_file_seen_count, test_files=[test_file]),
             )
         ]
 
         under_test.update_test_mappings(mappings, mongo_mock)
         mongo_mock.test_mappings.return_value.update_one.assert_called_once_with(
-            {"source_file": source_file},
-            {"$set": mapping, "$inc": {"source_file_seen_count": source_file_seen_count}},
-            upsert=True,
+            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
         )
 
         update_one_mock.assert_called_once_with(

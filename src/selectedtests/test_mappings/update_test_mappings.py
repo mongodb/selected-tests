@@ -7,6 +7,7 @@ from evergreen.api import EvergreenApi
 from pymongo import UpdateOne
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.helpers import create_query
 from selectedtests.project_config import ProjectConfig
 from selectedtests.test_mappings.commit_limit import CommitLimit
 from selectedtests.test_mappings.create_test_mappings import generate_test_mappings
@@ -45,32 +46,20 @@ def update_test_mappings(test_mappings: List[Dict[str, Any]], mongo: MongoWrappe
     :param mongo: An instance of MongoWrapper.
     """
     for mapping in test_mappings:
-        # get the test_files to update.
-        test_files = mapping.get("test_files", [])
-
-        # remove test_files field as these are stored in another collection.
-        del mapping["test_files"]
-
-        # get the value to inc  and remove from the mapping document (otherwise we would double
-        # increment).
         source_file_seen_count = mapping["source_file_seen_count"]
-        del mapping["source_file_seen_count"]
 
-        source_file = mapping["source_file"]
+        query = create_query(mapping, joined=["test_files"], mutable=["source_file_seen_count"])
 
         result = mongo.test_mappings().update_one(
-            {"source_file": source_file},
-            {"$set": mapping, "$inc": {"source_file_seen_count": source_file_seen_count}},
-            upsert=True,
+            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
         )
         LOGGER.debug(
-            "update_one test_mappings",
-            result=result,
-            source_file=source_file,
-            inc=source_file_seen_count,
+            "update_one test_mappings", result=result, query=query, inc=source_file_seen_count
         )
+
+        test_files = mapping.get("test_files", [])
         if test_files:
-            update_test_mappings_test_files(test_files, source_file, mongo)
+            update_test_mappings_test_files(test_files, mapping["source_file"], mongo)
 
 
 def update_test_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper) -> None:
