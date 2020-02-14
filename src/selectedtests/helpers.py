@@ -36,7 +36,7 @@ def create_query(
     document, mutable: Optional[List[str]] = None, joined: Optional[List[str]] = None
 ) -> Dict[str, Any]:
     """
-    create a query document by shallow copying document and excluding the mutable and optional keys.
+    Create a query document by shallow copying document and excluding the mutable and optional keys.
 
     :param document: The input document.
     :param mutable: A list of keys to exclude. These are the mutable fields in the collection.
