@@ -4,7 +4,8 @@ from typing import Any, Dict, List
 import structlog
 
 from evergreen.api import EvergreenApi
-from pymongo import UpdateOne
+from pymongo import ReturnDocument, UpdateOne
+from pymongo.errors import BulkWriteError
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import create_query
@@ -16,26 +17,36 @@ LOGGER = structlog.get_logger()
 
 
 def update_test_mappings_test_files(
-    test_files: List[Dict[str, Any]], source_file: str, mongo: MongoWrapper
+    test_files: List[Dict[str, Any]], test_mapping_id: Dict[str, Any], mongo: MongoWrapper
 ) -> None:
     """
     Update test_files in the test mappings test_files project config collection.
 
     :param test_files: A list of test mappings.
-    :param source_file: The containing test_mappings identifier.
+    :param test_mapping_id: The containing test_mappings identifier.
     :param mongo: An instance of MongoWrapper.
     """
     operations = []
     for test_file in test_files:
+        query = create_query(test_file, mutable=["test_file_seen_count"])
+        query = dict(**query, **test_mapping_id)
+
         update_test_file = UpdateOne(
-            {"source_file": source_file, "name": test_file["name"]},
+            query,
             {"$inc": {"test_file_seen_count": test_file["test_file_seen_count"]}},
             upsert=True,
         )
         operations.append(update_test_file)
 
-    result = mongo.test_mappings_test_files().bulk_write(operations)
-    LOGGER.debug("bulk_write", result=result.bulk_api_result, source_file=source_file)
+    try:
+        result = mongo.test_mappings_test_files().bulk_write(operations)
+        LOGGER.debug("bulk_write", result=result.bulk_api_result, parent=test_mapping_id)
+    except BulkWriteError as bwe:
+        # bulk write error default message is not always that helpful, so dump the details here.
+        LOGGER.exception(
+            "bulk_write error", parent=test_mapping_id, operations=operations, details=bwe.details
+        )
+        raise
 
 
 def update_test_mappings(test_mappings: List[Dict[str, Any]], mongo: MongoWrapper) -> None:
@@ -50,16 +61,24 @@ def update_test_mappings(test_mappings: List[Dict[str, Any]], mongo: MongoWrappe
 
         query = create_query(mapping, joined=["test_files"], mutable=["source_file_seen_count"])
 
-        result = mongo.test_mappings().update_one(
-            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
+        test_mapping = mongo.test_mappings().find_one_and_update(
+            query,
+            {"$inc": {"source_file_seen_count": source_file_seen_count}},
+            projection={"_id": 1},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
         )
         LOGGER.debug(
-            "update_one test_mappings", result=result, query=query, inc=source_file_seen_count
+            "update_one test_mappings",
+            test_mapping=test_mapping,
+            query=query,
+            inc=source_file_seen_count,
         )
 
         test_files = mapping.get("test_files", [])
         if test_files:
-            update_test_mappings_test_files(test_files, mapping["source_file"], mongo)
+            test_mapping_id = {"test_mapping_id": test_mapping["_id"]}
+            update_test_mappings_test_files(test_files, test_mapping_id, mongo)
 
 
 def update_test_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper) -> None:

@@ -21,13 +21,11 @@ def get_correlated_task_mappings(
         collection.aggregate(
             [
                 {"$match": {"project": project, "source_file": {"$in": changed_source_files}}},
-                # lookup could also use a pipeline but in certain cases this won't use an
-                # index, so a lookup followed by a filter can be quicker.
                 {
                     "$lookup": {
                         "from": f"{collection.name}_tasks",
-                        "localField": "source_file",
-                        "foreignField": "source_file",
+                        "localField": "_id",
+                        "foreignField": "task_mapping_id",
                         "as": "tasks",
                     }
                 },
@@ -39,14 +37,18 @@ def get_correlated_task_mappings(
                                 "input": "$tasks",
                                 "as": "task",
                                 "cond": {
-                                    "$gte": [
+                                    "$and": [
                                         {
-                                            "$divide": [
-                                                "$$task.flip_count",
-                                                "$source_file_seen_count",
+                                            "$gte": [
+                                                {
+                                                    "$divide": [
+                                                        "$$task.flip_count",
+                                                        "$source_file_seen_count",
+                                                    ]
+                                                },
+                                                float(threshold),
                                             ]
-                                        },
-                                        float(threshold),
+                                        }
                                     ]
                                 },
                             }
@@ -54,7 +56,7 @@ def get_correlated_task_mappings(
                     }
                 },
                 # clean up the output before returning.
-                {"$project": {"_id": False, "tasks._id": False, "tasks.source_file": False}},
+                {"$project": {"_id": False, "tasks._id": False, "tasks.task_mapping_id": False}},
             ]
         )
     )

@@ -21,13 +21,11 @@ def get_correlated_test_mappings(
         collection.aggregate(
             [
                 {"$match": {"project": project, "source_file": {"$in": changed_source_files}}},
-                # lookup could also use a pipeline but in certain cases this won't use an
-                # index, so a lookup followed by a filter can be quicker.
                 {
                     "$lookup": {
                         "from": f"{collection.name}_test_files",
-                        "localField": "source_file",
-                        "foreignField": "source_file",
+                        "localField": "_id",
+                        "foreignField": "test_mapping_id",
                         "as": "test_files",
                     }
                 },
@@ -58,7 +56,7 @@ def get_correlated_test_mappings(
                     "$project": {
                         "_id": False,
                         "test_files._id": False,
-                        "test_files.source_file": False,
+                        "test_files.test_mapping_id": False,
                     }
                 },
             ]

@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+from pymongo import ReturnDocument
+
 import selectedtests.task_mappings.update_task_mappings as under_test
 
 NS = "selectedtests.task_mappings.update_task_mappings"
@@ -70,13 +72,12 @@ class TestUpdateTaskMappings:
     def test_task_mappings_are_updated(self, update_one_mock):
         mongo_mock = MagicMock()
 
-        source_file = "src/mongo/db/storage/storage_engine_init.h"
         source_file_seen_count = 1
         query = {
             "project": "mongodb-mongo-master",
             "repo": "mongo",
             "branch": "master",
-            "source_file": source_file,
+            "source_file": "src/mongo/db/storage/storage_engine_init.h",
         }
         task = {
             "name": "query_fuzzer_standalone_3_enterprise-rhel-62-64-bit",
@@ -87,13 +88,19 @@ class TestUpdateTaskMappings:
             dict(**query, **dict(source_file_seen_count=source_file_seen_count, tasks=[task]))
         ]
 
+        mongo_mock.task_mappings.return_value.find_one_and_update.return_value = {"_id": 1}
+
         under_test.update_task_mappings(mappings, mongo_mock)
-        mongo_mock.task_mappings.return_value.update_one.assert_called_once_with(
-            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
+        mongo_mock.task_mappings.return_value.find_one_and_update.assert_called_once_with(
+            query,
+            {"$inc": {"source_file_seen_count": source_file_seen_count}},
+            projection={"_id": 1},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
         )
 
         update_one_mock.assert_called_once_with(
-            {"source_file": source_file, "name": task["name"], "variant": task["variant"]},
+            {"name": task["name"], "variant": task["variant"], "task_mapping_id": 1},
             {"$inc": {"flip_count": task["flip_count"]}},
             upsert=True,
         )

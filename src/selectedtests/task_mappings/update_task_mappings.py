@@ -4,7 +4,8 @@ from typing import Any, Dict, List
 import structlog
 
 from evergreen.api import EvergreenApi
-from pymongo import UpdateOne
+from pymongo import ReturnDocument, UpdateOne
+from pymongo.errors import BulkWriteError
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.helpers import create_query
@@ -16,26 +17,34 @@ LOGGER = structlog.get_logger()
 
 
 def update_task_mappings_tasks(
-    tasks: List[Dict[str, Any]], source_file: str, mongo: MongoWrapper
+    tasks: List[Dict[str, Any]], task_mapping_id: Dict[str, Any], mongo: MongoWrapper
 ) -> None:
     """
     Update task in the task mappings tasks collection.
 
     :param tasks: A list of tasks.
-    :param source_file: The task mappings identifier.
+    :param task_mapping_id: The containing task_mapping identifier.
     :param mongo: An instance of MongoWrapper.
     """
     operations = []
     for task in tasks:
+        query = create_query(task, mutable=["flip_count"])
+        query = dict(**query, **task_mapping_id)
+
         update_test_file = UpdateOne(
-            {"source_file": source_file, "name": task["name"], "variant": task["variant"]},
-            {"$inc": {"flip_count": task["flip_count"]}},
-            upsert=True,
+            query, {"$inc": {"flip_count": task["flip_count"]}}, upsert=True
         )
         operations.append(update_test_file)
 
-    result = mongo.task_mappings_tasks().bulk_write(operations)
-    LOGGER.debug("bulk_write", result=result.bulk_api_result, source_file=source_file)
+    try:
+        result = mongo.task_mappings_tasks().bulk_write(operations)
+        LOGGER.debug("bulk_write", result=result.bulk_api_result, parent=task_mapping_id)
+    except BulkWriteError as bwe:
+        # bulk write error default message is not always that helpful, so dump the details here.
+        LOGGER.exception(
+            "bulk_write error", parent=task_mapping_id, operations=operations, details=bwe.details
+        )
+        raise
 
 
 def update_task_mappings(mappings: List[Dict], mongo: MongoWrapper) -> None:
@@ -50,19 +59,24 @@ def update_task_mappings(mappings: List[Dict], mongo: MongoWrapper) -> None:
 
         query = create_query(mapping, joined=["tasks"], mutable=["source_file_seen_count"])
 
-        result = mongo.task_mappings().update_one(
-            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
+        task_mapping = mongo.task_mappings().find_one_and_update(
+            query,
+            {"$inc": {"source_file_seen_count": source_file_seen_count}},
+            projection={"_id": 1},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
         )
         LOGGER.debug(
             "update_one task_mappings",
-            result=result.raw_result,
+            task_mapping=task_mapping,
             query=query,
             inc=source_file_seen_count,
         )
 
         tasks = mapping.get("tasks", [])
         if tasks:
-            update_task_mappings_tasks(tasks, mapping["source_file"], mongo)
+            task_mapping_id = {"task_mapping_id": task_mapping["_id"]}
+            update_task_mappings_tasks(tasks, task_mapping_id, mongo)
 
 
 def update_task_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWrapper) -> None:

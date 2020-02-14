@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+from pymongo import ReturnDocument
+
 import selectedtests.test_mappings.update_test_mappings as under_test
 
 from selectedtests.test_mappings.create_test_mappings import TestMappingsResult
@@ -76,7 +78,6 @@ class TestUpdateTestMappings:
     def test_mappings_are_updated(self, update_one_mock):
         mongo_mock = MagicMock()
 
-        source_file = "src/mongo/db/storage/storage_engine_init.h"
         source_file_seen_count = 1
         query = {
             "project": "mongodb-mongo-master",
@@ -95,13 +96,19 @@ class TestUpdateTestMappings:
             )
         ]
 
+        mongo_mock.test_mappings.return_value.find_one_and_update.return_value = {"_id": 1}
+
         under_test.update_test_mappings(mappings, mongo_mock)
-        mongo_mock.test_mappings.return_value.update_one.assert_called_once_with(
-            query, {"$inc": {"source_file_seen_count": source_file_seen_count}}, upsert=True
+        mongo_mock.test_mappings.return_value.find_one_and_update.assert_called_once_with(
+            query,
+            {"$inc": {"source_file_seen_count": source_file_seen_count}},
+            projection={"_id": 1},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
         )
 
         update_one_mock.assert_called_once_with(
-            {"source_file": source_file, "name": test_file["name"]},
+            {"test_mapping_id": 1, "name": test_file["name"]},
             {"$inc": {"test_file_seen_count": test_file["test_file_seen_count"]}},
             upsert=True,
         )

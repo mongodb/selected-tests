@@ -30,20 +30,17 @@ def setup_mappings_indexes(collection: Collection) -> None:
 
     :param collection: Collection to add indexes to.
     """
-    index = IndexModel([("source_file", ASCENDING)], unique=True)
-    collection.create_indexes([index])
-    LOGGER.info("Adding indexes for collection", collection=collection.name)
-
-
-def setup_mappings_test_files_indexes(collection: Collection) -> None:
-    """
-    Create appropriate indexes for the mapping test files collection.
-
-    The indexes must support both the $lookup operation and uniqueness constraints.
-
-    :param collection: Collection to add indexes to.
-    """
-    index = IndexModel([("source_file", ASCENDING), ("name", ASCENDING)], unique=True)
+    # project, source_file on it's own could be unique, but the repo and branch are needed when
+    # there is a module.
+    index = IndexModel(
+        [
+            ("project", ASCENDING),
+            ("repo", ASCENDING),
+            ("branch", ASCENDING),
+            ("source_file", ASCENDING),
+        ],
+        unique=True,
+    )
     collection.create_indexes([index])
     LOGGER.info("Adding indexes for collection", collection=collection.name)
 
@@ -56,9 +53,26 @@ def setup_mappings_tasks_indexes(collection: Collection) -> None:
 
     :param collection: Collection to add indexes to.
     """
+    # task_mapping_id simplifies the index (but then requires a find_and_update_one for the
+    # insert / upsert.
     index = IndexModel(
-        [("source_file", ASCENDING), ("name", ASCENDING), ("variant", ASCENDING)], unique=True
+        [("task_mapping_id", ASCENDING), ("name", ASCENDING), ("variant", ASCENDING)], unique=True
     )
+    collection.create_indexes([index])
+    LOGGER.info("Adding indexes for collection", collection=collection.name)
+
+
+def setup_mappings_test_files_indexes(collection: Collection) -> None:
+    """
+    Create appropriate indexes for the mapping test files collection.
+
+    The indexes must support both the $lookup operation and uniqueness constraints.
+
+    :param collection: Collection to add indexes to.
+    """
+    # test_mapping_id simplifies the index (but then requires a find_and_update_one for the
+    # insert / upsert.
+    index = IndexModel([("test_mapping_id", ASCENDING), ("name", ASCENDING)], unique=True)
     collection.create_indexes([index])
     LOGGER.info("Adding indexes for collection", collection=collection.name)
 
