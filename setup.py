@@ -35,7 +35,7 @@ setup(
     ],
     install_requires=[
         'Click==7.0',
-        'GitPython==3.0.3',
+        'GitPython==3.0.8',
         'boltons==19.1.0',
         'dnspython==1.16.0',
         'evergreen.py==0.6.14',
