@@ -53,8 +53,6 @@ def setup_mappings_tasks_indexes(collection: Collection) -> None:
 
     :param collection: Collection to add indexes to.
     """
-    # task_mapping_id simplifies the index (but then requires a find_and_update_one for the
-    # insert / upsert.
     index = IndexModel(
         [("task_mapping_id", ASCENDING), ("name", ASCENDING), ("variant", ASCENDING)], unique=True
     )
@@ -70,8 +68,6 @@ def setup_mappings_test_files_indexes(collection: Collection) -> None:
 
     :param collection: Collection to add indexes to.
     """
-    # test_mapping_id simplifies the index (but then requires a find_and_update_one for the
-    # insert / upsert.
     index = IndexModel([("test_mapping_id", ASCENDING), ("name", ASCENDING)], unique=True)
     collection.create_indexes([index])
     LOGGER.info("Adding indexes for collection", collection=collection.name)

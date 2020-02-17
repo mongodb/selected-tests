@@ -97,7 +97,7 @@ regexs for files etc.).
 	"source_file_seen_count" : 1
 }
 // Aggregate task_mappings and task_mappings_tasks into the shape exported by the API.
-> db.task_mappings.aggregate({$match:{"source_file" : "src/mongo/executor/network_interface_mock.cpp"}}, {$lookup:{"from": "task_mappings_tasks", "localField": "source_file",  "foreignField": "source_file", "as": "tasks" }}, {$project:{_id:0, 'tasks._id':0, 'tasks.source_file':0}}).pretty()
+> db.task_mappings.aggregate({$match:{"source_file" : "src/mongo/executor/network_interface_mock.cpp"}}, {$lookup:{"from": "task_mappings_tasks", "localField": "_id",  "foreignField": "task_mapping_id", "as": "tasks" }}, {$project:{_id:0, 'tasks._id':0, 'tasks.task_mapping_id':0}}).pretty()
 {
 	"source_file" : "src/mongo/executor/network_interface_mock.cpp",
 	"branch" : "master",
@@ -121,18 +121,11 @@ regexs for files etc.).
 * _task_mappings_tasks_: The current task mappings tasks. Documents from this collection 
 are joined to the _task_mappings_ documents _tasks_ field through the source_file field.
 ```
-> db.task_mappings_tasks.find({"source_file" : "src/mongo/executor/network_interface_mock.cpp"}).pretty()
+> db.task_mappings_tasks.findOne()
 {
 	"_id" : ...,
 	"name" : "replica_sets_large_txns_format",
-	"source_file" : "src/mongo/executor/network_interface_mock.cpp",
-	"variant" : "enterprise-rhel-62-64-bit",
-	"flip_count" : 1
-}
-{
-	"_id" : ...,
-	"name" : "replica_sets_large_txns_format_05_enterprise-rhel-62-64-bit",
-	"source_file" : "src/mongo/executor/network_interface_mock.cpp",
+	"task_mapping_id" : ...,
 	"variant" : "enterprise-rhel-62-64-bit",
 	"flip_count" : 1
 }
@@ -166,7 +159,7 @@ are joined to the _task_mappings_ documents _tasks_ field through the source_fil
 	"source_file_seen_count" : 2
 }
 // Aggregate test_mappings and test_mappings_test_files into the shape exported by the API.
-> db.test_mappings.aggregate({$match:{"source_file" : "src/mongo/db/s/config/configsvr_create_database_command.cpp"}}, {$lookup:{"from": "test_mappings_test_files", "localField": "source_file",  "foreignField": "source_file", "as": "test_files" }}, {$project:{_id:0, 'test_files._id':0, 'test_files.source_file':0}}).pretty()
+> db.test_mappings.aggregate({$match:{"source_file" : "src/mongo/db/s/config/configsvr_create_database_command.cpp"}}, {$lookup:{"from": "test_mappings_test_files", "localField": "_id",  "foreignField": "test_mapping_id", "as": "test_files" }}, {$project:{_id:0, 'test_files._id':0, 'test_files.test_mapping_id':0}}).pretty()
 {
 	"source_file" : "src/mongo/db/s/config/configsvr_create_database_command.cpp",
 	"branch" : "master",
@@ -189,7 +182,7 @@ are joined to _test_mappings_ documents  _test_files_ field through the source_f
 {
 	"_id" : ...,
 	"name" : "jstests/core/views/views_validation.js",
-	"source_file" : "src/mongo/db/s/config/configsvr_create_database_command.cpp",
+	"test_mpapping_id" : ...,
 	"test_file_seen_count" : 2
 }
 ```

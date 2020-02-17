@@ -37,25 +37,20 @@ def get_correlated_task_mappings(
                                 "input": "$tasks",
                                 "as": "task",
                                 "cond": {
-                                    "$and": [
+                                    "$gte": [
                                         {
-                                            "$gte": [
-                                                {
-                                                    "$divide": [
-                                                        "$$task.flip_count",
-                                                        "$source_file_seen_count",
-                                                    ]
-                                                },
-                                                float(threshold),
+                                            "$divide": [
+                                                "$$task.flip_count",
+                                                "$source_file_seen_count",
                                             ]
-                                        }
+                                        },
+                                        float(threshold),
                                     ]
                                 },
                             }
                         }
                     }
                 },
-                # clean up the output before returning.
                 {"$project": {"_id": False, "tasks._id": False, "tasks.task_mapping_id": False}},
             ]
         )

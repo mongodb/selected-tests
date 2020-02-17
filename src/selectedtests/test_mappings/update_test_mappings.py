@@ -51,7 +51,7 @@ def update_test_mappings_test_files(
 
 def update_test_mappings(test_mappings: List[Dict[str, Any]], mongo: MongoWrapper) -> None:
     """
-    Update test mappings in the test mappings project config collection.
+    Update test mappings in the test mappings collection.
 
     :param test_mappings: A list of test mappings.
     :param mongo: An instance of MongoWrapper.

@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from pymongo import ReturnDocument
+from pymongo.errors import BulkWriteError
 
 import selectedtests.test_mappings.update_test_mappings as under_test
 
@@ -74,8 +77,8 @@ class TestUpdateTestMappingsSinceLastCommit:
 
 
 class TestUpdateTestMappings:
-    @patch(ns("UpdateOne"), autospec=True)
-    def test_mappings_are_updated(self, update_one_mock):
+    @patch(ns("update_test_mappings_test_files"), autospec=True)
+    def test_mappings_are_updated(self, update_test_mappings_test_files_mock):
         mongo_mock = MagicMock()
 
         source_file_seen_count = 1
@@ -107,11 +110,58 @@ class TestUpdateTestMappings:
             return_document=ReturnDocument.AFTER,
         )
 
+        update_test_mappings_test_files_mock.assert_called_once_with(
+            [test_file], {"test_mapping_id": 1}, mongo_mock
+        )
+
+
+class TestUpdateTestMappingsTestFiles:
+    @patch(ns("UpdateOne"), autospec=True)
+    def test_test_mappings_test_files_are_updated(self, update_one_mock):
+        mongo_mock = MagicMock()
+
+        test_mapping_id = {"test_mapping_id": 1}
+        test_file = {
+            "name": "jstests/core/txns/commands_not_allowed_in_txn.js",
+            "test_file_seen_count": 1,
+        }
+
+        under_test.update_test_mappings_test_files([test_file], test_mapping_id, mongo_mock)
         update_one_mock.assert_called_once_with(
-            {"test_mapping_id": 1, "name": test_file["name"]},
+            {"name": test_file["name"], "test_mapping_id": 1},
             {"$inc": {"test_file_seen_count": test_file["test_file_seen_count"]}},
             upsert=True,
         )
+
         mongo_mock.test_mappings_test_files.return_value.bulk_write.assert_called_once_with(
             [update_one_mock.return_value]
+        )
+
+    @patch(ns("LOGGER.exception"), autospec=True)
+    @patch(ns("UpdateOne"), autospec=True)
+    def test_task_mappings_exceptions(self, update_one_mock, exception_mock):
+        mongo_mock = MagicMock()
+
+        test_mapping_id = {"test_mapping_id": 1}
+        test_file = {
+            "name": "jstests/core/txns/commands_not_allowed_in_txn.js",
+            "test_file_seen_count": 1,
+        }
+
+        details = {"errorLabels": []}
+        mongo_mock.test_mappings_test_files.return_value.bulk_write.side_effect = BulkWriteError(
+            details
+        )
+        pytest.raises(
+            BulkWriteError,
+            under_test.update_test_mappings_test_files,
+            [test_file],
+            test_mapping_id,
+            mongo_mock,
+        )
+        exception_mock.assert_called_once_with(
+            "bulk_write error",
+            parent=test_mapping_id,
+            operations=[update_one_mock.return_value],
+            details=details,
         )

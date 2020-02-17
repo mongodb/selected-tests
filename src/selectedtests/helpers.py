@@ -33,7 +33,9 @@ def get_mongo_wrapper() -> MongoWrapper:
 
 
 def create_query(
-    document, mutable: Optional[List[str]] = None, joined: Optional[List[str]] = None
+    document: Dict[str, Any],
+    mutable: Optional[List[str]] = None,
+    joined: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Create a query document by shallow copying document and excluding the mutable and optional keys.
