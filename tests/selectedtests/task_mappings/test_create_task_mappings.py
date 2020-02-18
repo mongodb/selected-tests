@@ -615,6 +615,17 @@ class TestCreateTaskMap:
             assert mapped_tasks[task.display_name] is not None
             assert mapped_tasks[task.display_name] == task
 
+    def test_create_task_map_execution(self):
+        display_task = MagicMock(
+            display_name="name", json={"execution_tasks": [f"id{i}" for i in range(7)]}
+        )
+        execution_tasks = [MagicMock(display_name=f"name{i}", task_id=f"id{i}") for i in range(7)]
+        tasks = [display_task] + execution_tasks
+        mapped_tasks = under_test._create_task_map(tasks)
+
+        assert len(mapped_tasks) == 1
+        assert mapped_tasks["name"] == display_task
+
 
 class TestIsTaskAFlip:
     def test_non_activated_task_is_not_a_flip(self):

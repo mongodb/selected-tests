@@ -1,6 +1,7 @@
 """Method to create the task mappings for a given evergreen project."""
 from __future__ import annotations
 
+import itertools
 import re
 
 from collections import namedtuple
@@ -419,7 +420,14 @@ def _create_task_map(tasks: List[Task]) -> Dict:
     :param tasks: List of tasks to map.
     :return: Dictionary of tasks by display_name.
     """
-    return {task.display_name: task for task in tasks}
+    execution_tasks_map = {
+        task: task
+        for task in itertools.chain.from_iterable(
+            task.json["execution_tasks"] for task in tasks if "execution_tasks" in task.json
+        )
+    }
+
+    return {task.display_name: task for task in tasks if task.task_id not in execution_tasks_map}
 
 
 def _is_task_a_flip(task: Task, prev_tasks: Dict, next_tasks: Dict) -> bool:
