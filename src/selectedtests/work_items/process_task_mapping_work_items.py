@@ -10,6 +10,7 @@ from structlog.threadlocal import tmp_bind
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.project_config import ProjectConfig
 from selectedtests.task_mappings.create_task_mappings import generate_task_mappings
+from selectedtests.task_mappings.update_task_mappings import update_task_mappings
 from selectedtests.task_mappings.version_limit import VersionLimit
 from selectedtests.work_items.process_test_mapping_work_items import clear_in_progress_work
 from selectedtests.work_items.task_mapping_work_item import ProjectTaskMappingWorkItem
@@ -101,10 +102,11 @@ def _seed_task_mappings_for_project(
         work_item.module,
         work_item.module_source_file_regex,
     )
+
     project_config.save(mongo.project_config())
 
     if mappings:
-        mongo.task_mappings().insert_many(mappings)
+        update_task_mappings(mappings, mongo)
     else:
         LOGGER.info("No task mappings generated")
     log.info("Finished task mapping work item processing")

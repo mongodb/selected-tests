@@ -88,13 +88,14 @@ class TestProcessOneTaskMappingWorkItem:
 
 
 class TestSeedTaskMappingsForProject:
+    @patch(ns("update_task_mappings"))
     @patch(ns("generate_task_mappings"))
     @patch(ns("ProjectConfig.get"))
-    def test_task_mappings_are_created(self, project_config_mock, generate_task_mappings_mock):
-        generate_task_mappings_mock.return_value = (
-            ["mock-response"],
-            "most-recent-version-analyzed",
-        )
+    def test_task_mappings_are_created(
+        self, project_config_mock, generate_task_mappings_mock, update_task_mappings_mock
+    ):
+        task_mappings = ["mock-response"]
+        generate_task_mappings_mock.return_value = (task_mappings, "most-recent-version-analyzed")
         evg_api_mock = MagicMock()
         mongo_mock = MagicMock()
         logger_mock = MagicMock()
@@ -112,7 +113,7 @@ class TestSeedTaskMappingsForProject:
             work_item_mock.module_source_file_regex,
         )
         project_config_mock.return_value.save.assert_called_once_with(mongo_mock.project_config())
-        mongo_mock.task_mappings.return_value.insert_many.assert_called_once_with(["mock-response"])
+        update_task_mappings_mock.assert_called_once_with(task_mappings, mongo_mock)
 
     @patch(ns("generate_task_mappings"))
     @patch(ns("ProjectConfig.get"))
