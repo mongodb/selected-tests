@@ -94,9 +94,6 @@ def update_test_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWr
         LOGGER.info("Updating test mappings for project", project_config=project_config)
         test_config = project_config["test_config"]
 
-        # TODO: TIG-2375 if generate_test_mappings yielded the mappings in ascending order and
-        #  updates were written in transactions, then this code would be quicker, restartable and
-        #  error resistant.
         test_mappings_result = generate_test_mappings(
             evg_api,
             project_config["project"],

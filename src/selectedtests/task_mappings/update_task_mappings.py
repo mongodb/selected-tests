@@ -92,10 +92,6 @@ def update_task_mappings_since_last_commit(evg_api: EvergreenApi, mongo: MongoWr
         LOGGER.info("Updating task mappings for project", project_config=project_config)
         task_config = project_config["task_config"]
 
-        # TODO: TIG-2375 if generate_task_mappings yielded the mappings in ascending order and
-        #  updates were
-        #  written in transactions, then this code would be quicker, restartable and error
-        #  resistant.
         mappings, most_recent_version_analyzed = generate_task_mappings(
             evg_api,
             project_config["project"],
