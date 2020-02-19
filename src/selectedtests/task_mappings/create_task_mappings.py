@@ -421,8 +421,8 @@ def _create_task_map(tasks: List[Task]) -> Dict:
     :return: Dictionary of tasks by display_name.
     """
     execution_tasks_map = {
-        task: task
-        for task in itertools.chain.from_iterable(
+        execution_task_id: True
+        for execution_task_id in itertools.chain.from_iterable(
             task.json["execution_tasks"] for task in tasks if "execution_tasks" in task.json
         )
     }
