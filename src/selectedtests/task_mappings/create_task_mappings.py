@@ -152,10 +152,16 @@ class TaskMappings:
                         try:
                             cur_module = _get_associated_module(version, module_name)
                             prev_module = _get_associated_module(prev_version, module_name)
+
+                            # even though we don't need the module info for next_version, we run
+                            # this check to raise an error if the next version has a config error
+                            _get_associated_module(next_version, module_name)
                         except RetryError:
                             LOGGER.warning(
-                                "Manifest not found for version",
+                                "Manifest not found for version, version may have config error",
                                 version=version.version_id,
+                                prev_version=prev_version.version_id,
+                                next_version=next_version.version_id,
                                 exc_info=True,
                             )
                             continue
