@@ -73,9 +73,9 @@ def create_test_mapping(ctx: Context, project: str, src_regex: str, test_file_re
 @click.pass_context
 def process_test_mappings(ctx: Context, weeks_back: int) -> None:
     """Process test mapping work items that have not yet been processed."""
-    # For test mappings, after_date is compared against git commit committed_datetime, which is
-    # stored in a UTC date format that is UTC offset-aware. So after_date needs to be offset-aware,
-    # which is why we add tzinfo below.
+    # after_date is compared against git commit committed_datetime, which is stored in a UTC date
+    # format that is UTC offset-aware. So after_date needs to be offset-aware, which is why we
+    # add tzinfo below.
     now = datetime.utcnow().replace(tzinfo=pytz.UTC)
     after_date = now - timedelta(weeks=weeks_back)
     process_queued_test_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
@@ -117,10 +117,11 @@ def create_task_mapping(ctx: Context, project: str, src_regex: str, build_regex:
 @click.pass_context
 def process_task_mappings(ctx: Context, weeks_back: int) -> None:
     """Process task mapping work items that have not yet been processed."""
-    # For task mappings, after_date is compared against evergreen version create_time, which is
-    # stored in a UTC date format that is not UTC offset-aware. So after_date does not need to be
-    # offset-aware.
-    after_date = datetime.utcnow() - timedelta(weeks=weeks_back)
+    # after_date is compared against evergreen version create_time, which is stored in a UTC date
+    # format that is UTC offset-aware. So after_date needs to be offset-aware, which is why we
+    # add tzinfo below.
+    now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+    after_date = now - timedelta(weeks=weeks_back)
     process_queued_task_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
 
 
