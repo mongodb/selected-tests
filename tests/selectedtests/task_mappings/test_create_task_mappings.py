@@ -2,6 +2,7 @@ import re
 
 from copy import deepcopy
 from datetime import date, datetime, time
+from tenacity import RetryError
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -235,6 +236,76 @@ class TestCreateTaskMappings:
             module_name="",
             module_file_regex=None,
         )
+
+        assert mappings.mappings == {
+            ChangedFile("src/file1", "my_repo"): {"builds": {}, "seen_count": 1},
+            ChangedFile("src/file2", "my_repo"): {"builds": {}, "seen_count": 1},
+        }
+
+    @patch(ns("_get_evg_project_and_init_repo"))
+    @patch(ns("_get_diff"))
+    @patch(ns("_get_filtered_files"))
+    @patch(ns("_get_associated_module"))
+    @patch(ns("_get_module_changed_files"))
+    @patch(ns("_get_flipped_tasks"))
+    def test_broken_versions_creates_mappings_with_no_builds(
+        self,
+        flipped_mock,
+        module_changed_mock,
+        associated_module_mock,
+        filtered_files_mock,
+        diff_mock,
+        get_evg_project_and_init_repo_mock,
+        module_changed_files,
+        changed_files,
+    ):
+        version_limit_mock = MagicMock()
+        version_limit_mock.check_version_before_limit.return_value = False
+
+        evg_api_mock = MagicMock()
+        evg_api_mock.versions_by_project.return_value = [
+            MagicMock(
+                version_id=f"version-{i}",
+                create_time=datetime.combine(date(1, 1, 1), time(1, 2, i)),
+            )
+            for i in range(3)
+        ]
+        # This sets versions_by_project to return versions with the version_ids
+        # in the following order: ['version-2', 'version-1', 'version-0']
+        evg_api_mock.versions_by_project.return_value.reverse()
+
+        associated_module_mock.side_effect = RetryError
+        module_changed_mock.return_value = module_changed_files
+        filtered_files_mock.return_value = changed_files
+
+        expected_file_list = deepcopy(module_changed_mock.return_value).union(
+            deepcopy(filtered_files_mock.return_value)
+        )
+
+        flipped_mock.return_value = {"variant1": ["task1", "task2"], "variant2": ["task3", "task4"]}
+        project_name = "project"
+
+        mappings, most_recent_version_analyzed = under_test.TaskMappings.create_task_mappings(
+            evg_api_mock,
+            project_name,
+            version_limit_mock,
+            file_regex=None,
+            module_name="module",
+            module_file_regex=None,
+        )
+
+        pdb.set_trace()
+        assert len(expected_file_list) == len(mappings.mappings)
+        for file in expected_file_list:
+            file_mappings = mappings.mappings.get(file)["builds"]
+            assert 1 == mappings.mappings.get(file)[under_test.SEEN_COUNT_KEY]
+            assert file_mappings is not None
+            for variant in flipped_mock.return_value:
+                expected_tasks = flipped_mock.return_value.get(variant)
+                variant_output = file_mappings.get(variant)
+                assert variant_output is not None
+                for task in expected_tasks:
+                    assert task in variant_output
 
         assert mappings.mappings == {
             ChangedFile("src/file1", "my_repo"): {"builds": {}, "seen_count": 1},
