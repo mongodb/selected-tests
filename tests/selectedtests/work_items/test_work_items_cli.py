@@ -1,8 +1,12 @@
+from datetime import datetime
 from unittest.mock import MagicMock, patch
+
+import pytest
+import pytz
 
 from click.testing import CliRunner
 
-from selectedtests.work_items.work_items_cli import cli
+import selectedtests.work_items.work_items_cli as under_test
 
 NS = "selectedtests.work_items.work_items_cli"
 
@@ -10,6 +14,19 @@ NS = "selectedtests.work_items.work_items_cli"
 def ns(relative_name):
     """Return a full name from a name relative to the tested module"s name space."""
     return NS + "." + relative_name
+
+
+class TestGetAfterDate:
+    def test_compare_to_timezone_aware_date(self):
+        after_date = under_test._get_after_date(0)
+        timezome_aware_date = datetime(2014, 12, 10, 12, 0, 0, tzinfo=pytz.utc)
+        assert after_date > timezome_aware_date
+
+    def test_raises_error_when_compared_against_non_offset_aware_date(self):
+        after_date = under_test._get_after_date(0)
+        comparison_date = datetime.utcnow()
+        with pytest.raises(TypeError):
+            after_date < comparison_date
 
 
 class TestCli:
@@ -25,7 +42,9 @@ class TestCli:
 
         runner = CliRunner()
         with runner.isolated_filesystem():
-            result = runner.invoke(cli, ["--mongo-uri=localhost", "process-test-mappings"])
+            result = runner.invoke(
+                under_test.cli, ["--mongo-uri=localhost", "process-test-mappings"]
+            )
             assert result.exit_code == 0
 
     @patch(ns("get_evg_api"))
@@ -40,5 +59,7 @@ class TestCli:
 
         runner = CliRunner()
         with runner.isolated_filesystem():
-            result = runner.invoke(cli, ["--mongo-uri=localhost", "process-task-mappings"])
+            result = runner.invoke(
+                under_test.cli, ["--mongo-uri=localhost", "process-task-mappings"]
+            )
             assert result.exit_code == 0

@@ -23,6 +23,20 @@ from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWo
 DEFAULT_WEEKS_BACK = 24
 
 
+def _get_after_date(weeks_back: int) -> datetime:
+    """
+    Create an after_date for evergreen versions and git commits to be compared against.
+
+    :param weeks_back: Number of weeks back set date to.
+    :return: After date in UTC offset-aware format.
+    """
+    #  After_date is compared against evergreen version create_time and git commit
+    #  committed_datetime, which are stored in a UTC date format that is UTC offset-aware. So
+    #  after_date needs to be offset-aware, which is why we add tzinfo below.
+    now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+    return now - timedelta(weeks=weeks_back)
+
+
 @click.group()
 @click.option("--verbose", is_flag=True, default=False, help="Enable verbose logging.")
 @click.option("--mongo-uri", required=True, type=str, help="Mongo URI to connect to.")
@@ -72,12 +86,12 @@ def create_test_mapping(ctx: Context, project: str, src_regex: str, test_file_re
 )
 @click.pass_context
 def process_test_mappings(ctx: Context, weeks_back: int) -> None:
-    """Process test mapping work items that have not yet been processed."""
-    # after_date is compared against git commit committed_datetime, which is stored in a UTC date
-    # format that is UTC offset-aware. So after_date needs to be offset-aware, which is why we
-    # add tzinfo below.
-    now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-    after_date = now - timedelta(weeks=weeks_back)
+    """
+    Process test mapping work items that have not yet been processed.
+
+    :param weeks_back: Number of weeks back to process.
+    """
+    after_date = _get_after_date(weeks_back)
     process_queued_test_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
 
 
@@ -116,12 +130,12 @@ def create_task_mapping(ctx: Context, project: str, src_regex: str, build_regex:
 )
 @click.pass_context
 def process_task_mappings(ctx: Context, weeks_back: int) -> None:
-    """Process task mapping work items that have not yet been processed."""
-    # after_date is compared against evergreen version create_time, which is stored in a UTC date
-    # format that is UTC offset-aware. So after_date needs to be offset-aware, which is why we
-    # add tzinfo below.
-    now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-    after_date = now - timedelta(weeks=weeks_back)
+    """
+    Process task mapping work items that have not yet been processed.
+
+    :param weeks_back: Number of weeks back to process.
+    """
+    after_date = _get_after_date(weeks_back)
     process_queued_task_mapping_work_items(ctx.obj["evg_api"], ctx.obj["mongo"], after_date)
 
 
