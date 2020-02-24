@@ -15,6 +15,7 @@ from evergreen.api import Build, EvergreenApi, Task, Version
 from evergreen.manifest import ManifestModule
 from git import DiffIndex, Repo
 from structlog import get_logger
+from tenacity import RetryError
 
 from selectedtests.evergreen_helper import get_evg_project
 from selectedtests.git_helper import get_changed_files, init_repo
@@ -148,8 +149,22 @@ class TaskMappings:
                     changed_files = _get_filtered_files(diff, file_regex, repo_name)
 
                     if module_name:
-                        cur_module = _get_associated_module(version, module_name)
-                        prev_module = _get_associated_module(prev_version, module_name)
+                        try:
+                            cur_module = _get_associated_module(version, module_name)
+                            prev_module = _get_associated_module(prev_version, module_name)
+
+                            # even though we don't need the module info for next_version, we run
+                            # this check to raise an error if the next version has a config error
+                            _get_associated_module(next_version, module_name)
+                        except RetryError:
+                            LOGGER.warning(
+                                "Manifest not found for version, version may have config error",
+                                version=version.version_id,
+                                prev_version=prev_version.version_id,
+                                next_version=next_version.version_id,
+                                exc_info=True,
+                            )
+                            continue
                         if cur_module is not None and module_repo is None:
                             module_repo = init_repo(
                                 temp_dir, cur_module.repo, cur_module.branch, cur_module.owner
