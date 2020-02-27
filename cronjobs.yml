@@ -9,12 +9,40 @@ cronJobs:
   - name: process-test-mappings
     schedule: "0 1 * * *"
     command: ["/bin/sh", "cronjobs/process_test_mapping_work_items.sh"]
+    resources: # Burstable
+      requests: # guaranteed amount of resources
+        cpu: "10m"
+        memory: "5Mi"
+      limits: # maximum allowed resources
+        cpu: "1.5"
+        memory: "600Mi"
   - name: process-task-mappings
     schedule: "0 2 * * *"
     command: ["/bin/sh", "cronjobs/process_task_mapping_work_items.sh"]
+    resources: # Burstable
+      requests: # guaranteed amount of resources
+        cpu: "10m"
+        memory: "5Mi"
+      limits: # maximum allowed resources
+        cpu: "2.5"
+        memory: "1.5Gi"
   - name: update-test-mappings
     schedule: "0 3 * * *"
     command: ["/bin/sh", "cronjobs/update_test_mappings.sh"]
+    resources: # Burstable
+      requests: # guaranteed amount of resources
+        cpu: "900m"
+        memory: "500Mi"
+      limits: # maximum allowed resources
+        cpu: "1"
+        memory: "750Mi"
   - name: update-task-mappings
     schedule: "0 4 * * *"
     command: ["/bin/sh", "cronjobs/update_task_mappings.sh"]
+    resources: # Burstable
+      requests: # guaranteed amount of resources
+        cpu: "1.1"
+        memory: "800Mi"
+      limits: # maximum allowed resources
+        cpu: "1.2"
+        memory: "1Gi"
