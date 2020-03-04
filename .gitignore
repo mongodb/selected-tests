@@ -1,13 +1,14 @@
-.DS_Store
 *.egg
 *.egg-info
 *.pyc
+.DS_Store
 .idea
+.mypy_cache
 .python-version
 .tox
 __pycache__
 config.yml
+notebooks/.ipynb_checkpoints
 pip-wheel-metadata
-venv
-.mypy_cache
 test_output_junit.xml
+venv

@@ -45,7 +45,7 @@ To make an API request, follow the following steps:
 
 ## Database Schema
 The _selected_tests_ database consists of a number of interlocking collections.
-* _project_config_: A collection to contain project descriptions and meta data (last commit seen, 
+* _project_config_: A collection to contain project descriptions and meta data (last commit seen,
 regexs for files etc.).
 ```
 > db.project_config.findOne()
@@ -85,7 +85,7 @@ regexs for files etc.).
 	"end_time" : ISODate("2020-02-13T11:22:27.322Z")
 }
 ```
-* _task_mappings_: The current task mappings. 
+* _task_mappings_: The current task mappings.
 ```
 > db.task_mappings.findOne()
 {
@@ -118,7 +118,7 @@ regexs for files etc.).
 	]
 }
 ```
-* _task_mappings_tasks_: The current task mappings tasks. Documents from this collection 
+* _task_mappings_tasks_: The current task mappings tasks. Documents from this collection
 are joined to the _task_mappings_ documents _tasks_ field through the source_file field.
 ```
 > db.task_mappings_tasks.findOne()
@@ -175,7 +175,7 @@ are joined to the _task_mappings_ documents _tasks_ field through the source_fil
 }
 
 ```
-* _test_mappings_test_files_: The current test mappings test_files. Documents from this collection 
+* _test_mappings_test_files_: The current test mappings test_files. Documents from this collection
 are joined to _test_mappings_ documents  _test_files_ field through the source_file field.
 ```
 > db.test_mappings_test_files.findOne({"source_file" : "src/mongo/db/s/config/configsvr_create_database_command.cpp"})
@@ -185,7 +185,17 @@ are joined to _test_mappings_ documents  _test_files_ field through the source_f
 	"test_mpapping_id" : ...,
 	"test_file_seen_count" : 2
 }
+
+### Analyze distrubution of thresholds
+The distribution of the thresholds for test_mappings and task_mappings can be
+seen by running the jupyter notebooks in the `notebooks` directory. To run
+them, set the SELECTED_TESTS_MONGO_URI environment variable to the database you
+would like to analyze and run jupyter notebooks:
 ```
+export SELECTED_TESTS_MONGO_URI="localhost:27017"
+jupyter notebook
+```
+
 ## Create task mappings
 The task mapping cli command has only one required argument - the name of an evergreen project.
 In order to run it, run the below.
