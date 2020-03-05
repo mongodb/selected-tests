@@ -138,7 +138,7 @@ class TaskMappings:
                         branch = version.branch
                         repo_name = version.repo
 
-                    LOGGER.info("Processing mappings for version", version=version.version_id)
+                    LOGGER.info("Processing mappings for version", version=version.version_id, create_time=version.create_time)
 
                     try:
                         diff = _get_diff(base_repo, version.revision, prev_version.revision)
@@ -406,7 +406,7 @@ def _get_flipped_tasks_per_build(
     """
     try:
         prev_build: Build = prev_version.build_by_variant(build.build_variant)
-    except KeyError:
+    except (KeyError, AttributeError):
         LOGGER.warning(
             "Previous version does not contain a build for this build variant", exc_info=True
         )
@@ -414,7 +414,7 @@ def _get_flipped_tasks_per_build(
 
     try:
         next_build: Build = next_version.build_by_variant(build.build_variant)
-    except KeyError:
+    except (KeyError, AttributeError):
         LOGGER.warning(
             "Next version does not contain a build for this build variant", exc_info=True
         )
