@@ -235,9 +235,11 @@ $ task-mappings update
 ## Run app locally
 
 ### Set up environment
+[Install poetry](https://github.com/python-poetry/poetry#installation)
+
+Install dependencies:
 ```
-pip install -r requirements.txt
-pip install -e .
+poetry install
 ```
 
 #### Prerequisites
@@ -255,13 +257,13 @@ __Note__: reload is only used in development mode.
 
 ## Testing/Formatting/Linting
 ```
-isort -y
-black src tests
-pydocstyle src
-pytest --flake8 --isort
+poetry run black src tests
+poetry run pydocstyle src
+poetry run pytest
 ```
 
 To get code coverage information, you can run pytest directly.
+# WIP
 ```
 $ pytest --cov=src --cov-report=html
 ```

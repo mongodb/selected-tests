@@ -1,3 +1,50 @@
+[tool.poetry]
+name = "selectedtests"
+version = "0.1.0"
+description = "Calculate correlated tests and tasks for source files in a given evergreen project"
+authors = [
+    "Alexander Costas <alexander.costas@mongodb.com>",
+    "David Bradford <david.bradford@mongodb.com>",
+    "Jeff Zambory <jeff.zambory@mongodb.com>",
+    "Jim O'Leary <jim.oleary@mongodb.com>",
+    "Lydia Stepanek <lydia.stepanek@mongodb.com>",
+]
+readme = "README.md"
+license = "Apache-2.0"
+repository = "https://github.com/mongodb/selected-tests"
+
+[tool.poetry.scripts]
+selected-tests-service = "selectedtests.app.app:main"
+task-mappings = "selectedtests.task_mappings.task_mappings_cli:main"
+test-mappings = "selectedtests.test_mappings.test_mappings_cli:main"
+init-mongo = "selectedtests.datasource.datasource_cli:main"
+work-items = "selectedtests.work_items.work_items_cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+Click = "7.0"
+GitPython = "3.0.8"
+boltons = "19.1.0"
+dnspython = "1.16.0"
+"evergreen.py" = "1.0.2"
+fastapi = "0.45"
+misc-utils-py = "0.1.2"
+pytz = "2019.3"
+structlog = "19.1.0"
+pymongo = {version = "3.8.0", extras = ["tls"]}
+
+[tool.poetry.dev-dependencies]
+black = "^19.3b0"
+gunicorn = "^19.9.0"
+pydocstyle = "^4.0.1"
+pytest-flake8 = "^1.0.4"
+pytest-isort = "^0.3.1"
+pytest = "^5.2.0"
+pytest-mypy = "^0.4.2"
+scipy = "^1.4.1"
+jupyter = "^1.0.0"
+matplotlib = "^3.1.3"
+
 [tool.black]
 line-length = 100
-target-version = ['py37']
+target-version = ["py37"]
