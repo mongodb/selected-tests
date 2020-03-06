@@ -185,6 +185,7 @@ are joined to _test_mappings_ documents  _test_files_ field through the source_f
 	"test_mpapping_id" : ...,
 	"test_file_seen_count" : 2
 }
+```
 
 ### Analyze distrubution of thresholds
 The distribution of the thresholds for test_mappings and task_mappings can be
