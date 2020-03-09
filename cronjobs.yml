@@ -5,6 +5,17 @@ globalEnvSecrets:
   GITHUB_PRIVATE_KEY: selected-tests-secrets
   GITHUB_PUBLIC_KEY: selected-tests-secrets
   SELECTED_TESTS_MONGO_URI: selected-tests-secrets
+
+batchInstance: &batchInstance
+    # kanopy recommends all cronjobs run on batch instance groups
+    nodeSelector:
+      instancegroup: batch
+    tolerations:
+      - effect: NoSchedule
+        key: dedicated
+        operator: Equal
+        value: batch
+
 cronJobs:
   - name: process-test-mappings
     schedule: "0 1 * * *"
@@ -15,7 +26,8 @@ cronJobs:
         memory: "5Mi"
       limits: # maximum allowed resources
         cpu: "1.5"
-        memory: "600Mi"
+        memory: "1.5Gi"
+    <<: *batchInstance
   - name: process-task-mappings
     schedule: "0 2 * * *"
     command: ["/bin/sh", "cronjobs/process_task_mapping_work_items.sh"]
@@ -26,6 +38,7 @@ cronJobs:
       limits: # maximum allowed resources
         cpu: "2.5"
         memory: "1.5Gi"
+    <<: *batchInstance
   - name: update-test-mappings
     schedule: "0 3 * * *"
     command: ["/bin/sh", "cronjobs/update_test_mappings.sh"]
@@ -36,6 +49,7 @@ cronJobs:
       limits: # maximum allowed resources
         cpu: "1"
         memory: "750Mi"
+    <<: *batchInstance
   - name: update-task-mappings
     schedule: "0 4 * * *"
     command: ["/bin/sh", "cronjobs/update_task_mappings.sh"]
@@ -46,3 +60,4 @@ cronJobs:
       limits: # maximum allowed resources
         cpu: "1.2"
         memory: "1Gi"
+    <<: *batchInstance
