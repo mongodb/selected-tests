@@ -1,3 +1,4 @@
+replicaCount: 2
 env:
   EVG_API_USER: evergreen-user
 envSecrets:
@@ -20,3 +21,14 @@ resources: # Burstable
   limits: # maximum allowed resources
     cpu: "50m"
     memory: "100Mi"
+probes:
+  enabled: true
+  path: /health
+  headers: {}
+  liveness:
+    httpGet: true
+    initialDelaySeconds: 10
+    periodSeconds: 60
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
