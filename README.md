@@ -194,7 +194,7 @@ them, set the SELECTED_TESTS_MONGO_URI environment variable to the database you
 would like to analyze and run jupyter notebooks:
 ```
 export SELECTED_TESTS_MONGO_URI="localhost:27017"
-jupyter notebook
+poetry run jupyter notebook
 ```
 
 ## Create task mappings
@@ -265,19 +265,7 @@ poetry run pytest
 To get code coverage information, you can run pytest directly.
 # WIP
 ```
-$ pytest --cov=src --cov-report=html
-```
-
-## Pushing to staging
-The staging environment for this service is
-[here](https://selected-tests.server-tig.staging.corp.mongodb.com). In order to test your
-changes there, make a pr with your branch and make sure it passes the required evergreen tests. Then,
-push your changes to the remote 'staging' branch.
-
-That command will look something like this if your branch is called 'new_branch'
- and the original selected-tests repo is called origin:
-```
-git push origin new_branch:staging
+$ poetry run pytest --cov=src --cov-report=html
 ```
 
 ## Merging code to master
