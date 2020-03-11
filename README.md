@@ -201,7 +201,7 @@ poetry run jupyter notebook
 The task mapping cli command has only one required argument - the name of an evergreen project.
 In order to run it, run the below.
 ```
-task-mappings create EVERGREEN_PROJECT_NAME
+poetry run task-mappings create EVERGREEN_PROJECT_NAME
 ```
 Currently, it can only analyze public git repos. Private repo support is coming in a future version.
 
@@ -209,7 +209,7 @@ Currently, it can only analyze public git repos. Private repo support is coming 
 The test mapping cli command has only one required argument - the name of an evergreen project.
 In order to run it, run the below.
 ```
-test-mappings create EVERGREEN_PROJECT_NAME
+poetry run test-mappings create EVERGREEN_PROJECT_NAME
 ```
 
 ### Commands
@@ -219,8 +219,8 @@ day. This will gather the unprocessed test mapping create and task mapping creat
 process them so that test and task mappings for those projects are added to the db.
 
 ```
-$ work-items process-test-mappings
-$ work-items process-task-mappings
+$ poetry run work-items process-test-mappings
+$ poetry run work-items process-task-mappings
 ```
 
 A cron job will run daily to update the two models described above. The cron job
@@ -228,8 +228,8 @@ will look at all git commits and mainline patch builds from the previous day and
 create new test mappings and task mappings respectively. The commands to do this
 are as follows:
 ```
-$ test-mappings update
-$ task-mappings update
+$ poetry run test-mappings update
+$ poetry run task-mappings update
 ```
 
 ## Run app locally
