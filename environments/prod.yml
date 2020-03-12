@@ -16,11 +16,11 @@ prometheusRules:
       summary: "Selected tests service giving high number of bad responses over the last hour (current number: {{ $value }}). More information can be seen here: https://grafana.corp.mongodb.com/d/zenZa6oWk/selected-tests-service?orgId=4"
 resources: # Burstable
   requests: # guaranteed amount of resources
-    cpu: "5m"
-    memory: "30Mi"
-  limits: # maximum allowed resources
     cpu: "50m"
-    memory: "100Mi"
+    memory: "128Mi"
+  limits: # maximum allowed resources
+    cpu: "500m"
+    memory: "196Mi"
 probes:
   enabled: true
   path: /health
