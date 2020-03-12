@@ -194,14 +194,14 @@ them, set the SELECTED_TESTS_MONGO_URI environment variable to the database you
 would like to analyze and run jupyter notebooks:
 ```
 export SELECTED_TESTS_MONGO_URI="localhost:27017"
-jupyter notebook
+poetry run jupyter notebook
 ```
 
 ## Create task mappings
 The task mapping cli command has only one required argument - the name of an evergreen project.
 In order to run it, run the below.
 ```
-task-mappings create EVERGREEN_PROJECT_NAME
+poetry run task-mappings create EVERGREEN_PROJECT_NAME
 ```
 Currently, it can only analyze public git repos. Private repo support is coming in a future version.
 
@@ -209,7 +209,7 @@ Currently, it can only analyze public git repos. Private repo support is coming 
 The test mapping cli command has only one required argument - the name of an evergreen project.
 In order to run it, run the below.
 ```
-test-mappings create EVERGREEN_PROJECT_NAME
+poetry run test-mappings create EVERGREEN_PROJECT_NAME
 ```
 
 ### Commands
@@ -219,8 +219,8 @@ day. This will gather the unprocessed test mapping create and task mapping creat
 process them so that test and task mappings for those projects are added to the db.
 
 ```
-$ work-items process-test-mappings
-$ work-items process-task-mappings
+$ poetry run work-items process-test-mappings
+$ poetry run work-items process-task-mappings
 ```
 
 A cron job will run daily to update the two models described above. The cron job
@@ -228,16 +228,18 @@ will look at all git commits and mainline patch builds from the previous day and
 create new test mappings and task mappings respectively. The commands to do this
 are as follows:
 ```
-$ test-mappings update
-$ task-mappings update
+$ poetry run test-mappings update
+$ poetry run task-mappings update
 ```
 
 ## Run app locally
 
 ### Set up environment
+[Install poetry](https://github.com/python-poetry/poetry#installation)
+
+Install dependencies:
 ```
-pip install -r requirements.txt
-pip install -e .
+poetry install
 ```
 
 #### Prerequisites
@@ -255,27 +257,14 @@ __Note__: reload is only used in development mode.
 
 ## Testing/Formatting/Linting
 ```
-isort -y
-black src tests
-pydocstyle src
-pytest --flake8 --isort
+poetry run black src tests
+poetry run pydocstyle src
+poetry run pytest
 ```
 
 To get code coverage information, you can run pytest directly.
 ```
-$ pytest --cov=src --cov-report=html
-```
-
-## Pushing to staging
-The staging environment for this service is
-[here](https://selected-tests.server-tig.staging.corp.mongodb.com). In order to test your
-changes there, make a pr with your branch and make sure it passes the required evergreen tests. Then,
-push your changes to the remote 'staging' branch.
-
-That command will look something like this if your branch is called 'new_branch'
- and the original selected-tests repo is called origin:
-```
-git push origin new_branch:staging
+$ poetry run pytest --cov=src --cov-report=html
 ```
 
 ## Merging code to master
