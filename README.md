@@ -263,7 +263,6 @@ poetry run pytest
 ```
 
 To get code coverage information, you can run pytest directly.
-# WIP
 ```
 $ poetry run pytest --cov=src --cov-report=html
 ```

@@ -37,7 +37,7 @@ tasks:
         set -o errexit
         . venv/bin/activate
 
-        poetry run pytest --flake8 --isort --junitxml=test_output_junit.xml --ignore=venv
+        poetry run pytest --flake8 --isort --junitxml=test_output_junit.xml
 
 - name: check_formatting
   commands:
