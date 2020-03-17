@@ -26,5 +26,5 @@ $GITHUB_PUBLIC_KEY
 END_OF_PUBLIC
 
   eval "$(ssh-agent -s)"
-  ssh-add -k ~/.ssh/selected_tests
+  ssh-add -k $target_dir/selected_tests
 }
