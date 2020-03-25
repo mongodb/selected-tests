@@ -17,9 +17,10 @@ batchInstance: &batchInstance
         value: batch
 
 cronJobs:
-  - name: process-test-mappings
+  - name: selected-tests-test-mappings-process
     schedule: "0 1 * * *"
     command: ["/bin/sh", "cronjobs/process_test_mapping_work_items.sh"]
+    successfulJobsHistoryLimit: 1
     resources: # Burstable
       requests: # guaranteed amount of resources
         cpu: "10m"
@@ -28,9 +29,10 @@ cronJobs:
         cpu: "1.5"
         memory: "1.5Gi"
     <<: *batchInstance
-  - name: process-task-mappings
+  - name: selected-tests-task-mappings-process
     schedule: "0 2 * * *"
     command: ["/bin/sh", "cronjobs/process_task_mapping_work_items.sh"]
+    successfulJobsHistoryLimit: 1
     resources: # Burstable
       requests: # guaranteed amount of resources
         cpu: "10m"
@@ -39,25 +41,27 @@ cronJobs:
         cpu: "2.5"
         memory: "1.5Gi"
     <<: *batchInstance
-  - name: update-test-mappings
+  - name: selected-tests-test-mappings-update
     schedule: "0 3 * * *"
     command: ["/bin/sh", "cronjobs/update_test_mappings.sh"]
+    successfulJobsHistoryLimit: 1
     resources: # Burstable
       requests: # guaranteed amount of resources
         cpu: "900m"
         memory: "500Mi"
       limits: # maximum allowed resources
         cpu: "1"
-        memory: "750Mi"
+        memory: "1.5Gi"
     <<: *batchInstance
-  - name: update-task-mappings
+  - name: selected-tests-task-mappings-update
     schedule: "0 4 * * *"
     command: ["/bin/sh", "cronjobs/update_task_mappings.sh"]
+    successfulJobsHistoryLimit: 1
     resources: # Burstable
       requests: # guaranteed amount of resources
         cpu: "1.1"
         memory: "800Mi"
       limits: # maximum allowed resources
         cpu: "1.2"
-        memory: "1Gi"
+        memory: "1.5Gi"
     <<: *batchInstance
