@@ -22,7 +22,7 @@ new state of the service before that change can be merged to master.
 Documentation for how the swagger documentation is done can be found
 [here](https://flask-restplus.readthedocs.io/en/stable/swagger.html).
 
-## <a name="Authentication"></a>Authentication
+## Authentication
 
 To make requests to the selected-tests API you will need to include your CorpSecure auth_user and
 auth_token cookies in your request.

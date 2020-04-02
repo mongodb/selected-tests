@@ -32,7 +32,7 @@ You must have:
 
 We will discuss each in turn in the following sections.
  
-### <a name="GithubAccess"></a>Github Access
+### Github Access
  
 The selected tests project needs to be given access in order to access private repositories. This
 access is granted via ssh keys. To give selected tests access to your repository, you will need
@@ -64,33 +64,18 @@ that your keys are in ~/.ssh/selected_tests and ~/.ssh/selected_tests.pub.
 
 ### MongoDB
  
-The recommended MongoDB configuration for this project is a 3 node replica set. Currently in-house we use a 3 node
-replica set (Primary / Secondary / Secondary)  deployed in [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-on M5 instances (see [free shared and dedicated cluster comparison](https://docs.atlas.mongodb.com/cluster-tier/#free-shared-and-dedicated-cluster-comparison)).
+We recommended that you host your MongoDB database in [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). See
+[free shared and dedicated cluster comparison](https://docs.atlas.mongodb.com/cluster-tier/#free-shared-and-dedicated-cluster-comparison).
 
 Use one of the following options to setup your MongoDB database and ensure that you can access it:
  * [Atlas Getting Started](https://docs.atlas.mongodb.com/getting-started/)
  * [MongoDB Community](https://docs.mongodb.com/manual/administration/install-community/)
  
+**Note** from here on, we will assume that you have deployed a local MongoDB instance on **localhost:27017**.
 
 ### Python
 
 This project targets python versions greater than or equals to python 3.7. 
-
-**Note**: we recommend that you use some form of [python virtual env](https://docs.python-guide.org/dev/virtualenvs/)
-manager. The following commands use [pyenv](https://github.com/pyenv/pyenv) to manage both the python
-version and virtual environments, but you can use whatever you wish.   
-
-The following commands install python 3.7.7 (the latest 3.7 at this time), creates a new
-selected_test virtual env and then activates it:
-
-```shell script
-# These next 2 steps are only required once.
-pyenv install 3.7.7
-pyenv virtualenv 3.7.7 selected_tests
-# The next step will be needed in every shell
-pyenv activate selected_tests
-```
 
 ### Poetry
 
@@ -100,7 +85,8 @@ Use the following instructions to [Install poetry](https://github.com/python-poe
 
 You will need to set your Evergreen credentials in environment variables because the application
 and CLIs authenticate to Evergreen using $EVG_API_USER and $EVG_API_KEY. You can set these to the
-values in your local ~/.evergreen.yml file.
+values in your local ~/.evergreen.yml file (see [this page](https://github.com/evergreen-ci/evergreen/wiki/REST-V2-Usage#a-note-on-authentication).
+to get the api user and key values).
 
 ```shell script
 $ export EVG_API_USER=$(python -c "import yaml; import sys; cfg = yaml.safe_load(sys.stdin); print(cfg['user'])" < ~/.evergreen.yml)
@@ -157,21 +143,6 @@ $ init-mongo create-indexes
 {"message": "Adding indexes for collection", "lineno": 60, "filename": "datasource_cli.py", "collection": "task_mappings_tasks", "logger": "selectedtests.datasource.datasource_cli", "level": "info"}
 ```
 
-Or:
-
-```shell script
-$ init-mongo --mongo-uri localhost:27017 create-indexes
-```
-
-If you are using an Atlas instance which includes authentication, then you would use something like the following:
-
-```shell script
-export SELECTED_TESTS_MONGO_URI=mongodb+srv://<username>:<password>@<atlas>.mongodb.net/
-$ init-mongo create-indexes
-``` 
-
-Refer to the [Atlas connect to cluster](https://docs.atlas.mongodb.com/connect-to-cluster/) for instructions on how to access your cluster uri.  
-
 **Note** from here on, we will assume that **SELECTED_TESTS_MONGO_URI** is set.
 
 ## Launch Web Service
@@ -185,7 +156,7 @@ $ uvicorn --host 0.0.0.0 --port 8080 --workers 1 selectedtests.app.asgi:app --re
 
 __Note__: reload is only used in development mode.
 
-## <a name="GenerateTestTaskMappings"></a>Generate test and task mappings 
+## Generate test and task mappings 
 
 Use the following commands to create the test and task mappings for **mongodb-mongo-master**.
 
@@ -206,7 +177,7 @@ Now that the mappings have been created, we must populate them.
 ## Populating the mappings.
  
 You should run the `process-test-mappings` and `process-task-mappings` commands once every
-day (see [Generate test and task mappings](#GenerateTestTaskMappings)) . This will gather the
+day (see [Generate test and task mappings](#generate-test-task-mappings)) . This will gather the
 unprocessed test mapping create and task mapping create requests and process them so that test and
 task mappings for those projects are added to the db.
 
@@ -214,7 +185,7 @@ You should run the `test-mappings update` and `task-mappings update` daily to up
 task mappings models. These jobs look at all git commits and mainline patch builds from the previous
 day and create new test mappings and task mappings respectively.
 
-Assuming your [github keys](#GithubAccess) were created and are in  **~/.ssh/selected_tests_rsa**,
+Assuming your [github keys](#github-access) were created and are in  **~/.ssh/selected_tests_rsa**,
 you can run the following commands.
 
 ```shell script
@@ -240,18 +211,18 @@ ensure that your mapping are kept up to date.
 
 You can use the swagger access page or the command line to view the Selected Tests Service Mappings.
 
-# <a name="ViewMappings"></a>Swagger 
+# Swagger 
 
 You can view the mappings on the [swagger page](http://localhost:8080/swagger) for the web-service.
 
 This assumes that the service is running on **http://localhost:8080**.
 
-See [Selected Test Swagger API](../README.md#SelectedTestSwaggerAPI).
+See [Selected Test Swagger API](../README.md#accessing-selected-test-api).
 
 Documentation for how the swagger documentation is done can be found
 [here](https://flask-restplus.readthedocs.io/en/stable/swagger.html).
 
-## <a name="CurlMappings"></a>Curl Mappings 
+## Curl Mappings 
 
 Alternatively, you can also view the data from the command line with the following command:
 
@@ -263,4 +234,4 @@ $ curl "${SELECTED_TESTS_URI}/projects/mongodb-mongo-master/task-mappings?change
 
 **NOTE**: [jq](https://stedolan.github.io/jq/) pretty prints the data.
 
-**NOTE**: If you are trying to access the MongoDB service then you will also need to [Authenticate](docs/MongoService.md#Authentication).
+**NOTE**: If you are trying to access the MongoDB service then you will also need to [Authenticate](docs/MongoService.md#authentication).
