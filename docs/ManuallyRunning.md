@@ -5,8 +5,8 @@ The Selected Tests service is used to predict which tests need to run based on c
 # System Requirements
 
 This project requires:
- * Github access
- * A MongoDB database
+ * Github access.
+ * A MongoDB database (version >= 4.2).
  * Python (version >= 3.7).
  * [Python Poetry](https://github.com/python-poetry/poetry) to manage the python components.
  * [Evergreen Access](https://github.com/evergreen-ci/evergreen).
@@ -15,9 +15,9 @@ This project requires:
 
 The system is composed of:
  * This repository.
- * A [MongoDB database](https://www.mongodb.com/)
- * An ASGI web service (based on [FastAPI](https://github.com/tiangolo/fastapi))
- * A set of command line tools to update the database
+ * A [MongoDB database](https://www.mongodb.com/).
+ * An ASGI web service (based on [FastAPI](https://github.com/tiangolo/fastapi)).
+ * A set of command line tools to update the database.
  * A set of supporting shell scripts to create the supporting indexes and launch the web service.
  
 ## Before you start
@@ -260,5 +260,7 @@ $ export SELECTED_TESTS_URI=http://localhost:8080
 $ curl "${SELECTED_TESTS_URI}/projects/mongodb-mongo-master/test-mappings?changed_files=src/mongo/db/write_concern.cpp" --silent | jq .
 $ curl "${SELECTED_TESTS_URI}/projects/mongodb-mongo-master/task-mappings?changed_files=src/mongo/db/write_concern.cpp" --silent | jq .
 ```
+
 **NOTE**: [jq](https://stedolan.github.io/jq/) pretty prints the data.
+
 **NOTE**: If you are trying to access the MongoDB service then you will also need to [Authenticate](docs/MongoService.md#Authentication).
