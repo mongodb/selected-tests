@@ -2,9 +2,11 @@
 
 The Selected Tests service is used to predict which tests need to run based on code changes.
 
+It is depends on and requires a running [evergreen](https://github.com/evergreen-ci/evergreen) instance.
+
 ## Introduction
 
-This documment briefly introduces the Selected Tests API. For more detailed information,
+This document briefly introduces the Selected Tests API. For more detailed information,
 refer to the [Further Reading](#further-reading) section at the end of this document. 
 
 ## Selected Tests API
@@ -47,7 +49,6 @@ This would be the equivalent of changing only the **src/mongo/db/index_builds_co
 in a mongo branch and issuing the `evergreen patch` command(above). 
 
 You can also view the mappings from the command line. See [Curl Mappings](docs/ManuallyRunning.md#curl-mappings) for more details. 
-If you are trying to access the MongoDB service then you will also need to [Authenticate](docs/MongoService.md#authentication).
 
 If any new endpoints are added to the service or if the service is updated in such a way that any of
 the existing endpoints' contracts change, the swagger documentation must be updated to reflect the
@@ -59,7 +60,7 @@ Documentation for how the swagger documentation is done can be found
 # Further Reading 
 
 More detailed about the Selected Test service is contained in the following: 
- * [Manual Commands](docs/ManuallyRunning.md): run the service manually.
- * [Mongo Service](docs/MongoService.md): details of the selected tests service usage within MongoDB. 
- * [Contributing](docs/Contributing.md): guide to contribute to this project.
+ * [Manual Commands](docs/ManuallyRunning.md): information for an engineer who wants to run their own selected-tests service.
+ * [Database Schema](docs/DBSchema.md): db schema introduction and overview for an engineer who wants to understand the selected-tests service.
+ * [Contributing](docs/Contributing.md): information for an engineer who wants to contribute to selected-tests service development.
   

@@ -1,7 +1,3 @@
-# Selected Tests
-
-The Selected Tests service is used to predict which tests need to run based on code changes.
-
 # System Requirements
 
 This project requires:
@@ -23,14 +19,6 @@ The system is composed of:
 ## Before you start
 
 Let's set up the system requirements.
-
-You must have:
-  * access to a github repository.
-  * a MongoDB database.
-  * python (>= 3.7).
-  * Evergreen Access.
-
-We will discuss each in turn in the following sections.
  
 ### Github Access
  
@@ -93,8 +81,6 @@ $ export EVG_API_USER=$(python -c "import yaml; import sys; cfg = yaml.safe_load
 $ export EVG_API_KEY=$(python -c "import yaml; import sys; cfg = yaml.safe_load(sys.stdin); print(cfg['api_key'])" < ~/.evergreen.yml)
 ```
 
-**Note** from here on, we will assume that **EVG_API_USER** and **EVG_API_KEY** are set.
-
 # Project Components
 
 Now that we have installed and configured all the prerequisites we can begin to configure and run the
@@ -113,20 +99,14 @@ $ poetry install
 ## Selected Tests Commands
 
 At this point, you should have the various commands available:
-* **init-mongo**: Setup the MongoDB database. This command should be run to configure a new databas
-or to update an existing one.
-* **task-mappings**: gather unprocessed task mappings create requests and process them so that task
-mappings for those projects are added to the db. This command should be run daily.
-* **test-mappings**: gather unprocessed test mappings create requests and process them so that test
-mappings for those projects are added to the db.  This command should be run daily.
-* work-items: Update models,  these commands should be run daily.
-  * **process-task-mappings**: update the task mappings models. This jobs look at all git commits
-and mainline patch builds from the previous day and create new task mappings.
-  * **process-test-mappings**: update the task mappings models. This jobs look at all git commits
-and mainline patch builds from the previous day and create new test mappings.
+* **init-mongo**: Setup the MongoDB database.
+* **task-mappings**: Manage task mappings.
+* **test-mappings**: Manage test mappings
+* **work-items**: Update task and test mappings models.
 * **selected-tests-service**: the selected tests web service entry point. 
 
-  
+**Note** use the cli help option to get more detailed help for each command e.g `init-mongo --help`.
+
 ## Configure MongoDB
  
 Assuming you have deployed a local mongodb instance on the default port and you can access it with the mongo
@@ -142,8 +122,6 @@ $ init-mongo create-indexes
 {"message": "Adding indexes for collection", "lineno": 73, "filename": "datasource_cli.py", "collection": "test_mappings_test_files", "logger": "selectedtests.datasource.datasource_cli", "level": "info"}
 {"message": "Adding indexes for collection", "lineno": 60, "filename": "datasource_cli.py", "collection": "task_mappings_tasks", "logger": "selectedtests.datasource.datasource_cli", "level": "info"}
 ```
-
-**Note** from here on, we will assume that **SELECTED_TESTS_MONGO_URI** is set.
 
 ## Launch Web Service
 
@@ -176,10 +154,21 @@ Now that the mappings have been created, we must populate them.
 
 ## Populating the mappings.
  
-You should run the `process-test-mappings` and `process-task-mappings` commands once every
-day (see [Generate test and task mappings](#generate-test-task-mappings)) . This will gather the
+You should run the `process-test-mappings` and `process-task-mappings` commands every time a new project is added
+(see [Generate test and task mappings](#generate-test-task-mappings)) . This will gather the
 unprocessed test mapping create and task mapping create requests and process them so that test and
 task mappings for those projects are added to the db.
+
+```shell script
+$ eval "$(ssh-agent -s)"
+$ ssh-add -k ~/.ssh/selected_tests_rsa
+$ export EVG_API_USER=$(python -c "import yaml; import sys; cfg = yaml.safe_load(sys.stdin); print(cfg['user'])" < ~/.evergreen.yml)
+$ export EVG_API_KEY=$(python -c "import yaml; import sys; cfg = yaml.safe_load(sys.stdin); print(cfg['api_key'])" < ~/.evergreen.yml)
+$ export SELECTED_TESTS_URI=http://localhost:8080
+
+$ poetry run work-items --log-format json process-test-mappings
+$ poetry run work-items --log-format json process-task-mappings
+```
 
 You should run the `test-mappings update` and `task-mappings update` daily to update the test and
 task mappings models. These jobs look at all git commits and mainline patch builds from the previous
@@ -197,15 +186,14 @@ $ export SELECTED_TESTS_URI=http://localhost:8080
 
 # The following commands may take some time to run.
 $ poetry run test-mappings --log-format json update
-$ poetry run work-items --log-format json process-test-mappings
 
 # The following commands may take some time to run.
 $ poetry run task-mappings --log-format json update
-$ poetry run work-items --log-format json process-task-mappings
 ```
 
-As noted, the test / task mapping update and test / task work-item commands should be run daily to
-ensure that your mapping are kept up to date. 
+As noted, the test / task mapping update commands should be run daily to
+ensure that your mapping are kept up to date. The test / task work-item commands should be run every
+time you add a new project to ensure that the mappings are added to the database.  
 
 # View Selected Tests Service mappings 
 
@@ -233,5 +221,3 @@ $ curl "${SELECTED_TESTS_URI}/projects/mongodb-mongo-master/task-mappings?change
 ```
 
 **NOTE**: [jq](https://stedolan.github.io/jq/) pretty prints the data.
-
-**NOTE**: If you are trying to access the MongoDB service then you will also need to [Authenticate](docs/MongoService.md#authentication).

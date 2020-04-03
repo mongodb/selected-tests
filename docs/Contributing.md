@@ -1,9 +1,5 @@
 # Contributing / Development
 
-## External Contributors
-
-TBD.
-
 ## Development tools
 
 We use a number of python tools to support development:
