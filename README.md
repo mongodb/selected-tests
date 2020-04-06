@@ -2,7 +2,7 @@
 
 The Selected Tests service is used to predict which tests need to run based on code changes.
 
-It is depends on and requires a running [evergreen](https://github.com/evergreen-ci/evergreen) instance.
+It depends on and requires a running [evergreen](https://github.com/evergreen-ci/evergreen) instance.
 
 ## Introduction
 
