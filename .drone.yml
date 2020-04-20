@@ -87,14 +87,8 @@ pipeline:
       event: push
 
   unit_tests:
-    image: python:3.7-buster
-    volumes:
-    - name: git
-      path: /usr/bin/git
-    - name: pip3
-      path: /usr/local/lib/python3.7/site-packages
+    image: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}:latest
     commands:
-    - set -xe apt-get install -y git
     - pip3 install poetry
     - poetry install
     - poetry run pytest --flake8 --isort --junitxml=test_output_junit.xml
@@ -102,33 +96,19 @@ pipeline:
       event: pull_request
 
   check_formatting:
-    image: python:3.7-buster
-    volumes:
-    - name: git
-      path: /usr/bin/git
-    - name: pip3
-      path: /usr/local/lib/python3.7/site-packages
+    image: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}:latest
     commands:
+    - pip3 install poetry
     - poetry install
     - poetry run black --check --diff src tests
     when:
       event: pull_request
 
   check_mypy:
-    image: python:3.7-buster
-    volumes:
-    - name: git
-      path: /usr/bin/git
-    - name: pip3
-      path: /usr/local/lib/python3.7/site-packages
+    image: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}:latest
     commands:
+    - pip3 install poetry
     - poetry install
     - poetry run pytest --mypy src
     when:
       event: pull_request
-
-volumes:
-  - name: git
-    temp: {}
-  - name: pip3
-    temp: {}
