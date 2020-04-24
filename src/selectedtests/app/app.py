@@ -41,9 +41,10 @@ def create_app() -> FastAPI:
 
     def dependencies(binder: inject.Binder):
         binder.bind(EvergreenApi, get_evg_api())
-        binder.bind('EvergreenApi', get_evg_api())
+        binder.bind("EvergreenApi", get_evg_api())
         binder.bind(MongoWrapper, get_mongo_wrapper())
-        binder.bind('MongoWrapper', get_mongo_wrapper())
+        binder.bind("MongoWrapper", get_mongo_wrapper())
+
     inject.configure_once(dependencies, bind_in_runtime=False)
 
     return app

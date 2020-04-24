@@ -48,11 +48,7 @@ class TaskMappingsResponse(BaseModel):
         404: {"description": "Evergreen project not found"},
     },
 )
-def get(
-    changed_files: str,
-    project: str,
-    threshold: Decimal = Decimal(0),
-) -> TaskMappingsResponse:
+def get(changed_files: str, project: str, threshold: Decimal = Decimal(0),) -> TaskMappingsResponse:
     """
     Get a list of correlated task mappings for an input list of changed source files.
 
@@ -77,10 +73,7 @@ def get(
         422: {"description": "Work item already exists for project"},
     },
 )
-def post(
-    work_item_params: TaskMappingsWorkItem,
-    project: str,
-) -> CustomResponse:
+def post(work_item_params: TaskMappingsWorkItem, project: str,) -> CustomResponse:
     """
     Enqueue a project task mapping work item.
 

@@ -1,3 +1,4 @@
+"""Utilities for dependency injection support."""
 import inspect
 
 from typing import Any
@@ -6,6 +7,7 @@ import inject
 
 
 def remap_for_injection(func):
+    """Remaps a function such that it takes configured dependencies from inject regardless of order."""
     specs = inspect.getfullargspec(func)
     arg_map = {arg_name: specs.annotations.get(arg_name, Any) for arg_name in specs.args}
 

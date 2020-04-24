@@ -17,9 +17,7 @@ class TestGetCorrelatedTaskMappings:
         mock_task_mappings.aggregate.side_effect = [[task_mapping]]
         changed_files = ["src/file1.js"]
         project = "my-project"
-        task_mappings = under_test.get_correlated_task_mappings(
-            changed_files, project, Decimal(0)
-        )
+        task_mappings = under_test.get_correlated_task_mappings(changed_files, project, Decimal(0))
 
         assert task_mappings == [task_mapping]
         mock_task_mappings.aggregate.assert_called_once()
@@ -28,9 +26,7 @@ class TestGetCorrelatedTaskMappings:
         mock_task_mappings.aggregate.return_value = []
         changed_files = ["src/file1.js", "src/file2.js"]
         project = "my-project"
-        task_mappings = under_test.get_correlated_task_mappings(
-            changed_files, project, 0
-        )
+        task_mappings = under_test.get_correlated_task_mappings(changed_files, project, 0)
 
         assert task_mappings == []
         mock_task_mappings.aggregate.assert_called_once()

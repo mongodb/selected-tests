@@ -11,7 +11,7 @@ from selectedtests.injection_helper import remap_for_injection
 @inject.autoparams()
 @remap_for_injection
 def get_correlated_task_mappings(
-        db: MongoWrapper, changed_source_files: List[str], project: str, threshold: Decimal
+    db: MongoWrapper, changed_source_files: List[str], project: str, threshold: Decimal
 ) -> List[dict]:
     """
     Retrieve task mappings associated with a given evergreen project and list of source files.

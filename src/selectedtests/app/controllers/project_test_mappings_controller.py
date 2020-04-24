@@ -51,11 +51,7 @@ class TestMappingsResponse(BaseModel):
         404: {"description": "Evergreen project not found"},
     },
 )
-def get(
-    project: str,
-    changed_files: str,
-    threshold: Decimal = Decimal(0),
-) -> TestMappingsResponse:
+def get(project: str, changed_files: str, threshold: Decimal = Decimal(0),) -> TestMappingsResponse:
     """
     Get a list of correlated test mappings for an input list of changed source files.
 
@@ -80,10 +76,7 @@ def get(
         422: {"description": "Work item already exists for project"},
     },
 )
-def post(
-    work_item_params: TestMappingsWorkItem,
-    project: str,
-) -> CustomResponse:
+def post(work_item_params: TestMappingsWorkItem, project: str,) -> CustomResponse:
     """
     Enqueue a project test mapping work item.
 

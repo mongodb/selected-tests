@@ -72,9 +72,9 @@ def mock_test_mappings_queue(mock_mongo):
 def mock_injector(mock_evg: EvergreenApi, mock_mongo: MongoWrapper):
     def mock_dependencies(binder: inject.Binder) -> None:
         binder.bind(EvergreenApi, mock_evg)
-        binder.bind('EvergreenApi', mock_evg)
+        binder.bind("EvergreenApi", mock_evg)
         binder.bind(MongoWrapper, mock_mongo)
-        binder.bind('MongoWrapper', mock_mongo)
+        binder.bind("MongoWrapper", mock_mongo)
 
     inject.clear_and_configure(mock_dependencies, bind_in_runtime=False)
     return inject
