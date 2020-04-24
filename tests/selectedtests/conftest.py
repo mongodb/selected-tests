@@ -76,7 +76,7 @@ def mock_injector(mock_evg: EvergreenApi, mock_mongo: MongoWrapper):
         binder.bind(MongoWrapper, mock_mongo)
         binder.bind('MongoWrapper', mock_mongo)
 
-    inject.clear_and_configure(mock_dependencies)
+    inject.clear_and_configure(mock_dependencies, bind_in_runtime=False)
     return inject
 
 
