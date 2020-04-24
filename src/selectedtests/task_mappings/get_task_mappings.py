@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import List
 
 import inject
+
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.injection_helper import remap_for_injection
 

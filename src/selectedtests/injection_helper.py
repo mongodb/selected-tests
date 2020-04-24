@@ -1,4 +1,5 @@
 import inspect
+
 from typing import Any
 
 import inject
