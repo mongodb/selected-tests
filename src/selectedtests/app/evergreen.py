@@ -1,4 +1,5 @@
 """Web utilities for interacting with Evergreen API."""
+import inject
 
 from evergreen import EvergreenApi, Project
 from fastapi import HTTPException
@@ -6,6 +7,7 @@ from fastapi import HTTPException
 from selectedtests.evergreen_helper import get_evg_project
 
 
+@inject.autoparams()
 def try_retrieve_evergreen_project(project: str, api: EvergreenApi) -> Project:
     """
     Get the Evergreen project for a request by project id.

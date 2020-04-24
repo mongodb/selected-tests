@@ -2,21 +2,25 @@
 from decimal import Decimal
 from typing import List
 
-from pymongo.collection import Collection
+import inject
+
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 
+@inject.autoparams()
 def get_correlated_task_mappings(
-    collection: Collection, changed_source_files: List[str], project: str, threshold: Decimal
+    db: MongoWrapper, changed_source_files: List[str], project: str, threshold: Decimal
 ) -> List[dict]:
     """
     Retrieve task mappings associated with a given evergreen project and list of source files.
 
     :param project: The name of the evergreen project to analyze.
-    :param collection: Collection to act on.
+    :param db: db containing task mappings collection.
     :param changed_source_files: List of source files for which task mappings should be retrieved.
     :param threshold: Min threshold desired for flip_count/source_file_seen_count ratio.
     :return: A list of task mappings for the changed files.
     """
+    collection = db.task_mappings()
     return list(
         collection.aggregate(
             [

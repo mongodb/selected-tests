@@ -4,10 +4,13 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Optional
 
+import inject
 import structlog
 
 from pymongo.collection import Collection, ReturnDocument
 from pymongo.errors import DuplicateKeyError
+
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 LOGGER = structlog.get_logger()
 WORK_ITEM_TTL = timedelta(weeks=2).total_seconds()
@@ -105,13 +108,15 @@ class ProjectTaskMappingWorkItem(object):
             )
         return None
 
-    def insert(self, collection: Collection) -> bool:
+    @inject.autoparams()
+    def insert(self, db: MongoWrapper) -> bool:
         """
         Add this work item to the Mongo collection.
 
-        :param collection: Mongo collection containing queue.
+        :param db: db containing task mappings queue.
         :return: True if item was new record was added to collection.
         """
+        collection = db.task_mappings_queue()
         LOGGER.info("Adding new task_mapping work item for project", project=self.project)
         to_insert = {
             "created_on": self.created_on,

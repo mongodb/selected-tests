@@ -7,11 +7,14 @@ from typing import Dict, List
 from unittest.mock import MagicMock
 
 import git
+import inject
 import pytest
 
+from evergreen import EvergreenApi
 from starlette.testclient import TestClient
 
 from selectedtests.app import app
+from selectedtests.datasource.mongo_wrapper import MongoWrapper
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_OUTPUT_PATH = os.path.join(CURRENT_DIRECTORY, "sample_data")
@@ -24,10 +27,27 @@ def app_client():
     """
     Client for the flask web with mocked endpoints.
     """
-    mongo = MagicMock()
-    evg_api = MagicMock()
-    client = TestClient(app.create_app(mongo, evg_api))
-    return client
+    return TestClient(app.create_app())
+
+
+@pytest.fixture
+def mock_evg():
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_mongo():
+    return MagicMock()
+
+
+@pytest.fixture(autouse=True)
+def mock_injector(mock_evg: EvergreenApi, mock_mongo: MongoWrapper):
+    def mock_dependencies(binder: inject.Binder) -> None:
+        binder.bind(EvergreenApi, mock_evg)
+        binder.bind(MongoWrapper, mock_mongo)
+
+    inject.clear_and_configure(mock_dependencies)
+    return inject
 
 
 @pytest.fixture()

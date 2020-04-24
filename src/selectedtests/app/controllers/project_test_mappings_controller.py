@@ -2,15 +2,12 @@
 from decimal import Decimal
 from typing import List
 
-from evergreen import EvergreenApi
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from selectedtests.app.dependencies import get_db, get_evg
 from selectedtests.app.evergreen import try_retrieve_evergreen_project
 from selectedtests.app.models import CustomResponse
 from selectedtests.app.parsers import parse_changed_files
-from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.test_mappings.get_test_mappings import get_correlated_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
@@ -58,21 +55,17 @@ def get(
     project: str,
     changed_files: str,
     threshold: Decimal = Decimal(0),
-    evg_api: EvergreenApi = Depends(get_evg),
-    db: MongoWrapper = Depends(get_db),
 ) -> TestMappingsResponse:
     """
     Get a list of correlated test mappings for an input list of changed source files.
 
-    :param evg_api: The evergreen API.
-    :param db: The database.
     :param project: The evergreen project.
     :param changed_files: List of source files to calculate correlated tasks for.
     :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
     """
-    evg_project = try_retrieve_evergreen_project(project, evg_api)
+    evg_project = try_retrieve_evergreen_project(project)
     test_mappings = get_correlated_test_mappings(
-        db.test_mappings(), parse_changed_files(changed_files), evg_project.identifier, threshold
+        parse_changed_files(changed_files), evg_project.identifier, threshold
     )
     return TestMappingsResponse(test_mappings=test_mappings)
 
@@ -90,18 +83,14 @@ def get(
 def post(
     work_item_params: TestMappingsWorkItem,
     project: str,
-    evg_api: EvergreenApi = Depends(get_evg),
-    db: MongoWrapper = Depends(get_db),
 ) -> CustomResponse:
     """
     Enqueue a project test mapping work item.
 
-    :param evg_api: Evergreen API.
-    :param db: The database
     :param work_item_params: The work items to enqueue.
     :param project: The evergreen project.
     """
-    evg_project = try_retrieve_evergreen_project(project, evg_api)
+    evg_project = try_retrieve_evergreen_project(project)
     module = work_item_params.module
     module_source_file_regex = work_item_params.module_source_file_regex
     module_test_file_regex = work_item_params.module_test_file_regex
@@ -120,7 +109,7 @@ def post(
         module_source_file_regex,
         module_test_file_regex,
     )
-    if work_item.insert(db.test_mappings_queue()):
+    if work_item.insert():
         return CustomResponse(custom=f"Work item added for project '{evg_project.identifier}'")
     else:
         raise HTTPException(

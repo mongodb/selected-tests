@@ -1,4 +1,6 @@
 """Application to serve API of selected-tests service."""
+import inject
+
 from evergreen import EvergreenApi
 from fastapi import FastAPI
 
@@ -8,14 +10,13 @@ from selectedtests.app.controllers import (
     project_test_mappings_controller,
 )
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.helpers import get_evg_api, get_mongo_wrapper
 
 
-def create_app(mongo_wrapper: MongoWrapper, evg_api: EvergreenApi) -> FastAPI:
+def create_app() -> FastAPI:
     """
     Create a selected-tests REST API.
 
-    :param mongo_wrapper: MongoDB wrapper.
-    :param evg_api: Evergreen Api.
     :return: The application.
     """
     app = FastAPI(
@@ -37,6 +38,10 @@ def create_app(mongo_wrapper: MongoWrapper, evg_api: EvergreenApi) -> FastAPI:
         prefix="/projects/{project}/test-mappings",
         tags=["projects"],
     )
-    app.state.db = mongo_wrapper
-    app.state.evg_api = evg_api
+
+    def dependencies(binder: inject.Binder):
+        binder.bind(EvergreenApi, get_evg_api())
+        binder.bind(MongoWrapper, get_mongo_wrapper())
+    inject.configure_once(dependencies)
+
     return app
