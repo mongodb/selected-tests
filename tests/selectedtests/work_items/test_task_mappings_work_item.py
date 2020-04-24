@@ -27,46 +27,41 @@ class TestProjectTaskMappingWorkItem:
         assert not work_item.start_time
         assert not work_item.end_time
 
-    def test_no_module_passed_in(self):
-        collection = MagicMock()
-        collection.insert_one.return_value.acknowledged = True
-
+    def test_no_module_passed_in(self, mock_task_mappings_queue):
+        mock_task_mappings_queue.insert_one.return_value.acknowledged = True
         work_item = under_test.ProjectTaskMappingWorkItem.new_task_mappings(
             PROJECT, SOURCE_FILE_REGEX
         )
-        new_item = work_item.insert(collection)
+        new_item = work_item.insert()
 
-        collection.insert_one.assert_called_once()
+        mock_task_mappings_queue.insert_one.assert_called_once()
 
-        assert new_item
+        assert new_item is True
 
-    def test_insert_adds_item_to_collection(self):
-        collection = MagicMock()
-        collection.insert_one.return_value.acknowledged = True
-
+    def test_insert_adds_item_to_collection(self, mock_task_mappings_queue):
+        mock_task_mappings_queue.insert_one.return_value.acknowledged = True
         work_item = under_test.ProjectTaskMappingWorkItem.new_task_mappings(
             PROJECT, SOURCE_FILE_REGEX, MODULE, MODULE_SOURCE_FILE_REGEX, BUILD_VARIANT_REGEX
         )
-        new_item = work_item.insert(collection)
+        new_item = work_item.insert()
 
-        collection.insert_one.assert_called_once()
+        mock_task_mappings_queue.insert_one.assert_called_once()
 
-        assert new_item
+        assert new_item is True
 
-    def test_insert_fails_when_item_exists(self):
-        collection = MagicMock()
-        collection.insert_one.side_effect = DuplicateKeyError(
+    def test_insert_fails_when_item_exists(self, mock_task_mappings_queue):
+        mock_task_mappings_queue.insert_one.side_effect = DuplicateKeyError(
             "E11000 duplicate key error collection"
         )
 
         work_item = under_test.ProjectTaskMappingWorkItem.new_task_mappings(
             PROJECT, SOURCE_FILE_REGEX
         )
-        new_item = work_item.insert(collection)
+        new_item = work_item.insert()
 
-        collection.insert_one.assert_called_once()
+        mock_task_mappings_queue.insert_one.assert_called_once()
 
-        assert not new_item
+        assert new_item is False
 
     def test_next_not_found(self):
         collection = MagicMock()

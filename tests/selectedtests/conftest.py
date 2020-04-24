@@ -40,11 +40,41 @@ def mock_mongo():
     return MagicMock()
 
 
+@pytest.fixture
+def mock_task_mappings(mock_mongo):
+    task_mappings = MagicMock()
+    mock_mongo.task_mappings.return_value = task_mappings
+    return task_mappings
+
+
+@pytest.fixture
+def mock_test_mappings(mock_mongo):
+    test_mappings = MagicMock()
+    mock_mongo.test_mappings.return_value = test_mappings
+    return test_mappings
+
+
+@pytest.fixture
+def mock_task_mappings_queue(mock_mongo):
+    task_mappings_queue = MagicMock()
+    mock_mongo.task_mappings_queue.return_value = task_mappings_queue
+    return task_mappings_queue
+
+
+@pytest.fixture
+def mock_test_mappings_queue(mock_mongo):
+    test_mappings_queue = MagicMock()
+    mock_mongo.test_mappings_queue.return_value = test_mappings_queue
+    return test_mappings_queue
+
+
 @pytest.fixture(autouse=True)
 def mock_injector(mock_evg: EvergreenApi, mock_mongo: MongoWrapper):
     def mock_dependencies(binder: inject.Binder) -> None:
         binder.bind(EvergreenApi, mock_evg)
+        binder.bind('EvergreenApi', mock_evg)
         binder.bind(MongoWrapper, mock_mongo)
+        binder.bind('MongoWrapper', mock_mongo)
 
     inject.clear_and_configure(mock_dependencies)
     return inject

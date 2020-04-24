@@ -5,9 +5,11 @@ from typing import List
 import inject
 
 from selectedtests.datasource.mongo_wrapper import MongoWrapper
+from selectedtests.injection_helper import remap_for_injection
 
 
 @inject.autoparams()
+@remap_for_injection
 def get_correlated_test_mappings(
     db: MongoWrapper, changed_source_files: List[str], project: str, threshold: Decimal
 ) -> List[dict]:

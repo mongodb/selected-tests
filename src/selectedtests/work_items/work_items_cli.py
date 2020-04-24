@@ -58,7 +58,9 @@ def cli(ctx: Context, verbose: str, log_format: str, mongo_uri: str) -> None:
 
     def dependencies(binder: inject.Binder):
         binder.bind(EvergreenApi, ctx.obj["evg_api"])
+        binder.bind('EvergreenApi', ctx.obj["evg_api"])
         binder.bind(MongoWrapper, ctx.obj["mongo"])
+        binder.bind('MongoWrapper', ctx.obj["mongo"])
     inject.configure(dependencies)
 
     verbosity = Verbosity.DEBUG if verbose else Verbosity.INFO

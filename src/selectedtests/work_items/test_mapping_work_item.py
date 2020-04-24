@@ -125,7 +125,7 @@ class ProjectTestMappingWorkItem(object):
         :param db: db containing test mappings queue.
         :return: True if item was new record was added to collection.
         """
-        collection = db.task_mappings_queue()
+        collection = db.test_mappings_queue()
         LOGGER.info("Adding new test_mapping work item for project", project=self.project)
         try:
             result = collection.insert_one(
