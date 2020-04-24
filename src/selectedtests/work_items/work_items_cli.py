@@ -2,12 +2,10 @@
 from datetime import datetime
 
 import click
-import inject
 import pytz
 
 from click import Context
 from dateutil.relativedelta import relativedelta
-from evergreen import EvergreenApi
 from miscutils.logging_config import Verbosity
 
 from selectedtests.config.logging_config import config_logging
@@ -56,13 +54,6 @@ def cli(ctx: Context, verbose: str, log_format: str, mongo_uri: str) -> None:
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
     ctx.obj["evg_api"] = get_evg_api()
 
-    def dependencies(binder: inject.Binder):
-        binder.bind(EvergreenApi, ctx.obj["evg_api"])
-        binder.bind('EvergreenApi', ctx.obj["evg_api"])
-        binder.bind(MongoWrapper, ctx.obj["mongo"])
-        binder.bind('MongoWrapper', ctx.obj["mongo"])
-    inject.configure(dependencies)
-
     verbosity = Verbosity.DEBUG if verbose else Verbosity.INFO
     config_logging(verbosity, human_readable=log_format == "text")
 
@@ -93,7 +84,7 @@ def create_test_mapping(ctx: Context, project: str, src_regex: str, test_file_re
         raise ValueError("Evergreen project not found")
 
     work_item = ProjectTestMappingWorkItem.new_test_mappings(project, src_regex, test_file_regex)
-    work_item.insert()
+    work_item.insert(ctx.obj["mongo"].test_mappings_queue())
 
 
 @cli.command()
@@ -137,7 +128,7 @@ def create_task_mapping(ctx: Context, project: str, src_regex: str, build_regex:
     work_item = ProjectTaskMappingWorkItem.new_task_mappings(
         project, src_regex, build_variant_regex=build_regex
     )
-    work_item.insert()
+    work_item.insert(ctx.obj["mongo"].task_mappings_queue())
 
 
 @cli.command()
