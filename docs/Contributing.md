@@ -12,13 +12,10 @@ We use a number of python tools to support development:
  
 ## Testing/Formatting/Linting
 
-You can use the following commands to ensure that the code passes all tests and checks:
+You can use the following command to ensure that the code passes all tests and checks:
  
 ```
-$ poetry run pytest --flake8 --isort --junitxml=test_output_junit.xml
-$ poetry run black --check --diff src tests
-$ poetry run pydocstyle src
-$ poetry run pytest --mypy src
+$ poetry run pytest --junitxml=test_output_junit.xml
 ```
 
 To get code coverage information, you can run pytest directly.
