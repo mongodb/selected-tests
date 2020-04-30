@@ -5,8 +5,6 @@ buildvariants:
     - ubuntu1604-test
   tasks:
     - name: unit_tests
-    - name: check_formatting
-    - name: check_pydoc
 
 functions:
   create virtualenv:
@@ -38,36 +36,3 @@ tasks:
         . venv/bin/activate
 
         poetry run pytest --junitxml=test_output_junit.xml
-
-- name: check_formatting
-  commands:
-    - command: shell.exec
-      params:
-        working_dir: src
-        script: |
-          set -o errexit
-          . venv/bin/activate
-
-          poetry run black --check --diff src tests
-
-- name: check_pydoc
-  commands:
-    - command: shell.exec
-      params:
-        working_dir: src
-        script: |
-          set -o errexit
-          . venv/bin/activate
-
-          poetry run pydocstyle src
-
-- name: check_mypy
-  commands:
-    - command: shell.exec
-      params:
-        working_dir: src
-        script: |
-          set -o errexit
-          . venv/bin/activate
-
-          poetry run pytest --mypy src
