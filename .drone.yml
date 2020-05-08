@@ -135,4 +135,21 @@ steps:
     event:
     - pull_request
 
+- name: integration_tests
+  pull: if-not-exists
+  image: python:3.7-buster
+  commands:
+  - set -xe apt-get install -y git
+  - pip3 install poetry
+  - poetry install
+  - sleep 5
+  - poetry run init-mongo create-indexes --mongo-uri mongo
+  when:
+    event:
+    - pull_request
+
+services:
+- name: mongo
+  image: mongo:3.0
+
 ...
