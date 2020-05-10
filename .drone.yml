@@ -144,13 +144,13 @@ steps:
   - pip3 install poetry
   - poetry install
   - sleep 5
-  - poetry run init-mongo create-indexes --mongo-uri mongo
+  - poetry run init-mongo --mongo-uri mongo_service create-indexes
   when:
     event:
     - pull_request
 
 services:
-- name: mongo
+- name: mongo_service
   image: mongo:3.0
 
 ...
