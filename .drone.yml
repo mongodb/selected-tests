@@ -146,9 +146,6 @@ steps:
   - sleep 50
   - ping mongo_service
   - mongo --host mongo_service --eval "db.version()"
-  when:
-    event:
-    - pull_request
 
 services:
 - name: mongo_service
