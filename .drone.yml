@@ -153,8 +153,6 @@ steps:
 services:
 - name: mongo_service
   image: mongo:4.2
-  command:
-  - --smallfiles
   ports:
   - 27017
 
