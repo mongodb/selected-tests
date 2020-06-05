@@ -143,9 +143,7 @@ steps:
   - set -xe apt-get install -y git
   - pip3 install poetry
   - poetry install
-  - sleep 50
-  - ping mongo_service
-  - mongo --host mongo_service --eval "db.version()"
+  - poetry run init-mongo --mongo-uri mongo_service create-indexes
   when:
     event:
     - pull_request
@@ -155,5 +153,3 @@ services:
   image: mongo:4.2
   ports:
   - 27017
-
-...
