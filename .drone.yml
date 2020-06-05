@@ -143,14 +143,14 @@ steps:
   - set -xe apt-get install -y git
   - pip3 install poetry
   - poetry install
-  - sleep 5
-  - mongo --host mongo --eval "db.version()"
+  - sleep 50
+  - mongo --host mongo_service --eval "db.version()"
   when:
     event:
     - pull_request
 
 services:
-- name: mongo
+- name: mongo_service
   image: mongo:4.2
   command:
   - --smallfiles
