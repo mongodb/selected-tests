@@ -150,7 +150,7 @@ steps:
     - pull_request
 
 services:
-- name: mongo_service
+- name: mongo
   image: mongo:4.2
   command:
   - --smallfiles
