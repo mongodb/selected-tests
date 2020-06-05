@@ -144,13 +144,17 @@ steps:
   - pip3 install poetry
   - poetry install
   - sleep 5
-  - poetry run init-mongo --mongo-uri mongo_service create-indexes
+  - mongo --host mongo --eval "db.version()"
   when:
     event:
     - pull_request
 
 services:
 - name: mongo_service
-  image: mongo:3.0
+  image: mongo:4.2
+  command:
+  - --smallfiles
+  ports:
+  - 27017
 
 ...
