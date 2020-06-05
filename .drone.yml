@@ -144,6 +144,7 @@ steps:
   - pip3 install poetry
   - poetry install
   - sleep 50
+  - ping mongo_service
   - mongo --host mongo_service --eval "db.version()"
   when:
     event:
