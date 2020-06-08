@@ -144,7 +144,7 @@ steps:
   - pip3 install poetry
   - poetry install
   - poetry run init-mongo --mongo-uri mongo_service create-indexes
-  - export SELECTED_TESTS_MONGO_URI="localhost:27017"
+  - export SELECTED_TESTS_MONGO_URI="127.0.0.1:27017"
   - poetry run uvicorn --host 0.0.0.0 --port 8080 --workers 1 selectedtests.app.asgi:app
   when:
     event:
