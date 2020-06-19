@@ -49,7 +49,7 @@ def _get_after_date(years_back: int) -> datetime:
 @click.option("--mongo-uri", required=True, type=str, help="Mongo URI to connect to.")
 @click.pass_context
 def cli(ctx: Context, verbose: str, log_format: str, mongo_uri: str) -> None:
-    """Entry point for the cli interface. It sets up the evg api instance and logging."""
+    """Suite of selected-tests commands, see the commands help for more details."""
     ctx.ensure_object(dict)
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
     ctx.obj["evg_api"] = get_evg_api()
