@@ -78,7 +78,7 @@ def setup_mappings_test_files_indexes(collection: Collection) -> None:
 @click.option("--mongo-uri", required=True, type=str, help="Mongo URI to connect to.")
 @click.pass_context
 def cli(ctx: Context, verbose: bool, mongo_uri: str) -> None:
-    """Entry point for the cli interface. It sets up the evg api instance and logging."""
+    """Suite of MongoDB related commands, see the commands help for more details."""
     ctx.ensure_object(dict)
     ctx.obj["mongo"] = MongoWrapper.connect(mongo_uri)
 

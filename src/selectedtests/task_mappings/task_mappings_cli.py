@@ -33,7 +33,7 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 )
 @click.pass_context
 def cli(ctx: Context, verbose: bool, log_format: str) -> None:
-    """Entry point for the cli interface. It sets up the evg api instance and logging."""
+    """Suite of task mapping related commands, see the commands help for more details."""
     ctx.ensure_object(dict)
     ctx.obj["evg_api"] = get_evg_api()
 

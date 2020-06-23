@@ -12,3 +12,4 @@ notebooks/.ipynb_checkpoints
 pip-wheel-metadata
 test_output_junit.xml
 venv
+.venv
