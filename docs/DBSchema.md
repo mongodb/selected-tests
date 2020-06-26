@@ -86,7 +86,7 @@ are joined to the _task_mappings_ documents _tasks_ field through the source_fil
 	"flip_count" : 1
 }
 // Find all the source files related to a given task. In this query, source files are returned for the task "change_streams"
-> db.task_mappings_tasks.aggregate({$match:{name:'change_streams'}}, {$lookup:{from:'task_mappings', localField:'task_mapping_id', foreignField:'_id', as: 'tasks'}}, {$unwind:'$tasks'} {$sort: {'tasks.source_file': 1}}, {$group:{_id:'$name', source_files:{$push:'$tasks.source_file'}}}, {$project:{task_name:'$_id', source_files:1, _id:0}}).toArray()[0]
+> db.task_mappings_tasks.aggregate({$match:{name:'change_streams'}}, {$lookup:{from:'task_mappings', localField:'task_mapping_id', foreignField:'_id', as: 'tasks'}}, {$unwind:'$tasks'}, {$sort: {'tasks.source_file': 1}}, {$group:{_id:'$name', source_files:{$push:'$tasks.source_file'}}}, {$project:{task_name:'$_id', source_files:1, _id:0}}).toArray()[0]
 {
         "source_files" : [
                 "src/mongo/db/catalog/rename_collection.cpp",
