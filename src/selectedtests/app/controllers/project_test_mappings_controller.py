@@ -2,6 +2,8 @@
 from decimal import Decimal
 from typing import List
 
+import structlog
+
 from evergreen import EvergreenApi
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -14,6 +16,7 @@ from selectedtests.datasource.mongo_wrapper import MongoWrapper
 from selectedtests.test_mappings.get_test_mappings import get_correlated_test_mappings
 from selectedtests.work_items.test_mapping_work_item import ProjectTestMappingWorkItem
 
+LOGGER = structlog.get_logger(__name__)
 router = APIRouter()
 
 
@@ -70,7 +73,9 @@ def get(
     :param changed_files: List of source files to calculate correlated tasks for.
     :param threshold: Minimum threshold desired for flip_count / source_file_seen_count ratio
     """
+    LOGGER.info("Starting fetching test_mappings for project", project=project)
     evg_project = try_retrieve_evergreen_project(project, evg_api)
+    LOGGER.info("Retrieved evergreen project information", evergreen_project=evg_project.identifier)
     test_mappings = get_correlated_test_mappings(
         db.test_mappings(), parse_changed_files(changed_files), evg_project.identifier, threshold
     )
@@ -101,6 +106,7 @@ def post(
     :param work_item_params: The work items to enqueue.
     :param project: The evergreen project.
     """
+    LOGGER.info("Adding a test mapping work item to queue for project", project=project)
     evg_project = try_retrieve_evergreen_project(project, evg_api)
     module = work_item_params.module
     module_source_file_regex = work_item_params.module_source_file_regex
