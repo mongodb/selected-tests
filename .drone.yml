@@ -1,87 +1,138 @@
 ---
-pipeline:
-  publish_staging:
-    image: plugins/ecr
-    secrets: [ ecr_access_key, ecr_secret_key]
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: publish_staging
+  pull: if-not-exists
+  image: plugins/ecr
+  settings:
+    create_repository: true
     registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
     repo: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}
-    create_repository: true
     tags:
-      - git-${DRONE_COMMIT_SHA:0:7}
-      - staging
-    when:
-      branch: staging
-      event: push
+    - git-${DRONE_COMMIT_SHA:0:7}
+    - staging
+  environment:
+    ECR_ACCESS_KEY:
+      from_secret: ecr_access_key
+    ECR_SECRET_KEY:
+      from_secret: ecr_secret_key
+  when:
+    branch:
+    - staging
+    event:
+    - push
 
-  deploy_to_staging:
-    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
-    # The release name should be unique across the namespace, the app or repo name is recommended
-    release: selected-tests
-    namespace: server-tig
-    environment:
-      - API_SERVER=https://api.staging.corp.mongodb.com
-    prefix: staging
-    secrets: [ staging_kubernetes_token ]
-    helm_repos: mongodb=https://10gen.github.io/helm-charts
+- name: deploy_to_staging
+  pull: if-not-exists
+  image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
+  settings:
     chart: mongodb/web-app
     chart_version: 4.7.3
-    tiller_ns: server-tig
     client_only: true
-    values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME},ingress.enabled=true,ingress.hosts[0]=selected-tests.server-tig.staging.corp.mongodb.com"
-    when:
-      branch: staging
-      event: push
+    helm_repos: mongodb=https://10gen.github.io/helm-charts
+    namespace: server-tig
+    prefix: staging
+    release: selected-tests
+    tiller_ns: server-tig
+    values: image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME},ingress.enabled=true,ingress.hosts[0]=selected-tests.server-tig.staging.corp.mongodb.com
+  environment:
+    API_SERVER: https://api.staging.corp.mongodb.com
+    STAGING_KUBERNETES_TOKEN:
+      from_secret: staging_kubernetes_token
+  when:
+    branch:
+    - staging
+    event:
+    - push
 
-  publish_prod:
-    image: plugins/ecr
-    secrets: [ ecr_access_key, ecr_secret_key]
+- name: publish_prod
+  pull: if-not-exists
+  image: plugins/ecr
+  settings:
+    create_repository: true
     registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
     repo: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}
-    create_repository: true
     tags:
     - git-${DRONE_COMMIT_SHA:0:7}
     - latest
-    when:
-      branch: master
-      event: push
+  environment:
+    ECR_ACCESS_KEY:
+      from_secret: ecr_access_key
+    ECR_SECRET_KEY:
+      from_secret: ecr_secret_key
+  when:
+    branch:
+    - master
+    event:
+    - push
 
-  deploy_to_prod:
-    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
-    # The release name should be unique across the namespace, the app or repo name is recommended
-    release: selected-tests
-    namespace: server-tig
-    environment:
-      - API_SERVER=https://api.prod.corp.mongodb.com
-    prefix: prod
-    secrets: [ prod_kubernetes_token ]
-    helm_repos: mongodb=https://10gen.github.io/helm-charts
+- name: deploy_to_prod
+  pull: if-not-exists
+  image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
+  settings:
     chart: mongodb/web-app
     chart_version: 4.7.3
-    tiller_ns: server-tig
     client_only: true
-    values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME},ingress.enabled=true,ingress.hosts[0]=selected-tests.server-tig.prod.corp.mongodb.com"
-    values_files: ["environments/prod.yml"]
-    when:
-      branch: master
-      event: push
-
-  deploy_production_cronjobs:
-    group: deploy
-    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
-    # The release name should be unique across the namespace, the app or repo name is recommended
-    release: selected-tests-cronjobs
-    namespace: server-tig
-    environment:
-      - API_SERVER=https://api.prod.corp.mongodb.com
-    prefix: prod
-    secrets: [ prod_kubernetes_token ]
     helm_repos: mongodb=https://10gen.github.io/helm-charts
+    namespace: server-tig
+    prefix: prod
+    release: selected-tests
+    tiller_ns: server-tig
+    values: image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME},ingress.enabled=true,ingress.hosts[0]=selected-tests.server-tig.prod.corp.mongodb.com
+    values_files:
+    - environments/prod.yml
+  environment:
+    API_SERVER: https://api.prod.corp.mongodb.com
+    PROD_KUBERNETES_TOKEN:
+      from_secret: prod_kubernetes_token
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+- name: deploy_production_cronjobs
+  pull: if-not-exists
+  image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
+  settings:
     chart: mongodb/cronjobs
     chart_version: 1.5.1
-    tiller_ns: server-tig
     client_only: true
-    values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}"
-    values_files: ["cronjobs.yml"]
-    when:
-      branch: master
-      event: push
+    group: deploy
+    helm_repos: mongodb=https://10gen.github.io/helm-charts
+    namespace: server-tig
+    prefix: prod
+    release: selected-tests-cronjobs
+    tiller_ns: server-tig
+    values: image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}
+    values_files:
+    - cronjobs.yml
+  environment:
+    API_SERVER: https://api.prod.corp.mongodb.com
+    PROD_KUBERNETES_TOKEN:
+      from_secret: prod_kubernetes_token
+  when:
+    branch:
+    - master
+    event:
+    - push
+
+- name: unit_tests
+  pull: if-not-exists
+  image: python:3.7-buster
+  commands:
+  - set -xe apt-get install -y git
+  - pip3 install poetry
+  - poetry install
+  - poetry run pytest --junitxml=test_output_junit.xml
+  when:
+    event:
+    - pull_request
+
+...
