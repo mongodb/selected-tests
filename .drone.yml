@@ -1,88 +1,86 @@
 ---
+publish_base: &publish_base
+  image: plugins/ecr
+  access_key:
+    from_secret: ecr_access_key
+  secret_key:
+    from_secret: ecr_secret_key
+  registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+  repo: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}
+  create_repository: true
+
+deploy_webapp_base: &deploy_webapp_base
+  image: quay.io/mongodb/drone-helm:v3
+  namespace: server-tig
+  helm_repos: mongodb=https://10gen.github.io/helm-charts
+  chart: mongodb/web-app
+  chart_version: 4.7.5
+  tiller_ns: server-tig
+  client_only: true
+
+deploy_crons_base: &deploy_crons_base
+  image: quay.io/mongodb/drone-helm:v3
+  namespace: server-tig
+  helm_repos: mongodb=https://10gen.github.io/helm-charts
+  chart: mongodb/cronjobs
+  chart_version: 1.6.2
+  tiller_ns: server-tig
+  client_only: true
+
+deploy_staging: &deploy_staging
+  api_server: https://api.staging.corp.mongodb.com
+  kubernetes_token: 
+    from_secret: staging_kubernetes_token
+
+deploy_prod: &deploy_prod
+  api_server: https://api.prod.corp.mongodb.com
+  kubernetes_token: 
+    from_secret: prod_kubernetes_token
+
+staging_trigger: &staging_trigger
+  branch: staging
+  event: push
+
+prod_trigger: &prod_trigger
+  branch: master
+  event: push
+
 pipeline:
   publish_staging:
-    image: plugins/ecr
-    secrets: [ ecr_access_key, ecr_secret_key]
-    registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
-    repo: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}
-    create_repository: true
+    <<: *publish_base
     tags:
       - git-${DRONE_COMMIT_SHA:0:7}
       - staging
-    when:
-      branch: staging
-      event: push
+    when: *staging_trigger
 
   deploy_to_staging:
-    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
+    <<: [*deploy_webapp_base, *deploy_staging]
     # The release name should be unique across the namespace, the app or repo name is recommended
     release: selected-tests
-    namespace: server-tig
-    environment:
-      - API_SERVER=https://api.staging.corp.mongodb.com
-    prefix: staging
-    secrets: [ staging_kubernetes_token ]
-    helm_repos: mongodb=https://10gen.github.io/helm-charts
-    chart: mongodb/web-app
-    chart_version: 4.7.3
-    tiller_ns: server-tig
-    client_only: true
     values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME},ingress.enabled=true,ingress.hosts[0]=selected-tests.server-tig.staging.corp.mongodb.com"
     values_files: ["environments/staging.yml"]
-    when:
-      branch: staging
-      event: push
+    when: *staging_trigger
 
   publish_prod:
-    image: plugins/ecr
-    secrets: [ ecr_access_key, ecr_secret_key]
-    registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
-    repo: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}
-    create_repository: true
+    <<: *publish_base
     tags:
-    - git-${DRONE_COMMIT_SHA:0:7}
-    - latest
-    when:
-      branch: master
-      event: push
+      - git-${DRONE_COMMIT_SHA:0:7}
+      - latest
+    when: *prod_trigger
 
   deploy_to_prod:
-    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
+    <<: [*deploy_webapp_base, *deploy_prod]
     # The release name should be unique across the namespace, the app or repo name is recommended
     release: selected-tests
-    namespace: server-tig
-    environment:
-      - API_SERVER=https://api.prod.corp.mongodb.com
-    prefix: prod
-    secrets: [ prod_kubernetes_token ]
-    helm_repos: mongodb=https://10gen.github.io/helm-charts
-    chart: mongodb/web-app
-    chart_version: 4.7.3
-    tiller_ns: server-tig
-    client_only: true
     values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME},ingress.enabled=true,ingress.hosts[0]=selected-tests.server-tig.prod.corp.mongodb.com"
     values_files: ["environments/prod.yml"]
-    when:
-      branch: master
-      event: push
+    when: *prod_trigger
 
   deploy_production_cronjobs:
+    <<: [*deploy_crons_base, *deploy_prod]
     group: deploy
-    image: quay.io/mongodb/drone-helm:v2.14.1-0.1.0
     # The release name should be unique across the namespace, the app or repo name is recommended
     release: selected-tests-cronjobs
-    namespace: server-tig
-    environment:
-      - API_SERVER=https://api.prod.corp.mongodb.com
-    prefix: prod
-    secrets: [ prod_kubernetes_token ]
-    helm_repos: mongodb=https://10gen.github.io/helm-charts
-    chart: mongodb/cronjobs
-    chart_version: 1.5.1
-    tiller_ns: server-tig
-    client_only: true
     values: "image.tag=git-${DRONE_COMMIT_SHA:0:7},image.repository=795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}"
     values_files: ["cronjobs.yml"]
-    when:
-      branch: master
-      event: push
+    when: *prod_trigger
