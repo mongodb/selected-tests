@@ -35,4 +35,5 @@ tasks:
         set -o errexit
         . venv/bin/activate
 
+        export LD_LIBRARY_PATH=/opt/mongodbtoolchain/v3/lib
         poetry run pytest --junitxml=test_output_junit.xml
