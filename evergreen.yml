@@ -15,6 +15,9 @@ functions:
         set -o errexit
         /opt/mongodbtoolchain/v3/bin/python3 -m venv venv
         . venv/bin/activate
+
+        apt-get install gfortran libopenblas-dev liblapack-dev
+
         pip install --upgrade pip
         pip install poetry
         poetry install
