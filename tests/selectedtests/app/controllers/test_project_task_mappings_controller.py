@@ -66,7 +66,7 @@ def test_GET_project_not_found(
     get_evg_project_mock.return_value = None
 
     response = app_client.get(
-        f"/projects/invalid-evergreen-project/task-mappings?changed_files=src/file1.js,src/file2.js"
+        "/projects/invalid-evergreen-project/task-mappings?changed_files=src/file1.js,src/file2.js"
     )
     assert response.status_code == 404
     assert response.json()["detail"] == "Evergreen project not found"
@@ -131,7 +131,7 @@ def test_POST_project_not_found(get_evg_project_mock, app_client: TestClient):
     test_params = dict(source_file_regex="source-file-regex")
 
     response = app_client.post(
-        f"/projects/invalid-evergreen-project/task-mappings", json=test_params
+        "/projects/invalid-evergreen-project/task-mappings", json=test_params
     )
     assert response.status_code == 404
     assert response.json()["detail"] == "Evergreen project not found"
