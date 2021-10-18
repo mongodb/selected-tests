@@ -1,8 +1,8 @@
 buildvariants:
-- display_name: Ubuntu 16.04
-  name: ubuntu1604
+- display_name: Ubuntu 18.04
+  name: ubuntu1804
   run_on:
-    - ubuntu1604-test
+    - ubuntu1804-test
   tasks:
     - name: unit_tests
 
