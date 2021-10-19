@@ -1,8 +1,8 @@
 buildvariants:
-- display_name: Ubuntu 16.04
-  name: ubuntu1604
+- display_name: Ubuntu 18.04
+  name: ubuntu1804
   run_on:
-    - ubuntu1604-test
+    - ubuntu1804-test
   tasks:
     - name: unit_tests
 
@@ -35,4 +35,5 @@ tasks:
         set -o errexit
         . venv/bin/activate
 
+        export LD_LIBRARY_PATH=/opt/mongodbtoolchain/v3/lib
         poetry run pytest --junitxml=test_output_junit.xml

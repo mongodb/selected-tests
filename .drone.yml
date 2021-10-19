@@ -1,12 +1,12 @@
 ---
 publish_base: &publish_base
-  image: plugins/ecr
+  image: plugins/kaniko-ecr
   access_key:
     from_secret: ecr_access_key
   secret_key:
     from_secret: ecr_secret_key
   registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
-  repo: 795250896452.dkr.ecr.us-east-1.amazonaws.com/server-tig/${DRONE_REPO_NAME}
+  repo: server-tig/${DRONE_REPO_NAME}
   create_repository: true
 
 deploy_webapp_base: &deploy_webapp_base
